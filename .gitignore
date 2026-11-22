@@ -1,0 +1,26 @@
+# Planificación y decisiones internas: no se publican
+.local/
+
+# Entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Dependencias y artefactos de build
+vendor/
+node_modules/
+dist/
+build/
+coverage/
+
+# Herramientas
+.claude/settings.local.json
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.log
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
