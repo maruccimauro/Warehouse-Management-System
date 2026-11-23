@@ -1,0 +1,48 @@
+{
+  "skipToContent": "Saltar al contenido principal",
+  "documentTitle": "{{title}} · WMS",
+  "brand": "WMS",
+  "menuTitle": "Menú de acceso al sistema",
+  "user": {
+    "label": "Usuario",
+    "logout": "Cerrar sesión",
+    "loggingOut": "Cerrando sesión…"
+  },
+  "command": {
+    "label": "Campo de comando",
+    "confirm": "Confirmar",
+    "unknownTransaction": "La transacción {{code}} no existe.",
+    "invalid": "El comando {{command}} no es válido. Use un código de transacción, /n, /nCÓDIGO u /oCÓDIGO."
+  },
+  "toolbar": {
+    "label": "Barra de herramientas estándar",
+    "save": "Grabar",
+    "back": "Atrás",
+    "exit": "Finalizar",
+    "execute": "Ejecutar",
+    "favorite": "Favorito",
+    "favoriteAdded": "La transacción {{code}} se agregó a favoritos.",
+    "favoriteRemoved": "La transacción {{code}} se quitó de favoritos."
+  },
+  "tree": {
+    "label": "Menú de transacciones",
+    "title": "Menú",
+    "favorites": "Favoritos",
+    "noFavorites": "Sin favoritos",
+    "showCodes": "Mostrar códigos de transacción",
+    "toggle": "Menú"
+  },
+  "statusBar": {
+    "label": "Barra de estado",
+    "types": {
+      "S": "Éxito",
+      "W": "Advertencia",
+      "E": "Error",
+      "I": "Información"
+    },
+    "transaction": "Transacción",
+    "defaultWarehouse": "Depósito por defecto",
+    "none": "ninguno",
+    "language": "Idioma"
+  }
+}

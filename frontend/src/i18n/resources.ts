@@ -1,16 +1,24 @@
+import esAuth from './locales/es/auth.json';
 import esCommon from './locales/es/common.json';
 import esErrors from './locales/es/errors.json';
 import esHome from './locales/es/home.json';
 import esNotFound from './locales/es/notFound.json';
+import esShell from './locales/es/shell.json';
+import esSu3 from './locales/es/su3.json';
+import esTransactions from './locales/es/transactions.json';
 
 // Un namespace por pantalla y dos compartidos (common y errors). Agregar un idioma es
 // agregar su carpeta en locales/ y registrarla acá y en languages: los componentes no cambian.
 export const resources = {
   es: {
+    auth: esAuth,
     common: esCommon,
     errors: esErrors,
     home: esHome,
     notFound: esNotFound,
+    shell: esShell,
+    su3: esSu3,
+    transactions: esTransactions,
   },
 } as const;
 

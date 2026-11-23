@@ -1,4 +1,4 @@
 {
-  "title": "Sistema de gestión de depósitos",
-  "description": "Inventario, recepción, preparación de pedidos y despacho en un solo lugar."
+  "description": "Inventario, recepción, preparación de pedidos y despacho en un solo lugar.",
+  "hint": "Ingrese un código de transacción en el campo de comando o elija una transacción del menú."
 }

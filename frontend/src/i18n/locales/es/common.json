@@ -4,6 +4,10 @@
     "fullName": "Sistema de gestión de depósitos"
   },
   "actions": {
-    "backToHome": "Volver al inicio"
+    "backToHome": "Volver al inicio",
+    "retry": "Reintentar"
+  },
+  "status": {
+    "loadingSession": "Verificando la sesión…"
   }
 }

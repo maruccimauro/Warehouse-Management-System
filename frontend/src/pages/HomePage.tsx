@@ -1,12 +1,14 @@
 import { useTranslation } from 'react-i18next';
 
+// Pantalla inicial: el menú de acceso. El título lo pone el armazón y el árbol está en el
+// panel lateral.
 export function HomePage() {
   const { t } = useTranslation('home');
 
   return (
-    <main>
-      <h1>{t('title')}</h1>
+    <div className="grid max-w-2xl gap-2">
       <p>{t('description')}</p>
-    </main>
+      <p className="text-ink-muted">{t('hint')}</p>
+    </div>
   );
 }

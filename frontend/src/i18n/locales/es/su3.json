@@ -1,0 +1,21 @@
+{
+  "user": {
+    "title": "Datos del usuario",
+    "name": "Nombre",
+    "email": "Correo electrónico"
+  },
+  "parameters": {
+    "title": "Parámetros",
+    "id": "ID de parámetro",
+    "value": "Valor",
+    "description": "Descripción",
+    "descriptions": {
+      "LGN": "Depósito por defecto. Completa el campo Depósito de las pantallas operativas."
+    }
+  },
+  "noValue": "Sin valor",
+  "noWarehouses": "Sin depósitos asignados",
+  "warehouseOption": "{{code}}: {{name}}",
+  "saveHint": "Los cambios se aplican al grabar (Ctrl+S).",
+  "saved": "Los parámetros de usuario se grabaron."
+}

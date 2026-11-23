@@ -1,0 +1,97 @@
+@import 'tailwindcss';
+
+/*
+ * Tema inspirado en SAP GUI (ADR-016): paleta propia en la línea del tema claro de SAP,
+ * densidad alta y contraste suficiente. Los colores de texto cumplen 4.5:1 sobre surface y
+ * canvas; los bordes de campos, 3:1 (WCAG 1.4.11).
+ */
+@theme {
+  --font-sans: 'IBM Plex Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'Consolas', monospace;
+
+  --color-shell: #243447;
+  --color-shell-raised: #31455b;
+  --color-shell-fg: #ffffff;
+  --color-shell-muted: #c8d2dc;
+
+  --color-canvas: #eef1f4;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f6f8fa;
+  --color-toolbar: #e3e8ed;
+  --color-selected: #dcebfa;
+  --color-hover: #ebf3fb;
+
+  --color-border: #c5ced7;
+  --color-border-strong: #6c7a88;
+
+  --color-ink: #1c2b3a;
+  --color-ink-muted: #4e6278;
+
+  --color-accent: #0a5fc2;
+  --color-accent-strong: #084c9b;
+  --color-focus: #0a5fc2;
+
+  --color-success: #1f6b35;
+  --color-warning: #8a4b00;
+  --color-error: #b00020;
+  --color-info: #0a5fc2;
+
+  --color-success-soft: #e6f2e9;
+  --color-warning-soft: #fbf0e0;
+  --color-error-soft: #fbe7ea;
+  --color-info-soft: #e3eefa;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-canvas font-sans text-sm text-ink antialiased;
+  }
+
+  :where(a:any-link, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  /* Los controles heredan la tipografía; con puntero grueso se agrandan para que iOS no
+     haga zoom al enfocarlos y el objetivo táctil sea cómodo. */
+  :where(input, select, textarea, button) {
+    font: inherit;
+  }
+
+  @media (pointer: coarse) {
+    :where(input, select, textarea) {
+      font-size: max(1rem, 1em);
+    }
+  }
+}
+
+@layer components {
+  /* Oculta visualmente sin sacar del árbol de accesibilidad; se muestra al recibir foco. */
+  .visually-hidden:where(:not(:focus-within, :active)) {
+    position: absolute !important;
+    clip-path: inset(50%) !important;
+    overflow: hidden !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .field-input {
+    @apply min-h-7 w-full rounded-sm border border-border-strong bg-surface px-2 text-ink;
+    @apply disabled:cursor-not-allowed disabled:bg-surface-alt disabled:text-ink-muted;
+    @apply aria-invalid:border-error aria-invalid:bg-error-soft;
+  }
+
+  @media (pointer: coarse) {
+    .field-input {
+      @apply min-h-11;
+    }
+  }
+}

@@ -86,7 +86,9 @@ function isAbortError(error: unknown): boolean {
 export function createApiClient(config: ApiClientConfig = {}): ApiClient {
   const baseUrl = config.baseUrl ?? '/api/v1';
   const csrfCookieUrl = config.csrfCookieUrl ?? '/sanctum/csrf-cookie';
-  const fetchFn = config.fetch ?? globalThis.fetch.bind(globalThis);
+  // Resolución tardía: la instancia única usa el fetch vigente en cada petición, así las
+  // pruebas de componentes lo sustituyen con vi.stubGlobal sin recrear el cliente.
+  const fetchFn = config.fetch ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init));
   const readCookies = config.readCookies ?? (() => document.cookie);
   const language = config.language ?? (() => undefined);
 
