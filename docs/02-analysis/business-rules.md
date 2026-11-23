@@ -60,7 +60,7 @@ Las invariantes son condiciones que el sistema garantiza en todo momento, sin ex
 
 | Aspecto | Detalle |
 | - | - |
-| Enunciado | Un retiro solo puede usar stock disponible, salvo que consuma explícitamente una reserva existente (picking y despacho del pedido que la creó) |
+| Enunciado | Un retiro solo puede usar stock disponible, salvo que consuma explícitamente una reserva existente (picking, baja por daño en PACKING y despacho del pedido que la creó, y la solicitud de guardado que comprometió el stock de su origen) |
 | Garantía en base de datos | `CHECK (quantity_reserved + quantity_blocked <= quantity_on_hand)` |
 | Garantía en aplicación | `StockLedger` distingue líneas que consumen reservas de líneas libres |
 | Error | 422 `RESERVED_STOCK_NOT_AVAILABLE` |
@@ -82,10 +82,10 @@ Las invariantes son condiciones que el sistema garantiza en todo momento, sin ex
 | Aspecto | Detalle |
 | - | - |
 | Enunciado | Reintentos de una misma petición o confirmaciones repetidas de un documento no generan operaciones adicionales |
-| Garantía en base de datos | `UNIQUE (reference_type, reference_id)` en operaciones: un documento origina como máximo una operación, aunque fallen los controles de la aplicación. `UNIQUE (performed_by, idempotency_key)` en operaciones. `reverses_operation_id UNIQUE`: una operación se revierte una sola vez. `operation_id UNIQUE` en los documentos, que solo impide que dos documentos apunten a la misma operación. Índice único parcial de un despacho vigente por pedido |
+| Garantía en base de datos | `UNIQUE (reference_type, reference_id)` en operaciones: un documento origina como máximo una operación, aunque fallen los controles de la aplicación. `UNIQUE (performed_by, idempotency_key)` en operaciones. Trigger `stock_movements_validate_reversal`: lo revertido de cada línea no supera su cantidad original, aunque lleguen reversiones concurrentes. `operation_id UNIQUE` en los documentos, que solo impide que dos documentos apunten a la misma operación. Índice único parcial de un despacho vigente por pedido |
 | Garantía en aplicación | Middleware de idempotencia ([ADR-007](../03-architecture/adr/007-idempotency.md)) |
-| Errores | 422 `IDEMPOTENCY_KEY_REUSED` (misma clave, otro contenido). 409 `IDEMPOTENCY_REQUEST_IN_PROGRESS`. 409 `OPERATION_ALREADY_CONFIRMED`. 409 `OPERATION_ALREADY_REVERSED` |
-| Pruebas | Misma clave enviada 10 veces en paralelo: una sola operación. Despacho confirmado dos veces: una sola salida. Reversión repetida: la segunda falla |
+| Errores | 422 `IDEMPOTENCY_KEY_REUSED` (misma clave, otro contenido). 409 `IDEMPOTENCY_REQUEST_IN_PROGRESS`. 409 `OPERATION_ALREADY_CONFIRMED`. 422 `REVERSAL_EXCEEDS_REMAINING` |
+| Pruebas | Misma clave enviada 10 veces en paralelo: una sola operación. Despacho confirmado dos veces: una sola salida. Dos reversiones parciales concurrentes de la misma línea que juntas superan el original: una falla |
 | Etapa | E3, E4, E5, E6 |
 
 ### INV-008. Todo ajuste requiere motivo
@@ -157,8 +157,9 @@ Reglas de negocio que no son invariantes del inventario pero se aplican con el m
 | REG-009 | No se puede cancelar un pedido en estado `packed` o posterior | 409 `INVALID_STATE_TRANSITION` | E5 |
 | REG-010 | La cantidad depositada en una ubicación no supera su capacidad máxima, si está definida | 422 `LOCATION_CAPACITY_EXCEEDED` | E3 |
 | REG-011 | Una diferencia de conteo por encima del umbral exige reconteo por otro operador antes de aprobar | 409 `RECOUNT_REQUIRED` | E6 |
-| REG-012 | Toda operación es reversible, como en SAP: las de un documento solo desde el documento, que corrige su estado y sus cantidades; las transferencias y los ajustes desde el libro. Se revierte en orden inverso de la cadena, con motivo y permiso `*.reverse` | 409 `OPERATION_NOT_REVERSIBLE`. 409 `DEPENDENT_DOCUMENTS_NOT_REVERSED` | E3 a E6 |
+| REG-012 | Toda operación es reversible, como en SAP: las de un documento solo desde el documento, que corrige su estado y sus cantidades; las transferencias y los ajustes desde el libro. La reversión es por posición y por cantidad, repetible hasta agotar el saldo de cada posición; revertir el documento completo es revertir todas sus posiciones por el saldo. Se revierte en orden inverso de la cadena, aplicado por cantidad, con usuario, motivo y permiso `*.reverse` | 409 `OPERATION_NOT_REVERSIBLE`. 409 `DEPENDENT_DOCUMENTS_NOT_REVERSED`. 422 `REVERSAL_EXCEEDS_REMAINING` | E3 a E6 |
 | REG-013 | Un inventario físico no se inicia sobre ubicaciones con reservas activas sin confirmación explícita, porque congelarlas impediría pickear esos pedidos | 409 `LOCATION_HAS_ACTIVE_RESERVATIONS` | E6 |
+| REG-014 | Ni una transferencia manual ni un ajuste positivo manual tienen como destino una ubicación de sistema (RECEPCION, PACKING o DESPACHO); solo sus documentos cargan esas ubicaciones. Los ajustes negativos sí se admiten. Se valida en `TransferStock` y `AdjustStock` | 422 `SYSTEM_LOCATION_NOT_ALLOWED` | E3 |
 
 ## Catálogo de códigos de error de dominio
 
@@ -171,7 +172,7 @@ Reglas de negocio que no son invariantes del inventario pero se aplican con el m
 | `IDEMPOTENCY_KEY_REUSED` | 422 | INV-007 |
 | `IDEMPOTENCY_REQUEST_IN_PROGRESS` | 409 | INV-007 |
 | `OPERATION_ALREADY_CONFIRMED` | 409 | INV-007 |
-| `OPERATION_ALREADY_REVERSED` | 409 | INV-007 |
+| `REVERSAL_EXCEEDS_REMAINING` | 422 | INV-007, REG-012 |
 | `OPERATION_NOT_REVERSIBLE` | 409 | REG-012 |
 | `DEPENDENT_DOCUMENTS_NOT_REVERSED` | 409 | REG-012 |
 | `LOCATION_BLOCKED` | 422 | INV-009 |
@@ -184,4 +185,5 @@ Reglas de negocio que no son invariantes del inventario pero se aplican con el m
 | `LOCATION_CAPACITY_EXCEEDED` | 422 | REG-010 |
 | `RECOUNT_REQUIRED` | 409 | REG-011 |
 | `LOCATION_HAS_ACTIVE_RESERVATIONS` | 409 | REG-013 |
+| `SYSTEM_LOCATION_NOT_ALLOWED` | 422 | REG-014 |
 | `CONCURRENCY_CONFLICT` | 503 | ADR-004 |

@@ -39,14 +39,13 @@ Términos del dominio, su nombre en el código y su definición. El código usa 
 | Operación de inventario | `InventoryOperation` | Hecho de negocio confirmado que modifica stock: recepción, transferencia, ajuste, picking, despacho, reversión. Agrupa uno o más movimientos |
 | Movimiento | `StockMovement` | Línea de una operación que modifica una fila de existencia con un delta firmado |
 | Código de movimiento | `movement_code` | Número que clasifica un movimiento, tomado de las clases de movimiento de SAP donde hay equivalente (101 entrada por orden de compra, 601 salida por despacho) y del rango 9xx para los movimientos internos del depósito. Cada código tiene su código de reversión (101 y 102) |
-| Reversión | `reversal` | Operación que anula otra con los movimientos opuestos y los códigos de reversión. Se ejecuta desde el documento de origen, que corrige su estado; una operación se revierte una sola vez |
+| Reversión | `reversal` | Operación que anula otra, en todo o en parte, con los movimientos opuestos y los códigos de reversión. Se aplica por posición y por cantidad desde el documento de origen, que acumula lo revertido; puede repetirse hasta agotar lo original. Revertir el documento completo es revertir todas sus posiciones por su saldo |
 | Delta | `delta` | Variación de cantidad de un movimiento: positiva si ingresa, negativa si egresa. Nunca cero |
 | Saldo posterior | `balance_after` | Stock físico de la fila inmediatamente después de aplicar el movimiento |
 | Libro de inventario | ledger | Conjunto inmutable de operaciones y movimientos. Fuente para reconstruir la historia |
 | Transferencia | `transfer` | Operación que traslada stock entre dos ubicaciones del mismo depósito: un movimiento negativo en origen y uno positivo en destino |
 | Ajuste | `adjustment_in`, `adjustment_out` | Operación que corrige el stock físico por un motivo registrado |
 | Motivo | `reason_code` | Causa de un ajuste, de una lista cerrada: daño, pérdida, hallazgo, corrección |
-| Reversión | `reversal` | Operación que compensa otra operación con los deltas opuestos. Es la única forma de corregir una operación confirmada |
 | Reserva | `StockReservation` | Compromiso de una cantidad de una fila de existencia para una línea de pedido. Estados: activa, consumida, liberada |
 | Bloqueo de stock | `StockBlock` | Inmovilización de una cantidad dentro de una ubicación, sin moverla. Distinto del bloqueo de ubicación |
 | Conciliación | `wms:reconcile` | Verificación de que cada existencia coincide con la suma de sus movimientos y que lo reservado coincide con las reservas activas |
@@ -58,7 +57,8 @@ Términos del dominio, su nombre en el código y su definición. El código usa 
 | Orden de compra | `PurchaseOrder` | Documento que solicita productos a un proveedor. No modifica stock |
 | Línea de orden | `PurchaseOrderItem` | Producto y cantidad solicitada dentro de una orden |
 | Recepción | `GoodsReceipt` | Registro de la mercadería que llegó físicamente. Al confirmarse genera la operación de inventario |
-| Recepción parcial | estado `partially_received` | Recepción que no completa lo pedido; la orden mantiene el saldo pendiente |
+| Entrega final | `PurchaseOrder.status = closed` | Marca de un supervisor que da por terminada una orden de compra aunque quede saldo; no admite más recepciones |
+| Recepción parcial | `quantity_received < quantity_ordered` | Situación de una orden de compra cuyo neto recibido no completa lo pedido. No es un estado: se calcula de sus líneas, y la orden sigue `approved` con el saldo pendiente |
 | Recepción ciega | recepción sin orden | Recepción registrada sin orden de compra asociada; requiere permiso específico |
 | Rechazo | `quantity_rejected` | Cantidad recibida que no ingresa al stock por defecto o error, con motivo |
 | Tolerancia de sobre recepción | `over_receipt_tolerance_pct` | Porcentaje por encima de lo pedido que se acepta sin autorización especial |
@@ -70,9 +70,10 @@ Términos del dominio, su nombre en el código y su definición. El código usa 
 | - | - | - |
 | Pedido | `CustomerOrder` | Solicitud de salida de mercadería para un cliente |
 | Asignación | allocation | Elección de las filas de existencia concretas desde las que se atenderá un pedido, criterio FIFO |
+| Solicitud de guardado | `PutawayTask` | Orden de trabajo para llevar mercadería de RECEPCION (o de PACKING, en un retorno) a estanterías. Compromete el stock de su origen y se revierte en parte o en total con motivo por quien la ejecuta o por un supervisor |
 | Tarea de picking | `PickingTask` | Lista de líneas a recolectar para un pedido, ordenada por ubicación |
 | Picking | `pick` | Recolección de una línea: operación que traslada la mercadería de almacenamiento a la ubicación de packing |
-| Faltante | `short` | Cantidad que el operador no encontró al pickear. Libera la reserva y dispara un conteo cíclico |
+| Faltante | `quantity_short` | Cantidad que el operador no encontró al pickear. Libera la reserva y dispara un conteo cíclico |
 | Packing | `Package` | Verificación y embalaje de lo pickeado en uno o más bultos |
 | Bulto | `Package` | Unidad de embalaje con su contenido y peso |
 | Despacho | `Dispatch` | Salida de la mercadería del depósito. Documento propio (`DS`) cuya operación `dispatch` (601) tiene delta negativo en packing y consume la reserva. Se revierte con 602 si la mercadería no salió físicamente |
