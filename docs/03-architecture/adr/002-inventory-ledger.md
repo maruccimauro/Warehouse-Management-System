@@ -2,7 +2,7 @@
 
 - Estado: Propuesto
 - Fecha: 22/11/2026
-- Relacionados: ADR-003, ADR-006
+- Relacionados: ADR-003, ADR-006, ADR-013, ADR-014
 
 ## Contexto
 
@@ -12,11 +12,11 @@ El inventario necesita consulta rápida del estado actual y reconstrucción comp
 
 Dos niveles de registro y una proyección:
 
-- `inventory_operations`: cabecera de la operación de negocio (tipo, documento origen, motivo, usuario, clave de idempotencia).
-- `stock_movements`: una línea por fila de stock afectada, con `delta` firmado distinto de cero y `balance_after`.
+- `inventory_operations`: cabecera de la operación de negocio (tipo, documento origen, motivo, usuario, clave de idempotencia). Una reversión es una operación propia que referencia a la original con `reverses_operation_id`.
+- `stock_movements`: una línea por fila de stock afectada, con `delta` firmado distinto de cero, `balance_after` y un código de movimiento (`movement_code`, ADR-014). Una línea de reversión apunta a la línea original que revierte con `reverses_movement_id` (ADR-013).
 - `stocks`: proyección del estado actual por producto, ubicación y lote, actualizada en la misma transacción.
 
-Una transferencia es una operación con dos líneas (negativa en origen, positiva en destino). Para toda fila de stock se cumple `quantity_on_hand = SUM(delta)` de sus movimientos, verificado por el comando `wms:reconcile`.
+Una transferencia es una operación con dos líneas (931 negativa en origen, 931 positiva en destino). Para toda fila de stock se cumple `quantity_on_hand = SUM(delta)` de sus movimientos, verificado por el comando `wms:reconcile`, que también verifica que `quantity_reserved` y `quantity_blocked` coincidan con las reservas y los bloqueos activos de la fila.
 
 ## Alternativas consideradas
 
@@ -30,4 +30,6 @@ Una transferencia es una operación con dos líneas (negativa en origen, positiv
 
 - Conciliación automatizable y verificable en CI.
 - Duplicación controlada de datos (proyección y libro) que se mantiene sincronizada con una única puerta de escritura (`StockLedger`).
+- La reversión parcial por línea se expresa en el mismo libro, sin tablas aparte: lo revertido de una línea es la suma de sus líneas de reversión.
 - Crecimiento continuo de `stock_movements`; mitigado con índices compuestos y particionado por fecha como evolución.
+- Enmendado el 23/11/2026 en E0.09: códigos de movimiento, vínculo de reversión por línea y conciliación de reservas y bloqueos, según [database-design.md](../database-design.md#e3-núcleo-transaccional-de-inventario).

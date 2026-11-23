@@ -1,7 +1,8 @@
 # ADR-001: Monolito modular
 
-- Estado: Propuesto
+- Estado: Aceptado
 - Fecha: 22/11/2026
+- Aceptado: 23/11/2026, en la revisión de E0.09
 
 ## Contexto
 

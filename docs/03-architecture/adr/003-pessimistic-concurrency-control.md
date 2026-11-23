@@ -2,7 +2,7 @@
 
 - Estado: Propuesto
 - Fecha: 22/11/2026
-- Relacionados: ADR-002, ADR-004
+- Relacionados: ADR-002, ADR-004, ADR-013
 
 ## Contexto
 
@@ -10,10 +10,11 @@ Varios operadores modifican las mismas filas de stock al mismo tiempo (retiros, 
 
 ## Decisión
 
-- Toda transacción bloquea en un orden global único: 1) cabecera del documento raíz (`FOR UPDATE`); 2) documentos dependientes y líneas, por `id` ascendente; 3) ubicaciones involucradas, por `id` (`FOR SHARE` para mover, `FOR UPDATE` para cambiar su estado); 4) filas de `stocks` afectadas (`FOR UPDATE`), en una sola consulta y por `id` ascendente.
+- Toda transacción bloquea en un orden global único: 1) cabecera del documento raíz (`FOR UPDATE`); 2) documentos dependientes y líneas, por `id` ascendente; 3) ubicaciones involucradas, por `id` (`FOR SHARE` para mover, `FOR UPDATE` para cambiar su estado); 4) filas de `stocks` afectadas (`FOR UPDATE`), en una sola consulta y por `id` ascendente; 5) en una reversión, las líneas originales del libro, que bloquea el trigger `stock_movements_validate_reversal` al insertar cada línea de reversión (ADR-013). Por eso las líneas de una operación se insertan en orden ascendente de `id` de la línea original.
 - Las ubicaciones se bloquean antes que las existencias. Con el orden inverso, la aprobación de un inventario físico (que bloquea ubicaciones y luego existencias) y un movimiento concurrente sobre esas ubicaciones forman un ciclo de espera; con un único orden jerárquico el ciclo no puede formarse.
 - La disponibilidad se valida después de obtener el bloqueo, nunca antes.
 - Las restricciones `CHECK` de la tabla actúan como última barrera.
+- Las colas de trabajo, como la de picking, toman el siguiente elemento con `FOR UPDATE SKIP LOCKED`: dos operadores no esperan ni compiten por la misma tarea.
 
 ## Alternativas consideradas
 
@@ -29,3 +30,4 @@ Varios operadores modifican las mismas filas de stock al mismo tiempo (retiros, 
 - El orden global y el orden por `id` dentro de cada nivel eliminan los deadlocks entre operaciones de este motor y con las transiciones de documentos; los residuales se tratan según ADR-004.
 - Corregido el 23/11/2026 durante E0.08: la versión inicial bloqueaba existencias antes que ubicaciones (ver [database-design.md](../database-design.md#concurrencia)).
 - Contención en filas calientes: límite conocido, a medir con pruebas de carga.
+- Enmendado el 23/11/2026 en E0.09: nivel 5 del orden por el bloqueo de la línea original en las reversiones parciales y uso de `SKIP LOCKED` en colas de trabajo.

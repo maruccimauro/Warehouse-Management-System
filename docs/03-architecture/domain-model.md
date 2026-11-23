@@ -17,7 +17,7 @@ Entidades por módulo, relaciones principales y máquinas de estado de los docum
 
 ## Principios: movimientos, tareas y estados (DM-18)
 
-El modelo separa tres capas, como SAP (MM-IM, WM/EWM y SD/MM):
+El modelo separa tres capas, como SAP (MM-IM, WM/EWM y SD/MM); la decisión y sus alternativas están en [ADR-015](adr/015-movements-tasks-states.md):
 
 | Capa | Qué registra | Ejemplos | Cómo se corrige |
 | - | - | - | - |
@@ -324,7 +324,7 @@ Solo `active` admite movimientos (INV-009). `blocked` y `counting` no se encaden
 
 ## Reversiones
 
-Modelo tomado de SAP (DM-04, DM-15): cada documento se revierte desde su propio endpoint, por posición y por cantidad, como un 102 o un 282 sobre una posición de su documento original. La reversión es una operación nueva con los códigos de reversión de [movement_types](database-design.md#e3-núcleo-transaccional-de-inventario), con su usuario, su fecha y su motivo, y el documento acumula lo revertido por posición. Revertir un documento completo es revertir todas sus posiciones por su saldo.
+Modelo tomado de SAP (DM-04, DM-15, [ADR-013](adr/013-partial-reversal-by-line.md)): cada documento se revierte desde su propio endpoint, por posición y por cantidad, como un 102 o un 282 sobre una posición de su documento original. La reversión es una operación nueva con los códigos de reversión de [movement_types](database-design.md#e3-núcleo-transaccional-de-inventario), con su usuario, su fecha y su motivo, y el documento acumula lo revertido por posición. Revertir un documento completo es revertir todas sus posiciones por su saldo.
 
 Ejemplo: una recepción con 101 × 50 de un producto admite un 102 × 10 sobre esa posición. La recepción queda con un neto de 40, la orden de compra con 40 recibidas y el historial muestra las dos operaciones. Más adelante se puede revertir el saldo de 40; nada obliga a cancelar y volver a cargar.
 
