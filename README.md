@@ -6,7 +6,7 @@
 
 A warehouse management system focused on **inventory transactional consistency**: no negative stock, no duplicated operations and no race conditions between operators working on the same items.
 
-> **Status:** specification stage. Documentation and architecture decisions are being written before any code. See the [roadmap](#roadmap).
+> **Status:** technical foundations stage. The specification and architecture decisions are complete; the runnable skeleton is being built. See the [roadmap](#roadmap).
 
 ### What it covers
 
@@ -38,7 +38,7 @@ Laravel (PHP), PostgreSQL, React with TypeScript, Docker. Redis is added only wh
 
 Sistema de gestión de depósitos centrado en la **consistencia transaccional del inventario**: sin stock negativo, sin operaciones duplicadas y sin condiciones de carrera entre operadores que trabajan sobre los mismos productos.
 
-> **Estado:** etapa de especificación. La documentación y las decisiones de arquitectura se escriben antes que el código. Ver la [hoja de ruta](#roadmap).
+> **Estado:** etapa de fundamentos técnicos. La especificación y las decisiones de arquitectura están cerradas; se construye el esqueleto ejecutable. Ver la [hoja de ruta](#roadmap).
 
 ### Alcance
 
@@ -70,8 +70,8 @@ Laravel (PHP), PostgreSQL, React con TypeScript, Docker. Redis se incorpora solo
 
 | Stage | Scope | Status |
 | - | - | - |
-| E0 | Specification and decisions | In progress |
-| E1 | Technical foundations, auth, CI | Pending |
+| E0 | Specification and decisions | Done |
+| E1 | Technical foundations, auth, CI | In progress |
 | E2 | Warehouses, locations, catalog, users | Pending |
 | E3 | Transactional inventory core | Pending |
 | E4 | Procurement and receiving | Pending |

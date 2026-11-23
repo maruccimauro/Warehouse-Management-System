@@ -1,0 +1,5 @@
+# Entorno de desarrollo. Uso: docker compose up
+# Los servicios (app, web, db, frontend) se definen en E1.02.
+name: wms
+
+services: {}
