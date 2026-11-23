@@ -19,6 +19,10 @@ class SampleServiceProvider extends ModuleServiceProvider
         'sample_quantity_check' => SampleRuleViolated::class,
     ];
 
+    protected array $uniqueConstraintFields = [
+        'sample_items_code_unique' => 'code',
+    ];
+
     protected array $triggerErrors = [
         'SAMPLE_TRIGGER_CONFLICT' => SampleConflict::class,
     ];

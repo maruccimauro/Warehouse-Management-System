@@ -44,7 +44,8 @@ Los errores que garantiza la base de datos se traducen en el mismo punto, con `A
 
 - Violaciones de restricciones (SQLSTATE clase 23): por el nombre de la restricción, que sigue la convención `{tabla}_{columnas}_{tipo}`. Por ejemplo, `stocks_quantity_on_hand_check` se traduce a 422 `INSUFFICIENT_STOCK`.
 - Excepciones de triggers: por el mensaje, que es el código de dominio (`RAISE EXCEPTION 'REVERSAL_EXCEEDS_REMAINING' USING ERRCODE = 'check_violation'`).
-- Cada módulo declara sus traducciones en su ServiceProvider (`$constraintErrors` y `$triggerErrors`). Registrar dos veces la misma restricción o el mismo código es un error de arranque.
+- Restricciones únicas sobre datos que ingresa el usuario: a 422 `VALUE_ALREADY_EXISTS` con el campo del formulario en `context.field`, como respaldo de la regla `unique` del Form Request ante una carrera. En una restricción compuesta, como `(warehouse_id, code)`, el campo es el que ingresa el usuario.
+- Cada módulo declara sus traducciones en su ServiceProvider (`$constraintErrors`, `$uniqueConstraintFields` y `$triggerErrors`). Registrar dos veces la misma restricción o el mismo código es un error de arranque.
 - Una violación sin traducción es un error de programación: responde 500 sin detalles internos y se reporta. Es el caso de `REVERSAL_LINE_MISMATCH` y `REVERSAL_LINE_WITHOUT_ORIGINAL`, que la aplicación nunca debe provocar y no forman parte del catálogo público. Las violaciones traducidas no se reportan.
 
 ## Alternativas consideradas
@@ -62,3 +63,4 @@ Los errores que garantiza la base de datos se traducen en el mismo punto, con `A
 - En E3, una prueba verifica que toda restricción y todo mensaje de trigger con código público tenga traducción, a partir de `mappedConstraints()` y `mappedTriggerCodes()` del traductor.
 - Enmendado el 23/11/2026 en E0.09: traducción de los errores de la base de datos.
 - Aceptado el 23/11/2026 con lo implementado en E1.06: miembros del formato, esquema de `type`, códigos genéricos, tratamiento del modo debug y registro de traducciones por módulo.
+- Enmendado el 23/11/2026 en E2.10: traducción de las restricciones únicas a `VALUE_ALREADY_EXISTS` con el campo afectado.

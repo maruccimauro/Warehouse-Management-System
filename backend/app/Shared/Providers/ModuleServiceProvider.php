@@ -19,7 +19,7 @@ use ReflectionClass;
  * - Database/Migrations como ruta de migraciones del módulo.
  * - Las policies declaradas en $policies.
  * - Las traducciones de errores de base de datos declaradas en
- *   $constraintErrors y $triggerErrors (ADR-010).
+ *   $constraintErrors, $uniqueConstraintFields y $triggerErrors (ADR-010).
  *
  * Los directorios que el módulo no tiene se ignoran.
  */
@@ -41,6 +41,15 @@ abstract class ModuleServiceProvider extends ServiceProvider
      * @var array<string, class-string<DomainException>>
      */
     protected array $constraintErrors = [];
+
+    /**
+     * Restricciones únicas sobre datos que ingresa el usuario: nombre => campo
+     * del formulario. Se traducen a 422 VALUE_ALREADY_EXISTS con el campo en el
+     * contexto. Por ejemplo, 'warehouses_code_unique' => 'code'.
+     *
+     * @var array<string, string>
+     */
+    protected array $uniqueConstraintFields = [];
 
     /**
      * Mensajes de triggers con código público: código => excepción de dominio.
@@ -91,7 +100,7 @@ abstract class ModuleServiceProvider extends ServiceProvider
 
     private function registerDatabaseErrors(): void
     {
-        if ($this->constraintErrors === [] && $this->triggerErrors === []) {
+        if ($this->constraintErrors === [] && $this->uniqueConstraintFields === [] && $this->triggerErrors === []) {
             return;
         }
 
@@ -99,6 +108,10 @@ abstract class ModuleServiceProvider extends ServiceProvider
 
         foreach ($this->constraintErrors as $constraint => $exception) {
             $translator->mapConstraint($constraint, $exception);
+        }
+
+        foreach ($this->uniqueConstraintFields as $constraint => $field) {
+            $translator->mapUniqueConstraint($constraint, $field);
         }
 
         foreach ($this->triggerErrors as $code => $exception) {

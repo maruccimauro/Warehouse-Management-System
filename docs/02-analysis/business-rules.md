@@ -187,5 +187,6 @@ Reglas de negocio que no son invariantes del inventario pero se aplican con el m
 | `LOCATION_HAS_ACTIVE_RESERVATIONS` | 409 | REG-013 |
 | `SYSTEM_LOCATION_NOT_ALLOWED` | 422 | REG-014 |
 | `CONCURRENCY_CONFLICT` | 503 | ADR-004 |
+| `VALUE_ALREADY_EXISTS` | 422 | Unicidad de códigos de datos maestros (código de depósito, de zona y de ubicación por depósito, email de usuario; SKU, código de barras y CUIT desde E2.05 y E2.06). Respaldo de la validación ante una carrera; `context.field` indica el campo |
 | `INVALID_CREDENTIALS` | 422 | ADR-009 |
 | `SESSION_REQUIRED` | 400 | ADR-009 |

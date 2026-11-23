@@ -7,4 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class SampleRecord extends Model
 {
     protected $table = 'sample_records';
+
+    public $timestamps = false;
+
+    protected $guarded = [];
 }

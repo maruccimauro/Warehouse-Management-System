@@ -20,4 +20,10 @@ class WarehouseServiceProvider extends ModuleServiceProvider
         Zone::class => ZonePolicy::class,
         Location::class => LocationPolicy::class,
     ];
+
+    protected array $uniqueConstraintFields = [
+        'warehouses_code_unique' => 'code',
+        'zones_warehouse_id_code_unique' => 'code',
+        'locations_warehouse_id_code_unique' => 'code',
+    ];
 }

@@ -10,6 +10,10 @@ return new class extends Migration
     {
         Schema::create('sample_records', function (Blueprint $table) {
             $table->id();
+            $table->string('code', 20)->default('');
+            $table->string('name', 120)->default('');
+            $table->string('status', 20)->default('active');
+            $table->boolean('is_active')->default(true);
         });
     }
 

@@ -22,6 +22,10 @@ class IdentityServiceProvider extends ModuleServiceProvider
     /** Intentos de login por dirección IP, por minuto, para cualquier email. */
     public const LOGIN_ATTEMPTS_PER_IP = 20;
 
+    protected array $uniqueConstraintFields = [
+        'users_email_unique' => 'email',
+    ];
+
     public function boot(): void
     {
         parent::boot();

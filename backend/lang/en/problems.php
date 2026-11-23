@@ -15,4 +15,5 @@ return [
         429 => 'Too many requests. Please try again later.',
     ],
     'internal' => 'An unexpected error occurred.',
+    'value_already_exists' => 'The value is already registered.',
 ];

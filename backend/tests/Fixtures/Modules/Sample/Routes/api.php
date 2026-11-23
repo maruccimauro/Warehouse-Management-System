@@ -7,8 +7,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Tests\Fixtures\Modules\Sample\SampleConflict;
 use Tests\Fixtures\Modules\Sample\SampleRecord;
+use Tests\Fixtures\Modules\Sample\SampleRecordListRequest;
+use Tests\Fixtures\Modules\Sample\SampleRecordResource;
 use Tests\Fixtures\Modules\Sample\SampleRequest;
 use Tests\Fixtures\Modules\Sample\SampleRuleViolated;
+
+Route::get('/sample/records', fn (SampleRecordListRequest $request) => SampleRecordResource::collection($request->paginate(SampleRecord::query())));
 
 Route::get('/sample/ping', fn () => response()->json(['pong' => true]))->name('sample.ping');
 
@@ -27,12 +31,17 @@ Route::prefix('/sample/errors')->group(function () {
         DB::statement("CREATE TEMP TABLE sample_items (quantity integer CONSTRAINT {$constraint} CHECK (quantity >= 0))");
         DB::insert('INSERT INTO sample_items (quantity) VALUES (-1)');
     };
+    $duplicate = function (): void {
+        DB::statement('CREATE TEMP TABLE sample_items (code varchar(20) CONSTRAINT sample_items_code_unique UNIQUE)');
+        DB::insert("INSERT INTO sample_items (code) VALUES ('A-01'), ('A-01')");
+    };
     $raise = function (string $code): void {
         DB::statement("DO \$\$ BEGIN RAISE EXCEPTION '{$code}' USING ERRCODE = 'check_violation'; END \$\$");
     };
 
     Route::get('/constraint-mapped', fn () => $violate('sample_quantity_check'));
     Route::get('/constraint-unmapped', fn () => $violate('sample_unmapped_check'));
+    Route::get('/unique-mapped', fn () => $duplicate());
     Route::get('/trigger-mapped', fn () => $raise('SAMPLE_TRIGGER_CONFLICT'));
     Route::get('/trigger-unmapped', fn () => $raise('SAMPLE_UNMAPPED_TRIGGER'));
 });

@@ -4,6 +4,7 @@
 // nombres de los campos, que Laravel combina con los del framework.
 return [
     'attributes' => [
+        'code' => 'code',
         'email' => 'email',
         'password' => 'password',
     ],

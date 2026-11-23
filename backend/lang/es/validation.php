@@ -163,6 +163,7 @@ return [
 
     // Nombres de los campos en los mensajes: «El campo correo electrónico es obligatorio.»
     'attributes' => [
+        'code' => 'código',
         'email' => 'correo electrónico',
         'password' => 'contraseña',
     ],

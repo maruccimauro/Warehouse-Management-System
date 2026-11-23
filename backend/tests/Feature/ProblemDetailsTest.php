@@ -137,6 +137,31 @@ describe('database errors', function () {
             ]);
     });
 
+    it('translates a unique constraint violation to VALUE_ALREADY_EXISTS with the affected field', function () {
+        $this->getJson('/api/v1/sample/errors/unique-mapped')
+            ->assertStatus(422)
+            ->assertHeader('Content-Type', ProblemDetails::CONTENT_TYPE)
+            ->assertExactJson([
+                'type' => 'urn:wms:problem:value-already-exists',
+                'title' => 'El valor ya está registrado.',
+                'status' => 422,
+                'detail' => 'El campo código ya ha sido registrado.',
+                'instance' => '/api/v1/sample/errors/unique-mapped',
+                'code' => 'VALUE_ALREADY_EXISTS',
+                'context' => ['field' => 'code'],
+            ]);
+    });
+
+    it('writes VALUE_ALREADY_EXISTS in the language of the request', function () {
+        $this->getJson('/api/v1/sample/errors/unique-mapped', ['Accept-Language' => 'en'])
+            ->assertStatus(422)
+            ->assertJson([
+                'title' => 'The value is already registered.',
+                'detail' => 'The code has already been taken.',
+                'context' => ['field' => 'code'],
+            ]);
+    });
+
     it('translates a trigger exception by its message', function () {
         $this->getJson('/api/v1/sample/errors/trigger-mapped')
             ->assertStatus(409)
@@ -167,7 +192,7 @@ describe('database errors', function () {
     it('exposes the registered translations for the coverage check of E3', function () {
         $translator = $this->app->make(DatabaseErrorTranslator::class);
 
-        expect($translator->mappedConstraints())->toContain('sample_quantity_check')
+        expect($translator->mappedConstraints())->toContain('sample_quantity_check', 'sample_items_code_unique')
             ->and($translator->mappedTriggerCodes())->toContain('SAMPLE_TRIGGER_CONFLICT');
     });
 });

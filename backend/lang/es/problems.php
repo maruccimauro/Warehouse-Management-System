@@ -15,4 +15,5 @@ return [
         429 => 'Se superó el límite de solicitudes. Intente nuevamente más tarde.',
     ],
     'internal' => 'Ocurrió un error inesperado.',
+    'value_already_exists' => 'El valor ya está registrado.',
 ];

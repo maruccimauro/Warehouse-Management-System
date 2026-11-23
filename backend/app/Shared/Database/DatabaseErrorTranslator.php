@@ -3,6 +3,7 @@
 namespace App\Shared\Database;
 
 use App\Shared\Exceptions\DomainException;
+use App\Shared\Exceptions\ValueAlreadyExists;
 use Illuminate\Database\QueryException;
 use InvalidArgumentException;
 
@@ -13,6 +14,9 @@ use InvalidArgumentException;
  *   restricción, que sigue la convención {tabla}_{columnas}_{tipo}.
  * - Excepciones de triggers: por el mensaje, que es el código de dominio
  *   (RAISE EXCEPTION 'REVERSAL_EXCEEDS_REMAINING').
+ * - Restricciones únicas sobre datos que ingresa el usuario: a
+ *   VALUE_ALREADY_EXISTS con el campo afectado, como respaldo de la regla
+ *   unique del Form Request ante una carrera.
  *
  * Los módulos registran sus traducciones desde su ServiceProvider. Un error sin
  * traducción es un error de programación: translate() devuelve null y la API
@@ -26,8 +30,13 @@ final class DatabaseErrorTranslator
 
     private const DOMAIN_CODE_PATTERN = '/^[A-Z][A-Z0-9_]*$/';
 
+    private const UNIQUE_CONSTRAINT_SUFFIX = '_unique';
+
     /** @var array<string, class-string<DomainException>> */
     private array $constraints = [];
+
+    /** @var array<string, string> restricción única => campo */
+    private array $uniqueFields = [];
 
     /** @var array<string, class-string<DomainException>> */
     private array $triggerCodes = [];
@@ -37,8 +46,23 @@ final class DatabaseErrorTranslator
      */
     public function mapConstraint(string $constraint, string $exception): void
     {
-        $this->assertNotMapped($this->constraints, $constraint, 'restricción');
+        $this->assertConstraintNotMapped($constraint);
         $this->constraints[$constraint] = $exception;
+    }
+
+    /**
+     * Traduce la restricción única a VALUE_ALREADY_EXISTS sobre el campo del
+     * formulario que la viola. En una restricción compuesta, como
+     * (warehouse_id, code), el campo es el que ingresa el usuario.
+     */
+    public function mapUniqueConstraint(string $constraint, string $field): void
+    {
+        if (! str_ends_with($constraint, self::UNIQUE_CONSTRAINT_SUFFIX)) {
+            throw new InvalidArgumentException("La restricción {$constraint} no sigue la convención {tabla}_{columnas}_unique.");
+        }
+
+        $this->assertConstraintNotMapped($constraint);
+        $this->uniqueFields[$constraint] = $field;
     }
 
     /**
@@ -50,7 +74,10 @@ final class DatabaseErrorTranslator
             throw new InvalidArgumentException("El código de trigger {$code} no tiene formato de código de dominio.");
         }
 
-        $this->assertNotMapped($this->triggerCodes, $code, 'código de trigger');
+        if (isset($this->triggerCodes[$code])) {
+            throw new InvalidArgumentException("El código de trigger {$code} ya tiene traducción a {$this->triggerCodes[$code]}.");
+        }
+
         $this->triggerCodes[$code] = $exception;
     }
 
@@ -59,9 +86,16 @@ final class DatabaseErrorTranslator
         $message = $this->primaryMessage($exception);
 
         if ($this->isIntegrityViolation($exception)
-            && preg_match(self::CONSTRAINT_NAME_PATTERN, $message, $matches) === 1
-            && isset($this->constraints[$matches['name']])) {
-            return new $this->constraints[$matches['name']](previous: $exception);
+            && preg_match(self::CONSTRAINT_NAME_PATTERN, $message, $matches) === 1) {
+            $constraint = $matches['name'];
+
+            if (isset($this->constraints[$constraint])) {
+                return new $this->constraints[$constraint](previous: $exception);
+            }
+
+            if (isset($this->uniqueFields[$constraint])) {
+                return new ValueAlreadyExists($this->uniqueFields[$constraint], $exception);
+            }
         }
 
         if (isset($this->triggerCodes[$message])) {
@@ -76,7 +110,7 @@ final class DatabaseErrorTranslator
      */
     public function mappedConstraints(): array
     {
-        return array_keys($this->constraints);
+        return [...array_keys($this->constraints), ...array_keys($this->uniqueFields)];
     }
 
     /**
@@ -111,13 +145,12 @@ final class DatabaseErrorTranslator
         return trim((string) preg_replace('/^[A-Z]+:\s+/', '', $firstLine === false ? '' : $firstLine));
     }
 
-    /**
-     * @param  array<string, class-string<DomainException>>  $map
-     */
-    private function assertNotMapped(array $map, string $key, string $kind): void
+    private function assertConstraintNotMapped(string $constraint): void
     {
-        if (isset($map[$key])) {
-            throw new InvalidArgumentException("La {$kind} {$key} ya tiene traducción a {$map[$key]}.");
+        $target = $this->constraints[$constraint] ?? (isset($this->uniqueFields[$constraint]) ? ValueAlreadyExists::class : null);
+
+        if ($target !== null) {
+            throw new InvalidArgumentException("La restricción {$constraint} ya tiene traducción a {$target}.");
         }
     }
 }

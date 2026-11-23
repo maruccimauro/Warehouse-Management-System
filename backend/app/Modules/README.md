@@ -48,6 +48,21 @@ Reproducen el DDL de `docs/03-architecture/database-design.md`.
 
 `tests/Feature/Database/SchemaConventionsTest.php` recorre el esquema migrado y falla ante una columna `timestamp without time zone`, una precisión distinta de microsegundos o una secuencia `serial`. Las tablas de infraestructura de Laravel (`sessions`, `cache`, `jobs` y afines) quedan como sus migraciones publicadas y se excluyen.
 
+## Convenciones de API
+
+| Aspecto | Convención | Motivo |
+| - | - | - |
+| Respuesta | API Resource por modelo en `Http/Resources/`; nunca el modelo serializado directo | El contrato no cambia al agregar columnas, y Scramble lo documenta a partir del Resource (ADR-012) |
+| Listado de datos maestros | El Form Request extiende `App\Shared\Http\Listing\ListRequest` y el controlador devuelve `XResource::collection($request->paginate($query))` | Paginación por página con total: la grilla muestra el total y salta de página. El libro de movimientos de E3 usa cursor |
+| Forma del listado | `data`, `links` (`first`, `last`, `prev`, `next`) y `meta` (`current_page`, `last_page`, `per_page`, `total`, `from`, `to`, `path`) del paginador de Laravel | Formato estándar del framework |
+| Página | `page` desde 1; `per_page` de 50 por defecto y 200 como máximo | Acota el costo de una petición |
+| Filtros | `filter[campo]=valor`; cada listado declara sus campos en `filters()` con `FilterMode::Exact`, `Partial` (fragmento sin distinguir mayúsculas, comodines escapados) o `In` (`filter[campo][]=a&filter[campo][]=b`). Los valores que no son texto llevan su regla en `filterValueRules()` | Lista blanca: la columna sale de la declaración, nunca de la petición. Un criterio vacío no restringe, como en una pantalla de selección |
+| Orden | `sort=campo` o `sort=-campo`, entre los campos de `sorts()`; sin `sort`, `defaultSort()`. La clave primaria desempata | Sin desempate, dos páginas pueden repetir o saltear filas con el mismo valor |
+| Parámetro no declarado | 422 `VALIDATION_FAILED` con el campo en `errors` | Un filtro ignorado en silencio devuelve datos que el usuario cree filtrados |
+| Valor único repetido | El Form Request lo valida con `unique`; la restricción de la base es el respaldo ante una carrera y se declara en `$uniqueConstraintFields` del provider (restricción => campo del formulario), que responde 422 `VALUE_ALREADY_EXISTS` con `context.field` | Dos peticiones simultáneas pueden pasar la validación; la base rechaza la segunda y el cliente marca el mismo campo que con la validación |
+
+`tests/Feature/Http/ListingConventionsTest.php` prueba el contrato de listados y `tests/Feature/Database/UniqueConstraintTranslationTest.php` provoca cada restricción única registrada contra el esquema real.
+
 ## Alcance por depósito
 
 Todo recurso que pertenece a un depósito respeta REG-005 con `App\Modules\Identity\Authorization\WarehouseAccess` (ADR-009):
