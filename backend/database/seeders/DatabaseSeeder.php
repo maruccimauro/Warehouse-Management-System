@@ -2,24 +2,34 @@
 
 namespace Database\Seeders;
 
-use App\Modules\Identity\Models\User;
+use App\Modules\Identity\Database\Seeders\IdentitySeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use RuntimeException;
 
+/**
+ * Orquesta los seeders de desarrollo de cada módulo, en orden de dependencia.
+ * Cada etapa agrega el de su módulo (E2: Warehouse y Catalog).
+ */
 class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
+    /** Entornos donde se permiten datos de desarrollo con credenciales públicas. */
+    public const ALLOWED_ENVIRONMENTS = ['local', 'testing'];
+
     public function run(): void
     {
-        // User::factory(10)->create();
+        if (! app()->environment(self::ALLOWED_ENVIRONMENTS)) {
+            throw new RuntimeException(sprintf(
+                'Los seeders de desarrollo solo corren en %s; el entorno actual es %s.',
+                implode(' y ', self::ALLOWED_ENVIRONMENTS),
+                app()->environment(),
+            ));
+        }
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            IdentitySeeder::class,
         ]);
     }
 }

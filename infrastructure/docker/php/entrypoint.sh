@@ -1,6 +1,7 @@
 #!/bin/sh
 # Preparación idempotente del backend antes de arrancar PHP-FPM:
-# dependencias, archivo .env y APP_KEY. Cada paso se salta si ya está hecho.
+# dependencias, archivo .env, APP_KEY, migraciones y datos de desarrollo.
+# Cada paso se salta si ya está hecho.
 set -eu
 
 cd /var/www/backend
@@ -44,5 +45,10 @@ fi
 if ! grep -Eq '^APP_KEY=.+' .env; then
     as_app php artisan key:generate --no-interaction
 fi
+
+# Migraciones pendientes y datos de desarrollo. Los seeders son idempotentes
+# (no duplican ni pisan datos) y fallan fuera de local y testing: este
+# entrypoint es solo del entorno de desarrollo.
+as_app php artisan migrate --seed --no-interaction
 
 exec "$@"

@@ -23,7 +23,9 @@ Cada directorio se crea cuando el módulo lo necesita.
 app/Modules/{Nombre}/
 ├── {Nombre}ServiceProvider.php   extiende App\Shared\Providers\ModuleServiceProvider
 ├── Actions/                      casos de uso: una clase por operación de negocio
+├── Database/Factories/           factories de los modelos del módulo
 ├── Database/Migrations/          migraciones del módulo, cargadas por el provider
+├── Database/Seeders/             datos de desarrollo idempotentes, llamados desde DatabaseSeeder
 ├── Exceptions/                   excepciones de dominio con código estable (ADR-010)
 ├── Http/Controllers/
 ├── Http/Requests/
