@@ -31,7 +31,6 @@ class IdentitySeeder extends Seeder
             [
                 'name' => config()->string('wms.dev_admin.name'),
                 'password' => config()->string('wms.dev_admin.password'),
-                'email_verified_at' => now(),
             ],
         );
     }

@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Shared\Database\DatabaseErrorTranslator;
 use App\Shared\Exceptions\ProblemDetailsRenderer;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -22,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        // TIMESTAMPTZ sin precisión explícita (microsegundos), como el DDL de
+        // database-design.md. Laravel usa precisión 0 por defecto.
+        Schema::defaultTimePrecision(null);
     }
 }

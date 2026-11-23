@@ -14,4 +14,4 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)->in('Feature');
 
-pest()->use(RefreshDatabase::class)->in('Feature/Identity');
+pest()->use(RefreshDatabase::class)->in('Feature/Identity', 'Feature/Database');

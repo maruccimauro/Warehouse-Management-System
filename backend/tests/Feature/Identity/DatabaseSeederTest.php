@@ -24,7 +24,7 @@ it('creates the development admin who can log in', function () {
     $admin = User::query()->where('email', 'admin@wms.test')->sole();
 
     expect($admin->name)->toBe('Administrador de desarrollo')
-        ->and($admin->email_verified_at)->not->toBeNull()
+        ->and($admin->is_active)->toBeTrue()
         ->and(Hash::check('admin-dev-1', $admin->password))->toBeTrue();
 
     $this->postJson(
