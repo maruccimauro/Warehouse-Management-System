@@ -7,7 +7,7 @@ Entidades por módulo, relaciones principales y máquinas de estado de los docum
 | Concepto | Criterio |
 | - | - |
 | Transición | Cambio de estado de un documento ejecutado por una Action. Toda transición no listada en la tabla de su máquina es inválida y responde 409 `INVALID_STATE_TRANSITION` |
-| Permiso | Permiso de `spatie/laravel-permission` con nomenclatura `modulo.accion`, verificado por la Policy junto con la pertenencia del documento a un depósito asignado al usuario (REG-005, [ADR-009](adr/009-spa-authentication-authorization.md)) |
+| Permiso | Permiso de `spatie/laravel-permission` con nomenclatura `modulo.accion`, verificado por la Policy junto con el alcance por depósito: consulta en los depósitos asignados o en todos con `warehouses.view_all`, operación en los asignados o en todos con `warehouses.operate_all` (REG-005, [ADR-009](adr/009-spa-authentication-authorization.md)) |
 | Sistema | Transición que no se invoca directamente: es efecto de otra transición y ocurre en la misma transacción, con el permiso de la transición que la provoca |
 | Bloqueo de cabecera | Toda transición bloquea la fila del documento con `SELECT ... FOR UPDATE` y valida el estado después de obtener el bloqueo. Esto serializa transiciones concurrentes sobre el mismo documento |
 | Estado final | Estado sin transiciones de salida. Un documento en estado final no se edita |
@@ -353,10 +353,12 @@ Ejemplo: una recepción con 101 × 50 de un producto admite un 102 × 10 sobre e
 
 ## Catálogo de permisos
 
-Permisos que exigen las transiciones de este documento y la administración de datos maestros, con nomenclatura `modulo.accion`. El código los define en `App\Modules\Identity\Authorization\Permission` y el comando `wms:sync-authorization` los lleva a la base en cada entorno (E2.07); un permiso nuevo se agrega en los dos lugares en el mismo cambio. Las consultas de datos maestros no exigen permiso propio: alcanza con la sesión y el alcance por depósito (REG-005), salvo usuarios y roles, que exigen `users.manage`.
+Permisos que exigen las transiciones de este documento y la administración de datos maestros, con nomenclatura `modulo.accion`. El código los define en `App\Modules\Identity\Authorization\Permission` y el comando `wms:sync-authorization` los lleva a la base en cada entorno (E2.07); un permiso nuevo se agrega en los dos lugares en el mismo cambio. Las consultas de datos maestros no exigen permiso propio: alcanza con la sesión y el alcance de consulta por depósito (REG-005), salvo usuarios y roles, que exigen `users.manage`. Toda operación sobre un recurso de un depósito exige el permiso de la acción y que el depósito esté asignado al usuario, o `warehouses.operate_all`.
 
 | Permiso | Alcance |
 | - | - |
+| `warehouses.view_all` | Consulta de todos los depósitos (stock, movimientos, documentos, zonas y ubicaciones) sin tenerlos asignados. Equivale en SAP a la actividad 03 con `WERKS = *` |
+| `warehouses.operate_all` | Operación en todos los depósitos sin tenerlos asignados. Equivale en SAP a las actividades 01 y 02 con `WERKS = *` |
 | `warehouses.manage` | Alta, edición y desactivación de depósitos |
 | `locations.manage` | Alta, edición y desactivación de zonas y ubicaciones |
 | `locations.block` | Bloqueo y desbloqueo de ubicaciones |
@@ -403,10 +405,10 @@ Los roles son datos del sistema con identificador estable; la interfaz traduce s
 | Rol | Identificador | Permisos |
 | - | - | - |
 | Administrador | `administrator` | Todos, como `SAP_ALL`. Las reglas de segregación por documento (REG-001, INV-010, DM-08) también lo alcanzan |
-| Supervisor | `supervisor` | `locations.block`, todos los de `inventory`, `procurement.approve`, `procurement.cancel`, `procurement.close`, todos los de `receiving`, `putaway`, `orders`, `picking`, `packing` y `dispatch`, `stocktake.manage`, `stocktake.approve`, `stocktake.reverse` y `audit.view` |
-| Operador | `operator` | `inventory.transfer`, `receiving.create`, `receiving.confirm`, `putaway.execute`, `putaway.reverse`, `picking.execute`, `packing.execute`, `dispatch.execute` y `stocktake.count` |
-| Compras | `purchasing` | `suppliers.manage`, `procurement.create` y `procurement.cancel` |
-| Auditor | `auditor` | `audit.view` |
+| Supervisor | `supervisor` | `warehouses.view_all`, `locations.block`, todos los de `inventory`, `procurement.approve`, `procurement.cancel`, `procurement.close`, todos los de `receiving`, `putaway`, `orders`, `picking`, `packing` y `dispatch`, `stocktake.manage`, `stocktake.approve`, `stocktake.reverse` y `audit.view` |
+| Operador | `operator` | `warehouses.view_all`, `inventory.transfer`, `receiving.create`, `receiving.confirm`, `putaway.execute`, `putaway.reverse`, `picking.execute`, `packing.execute`, `dispatch.execute` y `stocktake.count` |
+| Compras | `purchasing` | `warehouses.view_all`, `suppliers.manage`, `procurement.create` y `procurement.cancel` |
+| Auditor | `auditor` | `warehouses.view_all` y `audit.view` |
 
 ## Decisiones de modelado
 

@@ -12,6 +12,12 @@ namespace App\Modules\Identity\Authorization;
  */
 enum Permission: string
 {
+    // Alcance por depósito (E2.08, REG-005). Como el campo WERKS de los
+    // objetos de autorización de SAP con valor *: view_all equivale a la
+    // actividad 03 (visualizar) y operate_all a 01 y 02 (crear y modificar).
+    case WarehousesViewAll = 'warehouses.view_all';
+    case WarehousesOperateAll = 'warehouses.operate_all';
+
     // Datos maestros (E2).
     case WarehousesManage = 'warehouses.manage';
     case LocationsManage = 'locations.manage';

@@ -48,6 +48,13 @@ Reproducen el DDL de `docs/03-architecture/database-design.md`.
 
 `tests/Feature/Database/SchemaConventionsTest.php` recorre el esquema migrado y falla ante una columna `timestamp without time zone`, una precisión distinta de microsegundos o una secuencia `serial`. Las tablas de infraestructura de Laravel (`sessions`, `cache`, `jobs` y afines) quedan como sus migraciones publicadas y se excluyen.
 
+## Alcance por depósito
+
+Todo recurso que pertenece a un depósito respeta REG-005 con `App\Modules\Identity\Authorization\WarehouseAccess` (ADR-009):
+
+- El modelo usa el trait `App\Modules\Warehouse\Models\Concerns\ScopedByWarehouse`, que da los scopes `visibleTo($user)` para listados y `operableBy($user)` para elegir dónde operar. Si la columna no es `warehouse_id`, el modelo redefine `warehouseScopeColumn()`.
+- La Policy devuelve `authorizeView()` para consultar y `authorizeOperation()` con el permiso de la acción para operar. El orden es 404 fuera del alcance de consulta, 403 sin operación en el depósito y 403 sin el permiso.
+
 ## Reglas
 
 - Solo `Inventory` escribe en `stocks` y `stock_movements`. Los demás módulos invocan sus Actions.

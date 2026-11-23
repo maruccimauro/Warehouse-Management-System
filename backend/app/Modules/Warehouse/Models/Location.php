@@ -4,6 +4,7 @@ namespace App\Modules\Warehouse\Models;
 
 use App\Modules\Warehouse\Enums\LocationStatus;
 use App\Modules\Warehouse\Enums\SystemLocationRole;
+use App\Modules\Warehouse\Models\Concerns\ScopedByWarehouse;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -34,6 +35,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['warehouse_id', 'zone_id', 'code', 'aisle', 'rack', 'level', 'position', 'status', 'status_reason', 'max_units', 'system_role'])]
 class Location extends Model
 {
+    use ScopedByWarehouse;
+
     /**
      * @return array<string, string>
      */

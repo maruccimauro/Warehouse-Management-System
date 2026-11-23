@@ -14,7 +14,7 @@ Estados posibles: Propuesto, Aceptado, Reemplazado por ADR-NNN, Obsoleto.
 | [ADR-006](006-ledger-immutability.md) | Inmutabilidad del libro garantizada por la base de datos | Propuesto |
 | [ADR-007](007-idempotency.md) | Idempotencia en operaciones que modifican stock | Propuesto |
 | [ADR-008](008-transactional-audit.md) | Auditoría explícita dentro de la transacción | Propuesto |
-| [ADR-009](009-spa-authentication-authorization.md) | Autenticación SPA con Sanctum y autorización por permisos y depósito | Propuesto |
+| [ADR-009](009-spa-authentication-authorization.md) | Autenticación SPA con Sanctum y autorización por permisos y depósito | Aceptado |
 | [ADR-010](010-problem-details-errors.md) | Errores HTTP con Problem Details y códigos de dominio estables | Aceptado |
 | [ADR-011](011-redis-deferred.md) | Incorporación diferida de Redis | Propuesto |
 | [ADR-012](012-openapi-scramble.md) | Documentación OpenAPI generada con Scramble | Propuesto |

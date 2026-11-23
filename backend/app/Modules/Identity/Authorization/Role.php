@@ -26,9 +26,13 @@ enum Role: string
         return match ($this) {
             // Como SAP_ALL: configura el sistema y puede operar. Las reglas de
             // segregación (REG-001, INV-010, DM-08) se validan por documento y
-            // también lo alcanzan.
+            // también lo alcanzan. Todos los roles consultan los depósitos
+            // (warehouses.view_all), para ubicar mercadería entre depósitos;
+            // operar en todos sin asignación (warehouses.operate_all) es solo
+            // del administrador.
             self::Administrator => Permission::cases(),
             self::Supervisor => [
+                Permission::WarehousesViewAll,
                 Permission::LocationsBlock,
                 Permission::InventoryTransfer,
                 Permission::InventoryAdjust,
@@ -62,6 +66,7 @@ enum Role: string
                 Permission::AuditView,
             ],
             self::Operator => [
+                Permission::WarehousesViewAll,
                 Permission::InventoryTransfer,
                 Permission::ReceivingCreate,
                 Permission::ReceivingConfirm,
@@ -73,11 +78,13 @@ enum Role: string
                 Permission::StocktakeCount,
             ],
             self::Purchasing => [
+                Permission::WarehousesViewAll,
                 Permission::SuppliersManage,
                 Permission::ProcurementCreate,
                 Permission::ProcurementCancel,
             ],
             self::Auditor => [
+                Permission::WarehousesViewAll,
                 Permission::AuditView,
             ],
         };

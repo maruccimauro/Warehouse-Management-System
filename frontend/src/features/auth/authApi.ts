@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { api } from '@/shared/api/apiClient';
 
-// Contrato de AuthenticatedUserResource. roles, permissions y warehouses llegan vacíos
-// hasta E2, pero ya forman parte de la respuesta para que la interfaz no cambie (ADR-009).
+// Contrato de AuthenticatedUserResource (ADR-009). warehouses son los depósitos activos
+// donde el usuario opera (REG-005); los que solo consulta los lista la API de depósitos.
 export const warehouseSummarySchema = z.object({
   id: z.number().int(),
   code: z.string(),

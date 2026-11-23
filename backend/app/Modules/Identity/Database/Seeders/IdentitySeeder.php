@@ -14,8 +14,8 @@ use Illuminate\Database\Seeder;
  * Es idempotente: cada usuario se identifica por su email y solo se crea si
  * no existe, y un rol se asigna solo a quien no tiene ninguno, así el
  * entrypoint puede sembrar en cada arranque sin duplicar datos ni pisar una
- * contraseña o un rol cambiados a mano. Los depósitos asignados se suman con
- * el módulo Warehouse (E2.08).
+ * contraseña o un rol cambiados a mano. Los depósitos asignados los agrega
+ * WarehouseAssignmentSeeder, después de crear los depósitos.
  */
 class IdentitySeeder extends Seeder
 {

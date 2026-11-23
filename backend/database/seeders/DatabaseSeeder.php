@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Modules\Identity\Database\Seeders\IdentitySeeder;
+use App\Modules\Identity\Database\Seeders\WarehouseAssignmentSeeder;
 use App\Modules\Warehouse\Database\Seeders\WarehouseSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -32,6 +33,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             IdentitySeeder::class,
             WarehouseSeeder::class,
+            WarehouseAssignmentSeeder::class,
         ]);
     }
 }

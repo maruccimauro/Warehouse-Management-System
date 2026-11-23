@@ -2,6 +2,7 @@
 
 namespace App\Modules\Identity\Http\Controllers;
 
+use App\Modules\Identity\Authorization\WarehouseAccess;
 use App\Modules\Identity\Exceptions\InvalidCredentials;
 use App\Modules\Identity\Exceptions\SessionRequired;
 use App\Modules\Identity\Http\Requests\LoginRequest;
@@ -19,6 +20,8 @@ use Illuminate\Support\Facades\Auth;
  */
 class AuthController
 {
+    public function __construct(private readonly WarehouseAccess $warehouseAccess) {}
+
     public function login(LoginRequest $request): JsonResponse
     {
         if (! $request->hasSession()) {
@@ -32,7 +35,7 @@ class AuthController
         // Nuevo identificador de sesión al autenticar: evita la fijación de sesión.
         $request->session()->regenerate();
 
-        return (new AuthenticatedUserResource($this->authenticatedUser($request)))->response();
+        return $this->userResource($this->authenticatedUser($request))->response();
     }
 
     public function logout(Request $request): Response
@@ -47,7 +50,12 @@ class AuthController
 
     public function me(Request $request): AuthenticatedUserResource
     {
-        return new AuthenticatedUserResource($this->authenticatedUser($request));
+        return $this->userResource($this->authenticatedUser($request));
+    }
+
+    private function userResource(User $user): AuthenticatedUserResource
+    {
+        return new AuthenticatedUserResource($user, $this->warehouseAccess->operableWarehouses($user));
     }
 
     private function authenticatedUser(Request $request): User

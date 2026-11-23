@@ -3,6 +3,7 @@
 namespace App\Modules\Warehouse\Models;
 
 use App\Modules\Warehouse\Database\Factories\WarehouseFactory;
+use App\Modules\Warehouse\Models\Concerns\ScopedByWarehouse;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -28,7 +29,7 @@ use Illuminate\Support\Carbon;
 class Warehouse extends Model
 {
     /** @use HasFactory<WarehouseFactory> */
-    use HasFactory;
+    use HasFactory, ScopedByWarehouse;
 
     /**
      * @return array<string, string>
@@ -46,6 +47,14 @@ class Warehouse extends Model
     protected function code(): Attribute
     {
         return Attribute::make(set: fn (string $value): string => mb_strtoupper(trim($value)));
+    }
+
+    /**
+     * El alcance de un depósito es el propio depósito.
+     */
+    protected function warehouseScopeColumn(): string
+    {
+        return 'id';
     }
 
     /**

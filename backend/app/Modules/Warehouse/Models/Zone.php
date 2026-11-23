@@ -3,6 +3,7 @@
 namespace App\Modules\Warehouse\Models;
 
 use App\Modules\Warehouse\Enums\ZoneType;
+use App\Modules\Warehouse\Models\Concerns\ScopedByWarehouse;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['warehouse_id', 'code', 'name', 'type', 'is_system'])]
 class Zone extends Model
 {
+    use ScopedByWarehouse;
+
     /**
      * @return array<string, string>
      */

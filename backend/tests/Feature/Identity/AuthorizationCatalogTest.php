@@ -64,7 +64,7 @@ it('is idempotent and removes what left the catalog', function () {
 
     expect(PermissionModel::query()->count())->toBe(count(Permission::cases()))
         ->and(RoleModel::query()->where('name', 'obsolete-role')->exists())->toBeFalse()
-        ->and(RoleModel::findByName(Role::Auditor->value)->permissions->pluck('name')->all())->toBe(['audit.view']);
+        ->and(RoleModel::findByName(Role::Auditor->value)->permissions->pluck('name')->sort()->values()->all())->toBe(permissionNamesOf(Role::Auditor));
 });
 
 it('keeps the roles assigned to users when synchronizing', function () {

@@ -3,6 +3,8 @@
 namespace App\Modules\Identity\Http\Resources;
 
 use App\Modules\Identity\Models\User;
+use App\Modules\Warehouse\Models\Warehouse;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
@@ -12,20 +14,25 @@ use Illuminate\Support\Collection;
  *
  * roles y permissions salen de spatie/laravel-permission (E2.07): los
  * permisos son los efectivos, heredados de los roles o asignados directo.
- * warehouses forma parte del contrato desde E1 y se completa con la asignación
- * de depósitos (E2.08, ADR-009).
+ * warehouses son los depósitos activos donde el usuario opera (E2.08,
+ * REG-005): los asignados, o todos con warehouses.operate_all. Los que solo
+ * consulta no se listan acá: las pantallas de consulta los obtienen de la API
+ * de depósitos, que aplica el alcance de consulta.
  *
  * @property User $resource
  */
 class AuthenticatedUserResource extends JsonResource
 {
-    public function __construct(User $user)
+    /**
+     * @param  EloquentCollection<int, Warehouse>  $warehouses
+     */
+    public function __construct(User $user, private readonly EloquentCollection $warehouses)
     {
         parent::__construct($user);
     }
 
     /**
-     * @return array{id: int, name: string, email: string, roles: list<string>, permissions: list<string>, warehouses: list<array<string, mixed>>}
+     * @return array{id: int, name: string, email: string, roles: list<string>, permissions: list<string>, warehouses: list<array{id: int, code: string, name: string}>}
      */
     public function toArray(Request $request): array
     {
@@ -35,7 +42,13 @@ class AuthenticatedUserResource extends JsonResource
             'email' => $this->resource->email,
             'roles' => self::sortedNames($this->resource->getRoleNames()),
             'permissions' => self::sortedNames($this->resource->getAllPermissions()->pluck('name')),
-            'warehouses' => [],
+            'warehouses' => array_values($this->warehouses
+                ->map(fn (Warehouse $warehouse): array => [
+                    'id' => $warehouse->id,
+                    'code' => $warehouse->code,
+                    'name' => $warehouse->name,
+                ])
+                ->all()),
         ];
     }
 

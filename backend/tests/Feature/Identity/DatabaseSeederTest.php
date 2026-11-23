@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Identity\Models\User;
+use App\Modules\Warehouse\Models\Warehouse;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -49,6 +50,30 @@ it('is idempotent and keeps passwords changed after seeding', function () {
 
     expect(User::query()->count())->toBe(4)
         ->and(Hash::check('cambiada-a-mano', User::query()->where('email', 'admin@wms.test')->sole()->password))->toBeTrue();
+});
+
+it('assigns warehouses to the fictitious users in cycle and none to the admin', function () {
+    config()->set('wms.demo_users', 4);
+    $this->seed(DatabaseSeeder::class);
+
+    $codesOf = fn (string $email): array => User::query()->where('email', $email)->sole()
+        ->warehouses()->orderBy('code')->pluck('code')->all();
+
+    expect($codesOf('admin@wms.test'))->toBe([])
+        ->and($codesOf('usuario01@wms.test'))->toBe(['CENTRAL'])
+        ->and($codesOf('usuario02@wms.test'))->toBe(['NORTE'])
+        ->and($codesOf('usuario03@wms.test'))->toBe(['CENTRAL', 'NORTE'])
+        ->and($codesOf('usuario04@wms.test'))->toBe(['CENTRAL']);
+});
+
+it('keeps warehouse assignments changed after seeding', function () {
+    $this->seed(DatabaseSeeder::class);
+    $user = User::query()->where('email', 'usuario01@wms.test')->sole();
+    $user->warehouses()->sync(Warehouse::query()->where('code', 'NORTE')->pluck('id')->all());
+
+    $this->seed(DatabaseSeeder::class);
+
+    expect($user->warehouses()->pluck('code')->all())->toBe(['NORTE']);
 });
 
 it('refuses to run outside local and testing', function () {
