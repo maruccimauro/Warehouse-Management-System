@@ -1,5 +1,74 @@
-# Entorno de desarrollo. Uso: docker compose up
-# Los servicios (app, web, db, frontend) se definen en E1.02.
+# Entorno de desarrollo. Uso: cp .env.example .env && docker compose up -d
 name: wms
 
-services: {}
+services:
+  app:
+    build:
+      context: infrastructure/docker/php
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    image: wms-app:dev
+    environment:
+      # Las variables del entorno tienen prioridad sobre backend/.env:
+      # la conexión a la base se define en un solo lugar.
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-wms}
+      DB_USERNAME: ${DB_USERNAME:-wms}
+      DB_PASSWORD: ${DB_PASSWORD:-wms}
+    volumes:
+      - ./backend:/var/www/backend
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    image: nginx:1.30-alpine
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    volumes:
+      - ./infrastructure/docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./backend/public:/var/www/backend/public:ro
+    depends_on:
+      - app
+      - frontend
+    restart: unless-stopped
+
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-wms}
+      POSTGRES_USER: ${DB_USERNAME:-wms}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-wms}
+    ports:
+      - "${FORWARD_DB_PORT:-5432}:5432"
+    volumes:
+      # Desde PostgreSQL 18 la imagen guarda los datos en /var/lib/postgresql/<versión>/docker:
+      # se monta el directorio padre para que un cambio de versión mayor no pise datos.
+      - db_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  frontend:
+    image: node:26-alpine
+    working_dir: /app
+    entrypoint: ["sh", "/entrypoint.sh"]
+    volumes:
+      - ./frontend:/app
+      # node_modules fuera del bind mount: binarios nativos de Linux (esbuild, rollup)
+      # aislados de los del host y sin el costo de E/S del montaje en Windows y macOS.
+      - frontend_node_modules:/app/node_modules
+      - ./infrastructure/docker/node/entrypoint.sh:/entrypoint.sh:ro
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  frontend_node_modules:
