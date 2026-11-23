@@ -42,25 +42,6 @@ beforeEach(function () {
     });
 });
 
-/**
- * Usuario con un rol (null: sin rol, como uno sin warehouses.view_all) y los
- * depósitos asignados.
- *
- * @param  list<Warehouse>  $warehouses
- */
-function userWithAccess(?Role $role, array $warehouses = []): User
-{
-    $user = User::factory()->create();
-
-    if ($role !== null) {
-        $user->assignRole($role->value);
-    }
-
-    $user->warehouses()->attach(array_map(fn (Warehouse $warehouse): int => $warehouse->id, $warehouses));
-
-    return $user;
-}
-
 function receivingLocationOf(Warehouse $warehouse): Location
 {
     return $warehouse->locations()->where('system_role', SystemLocationRole::Receiving)->sole();

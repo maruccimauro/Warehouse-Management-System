@@ -2,6 +2,7 @@
 
 namespace App\Shared\Http\Listing;
 
+use Illuminate\Auth\Access\Response;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -66,10 +67,15 @@ abstract class ListRequest extends FormRequest
         return [];
     }
 
-    public function authorize(): bool
+    /**
+     * Un listado dentro de un recurso con alcance (las ubicaciones de un
+     * depósito, por ejemplo) redefine este método con la Policy del recurso:
+     * Laravel autoriza antes de validar, y así un usuario sin alcance recibe
+     * 404 y no un 422 que revele que el recurso existe (REG-005). Un listado
+     * general filtra con el scope visibleTo en el controlador.
+     */
+    public function authorize(): bool|Response
     {
-        // La autorización del listado la hace el controlador con la Policy y el
-        // scope visibleTo (REG-005); esta petición solo valida los parámetros.
         return true;
     }
 

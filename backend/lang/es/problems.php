@@ -16,4 +16,8 @@ return [
     ],
     'internal' => 'Ocurrió un error inesperado.',
     'value_already_exists' => 'El valor ya está registrado.',
+    'invalid_state_transition' => [
+        'title' => 'El cambio de estado no está permitido.',
+        'detail' => 'El recurso está en estado :from y no puede pasar a :to.',
+    ],
 ];

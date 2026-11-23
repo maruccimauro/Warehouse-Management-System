@@ -1,5 +1,8 @@
 <?php
 
+use App\Modules\Identity\Authorization\Role;
+use App\Modules\Identity\Models\User;
+use App\Modules\Warehouse\Models\Warehouse;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,3 +18,23 @@ use Tests\TestCase;
 pest()->extend(TestCase::class)->in('Feature');
 
 pest()->use(RefreshDatabase::class)->in('Feature/Database', 'Feature/Http', 'Feature/Identity', 'Feature/Warehouse');
+
+/**
+ * Usuario con un rol (null: sin rol, como uno sin warehouses.view_all) y los
+ * depósitos asignados. Requiere los roles sincronizados con
+ * SyncRolesAndPermissions.
+ *
+ * @param  list<Warehouse>  $warehouses
+ */
+function userWithAccess(?Role $role, array $warehouses = []): User
+{
+    $user = User::factory()->create();
+
+    if ($role !== null) {
+        $user->assignRole($role->value);
+    }
+
+    $user->warehouses()->attach(array_map(fn (Warehouse $warehouse): int => $warehouse->id, $warehouses));
+
+    return $user;
+}

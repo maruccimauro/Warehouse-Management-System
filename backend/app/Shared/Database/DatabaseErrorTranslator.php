@@ -94,7 +94,7 @@ final class DatabaseErrorTranslator
             }
 
             if (isset($this->uniqueFields[$constraint])) {
-                return new ValueAlreadyExists($this->uniqueFields[$constraint], $exception);
+                return new ValueAlreadyExists($this->uniqueFields[$constraint], previous: $exception);
             }
         }
 

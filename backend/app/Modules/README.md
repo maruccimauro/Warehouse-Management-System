@@ -23,12 +23,14 @@ Cada directorio se crea cuando el módulo lo necesita.
 app/Modules/{Nombre}/
 ├── {Nombre}ServiceProvider.php   extiende App\Shared\Providers\ModuleServiceProvider
 ├── Actions/                      casos de uso: una clase por operación de negocio
+├── Data/                         objetos de valor que reciben las Actions (plantillas, criterios)
 ├── Database/Factories/           factories de los modelos del módulo
 ├── Database/Migrations/          migraciones del módulo, cargadas por el provider
 ├── Database/Seeders/             datos de desarrollo idempotentes, llamados desde DatabaseSeeder
 ├── Exceptions/                   excepciones de dominio con código estable (ADR-010)
 ├── Http/Controllers/
-├── Http/Requests/
+├── Http/Requests/                autorizan con la Policy antes de validar (404 antes que 422)
+├── Http/Resources/               forma pública de cada modelo en la API
 ├── Models/
 ├── Policies/                     declaradas en $policies del provider
 └── Routes/api.php                registrado bajo /api/v1 con el grupo de middleware api
@@ -59,6 +61,7 @@ Reproducen el DDL de `docs/03-architecture/database-design.md`.
 | Filtros | `filter[campo]=valor`; cada listado declara sus campos en `filters()` con `FilterMode::Exact`, `Partial` (fragmento sin distinguir mayúsculas, comodines escapados) o `In` (`filter[campo][]=a&filter[campo][]=b`). Los valores que no son texto llevan su regla en `filterValueRules()` | Lista blanca: la columna sale de la declaración, nunca de la petición. Un criterio vacío no restringe, como en una pantalla de selección |
 | Orden | `sort=campo` o `sort=-campo`, entre los campos de `sorts()`; sin `sort`, `defaultSort()`. La clave primaria desempata | Sin desempate, dos páginas pueden repetir o saltear filas con el mismo valor |
 | Parámetro no declarado | 422 `VALIDATION_FAILED` con el campo en `errors` | Un filtro ignorado en silencio devuelve datos que el usuario cree filtrados |
+| Modelos de la ruta | Vinculación explícita con `Route::model()` en el provider del módulo; los identificadores con patrón `[1-9][0-9]{0,17}` | El Form Request usa el modelo antes del controlador, y la vinculación implícita solo resuelve lo que declara la firma del controlador. Un identificador no numérico o fuera de `BIGINT` responde 404 y no un error de conversión de PostgreSQL |
 | Valor único repetido | El Form Request lo valida con `unique`; la restricción de la base es el respaldo ante una carrera y se declara en `$uniqueConstraintFields` del provider (restricción => campo del formulario), que responde 422 `VALUE_ALREADY_EXISTS` con `context.field` | Dos peticiones simultáneas pueden pasar la validación; la base rechaza la segunda y el cliente marca el mismo campo que con la validación |
 
 `tests/Feature/Http/ListingConventionsTest.php` prueba el contrato de listados y `tests/Feature/Database/UniqueConstraintTranslationTest.php` provoca cada restricción única registrada contra el esquema real.

@@ -176,7 +176,7 @@ Reglas de negocio que no son invariantes del inventario pero se aplican con el m
 | `OPERATION_NOT_REVERSIBLE` | 409 | REG-012 |
 | `DEPENDENT_DOCUMENTS_NOT_REVERSED` | 409 | REG-012 |
 | `LOCATION_BLOCKED` | 422 | INV-009 |
-| `INVALID_STATE_TRANSITION` | 409 | INV-010, REG-002, REG-009 |
+| `INVALID_STATE_TRANSITION` | 409 | INV-010, REG-002, REG-009, máquinas de estado auxiliares de `domain-model.md` (desactivar una ubicación `blocked` o `counting`) |
 | `SELF_APPROVAL_NOT_ALLOWED` | 403 | INV-010, REG-001 |
 | `ORDER_NOT_READY_FOR_DISPATCH` | 409 | INV-011 |
 | `LOCATION_ALREADY_IN_STOCKTAKE` | 409 | REG-006 |

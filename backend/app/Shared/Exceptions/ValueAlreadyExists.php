@@ -13,14 +13,20 @@ use Throwable;
  * vez y la base rechaza la segunda por su restricción única. El contexto
  * indica el campo del formulario afectado, para que el cliente marque el error
  * en ese campo igual que con VALIDATION_FAILED.
+ *
+ * Una operación por lotes, como la generación masiva de ubicaciones, informa
+ * además en values cuáles de los valores del lote ya existen.
  */
 final class ValueAlreadyExists extends DomainException
 {
-    public function __construct(public readonly string $field, ?Throwable $previous = null)
+    /**
+     * @param  list<string>  $values
+     */
+    public function __construct(public readonly string $field, array $values = [], ?Throwable $previous = null)
     {
         parent::__construct(
             detail: self::text('validation.unique', ['attribute' => self::attributeName($field)]),
-            context: ['field' => $field],
+            context: $values === [] ? ['field' => $field] : ['field' => $field, 'values' => $values],
             previous: $previous,
         );
     }

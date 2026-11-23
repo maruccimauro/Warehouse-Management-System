@@ -16,4 +16,8 @@ return [
     ],
     'internal' => 'An unexpected error occurred.',
     'value_already_exists' => 'The value is already registered.',
+    'invalid_state_transition' => [
+        'title' => 'The state change is not allowed.',
+        'detail' => 'The resource is in state :from and cannot move to :to.',
+    ],
 ];
