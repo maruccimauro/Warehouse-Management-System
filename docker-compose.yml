@@ -18,6 +18,11 @@ services:
       DB_DATABASE: ${DB_DATABASE:-wms}
       DB_USERNAME: ${DB_USERNAME:-wms}
       DB_PASSWORD: ${DB_PASSWORD:-wms}
+      # El puerto público también se define una sola vez: Sanctum trata como SPA
+      # solo las peticiones de este host (ADR-009) y cambiar WEB_PORT sin esto
+      # rompe el login con SESSION_REQUIRED.
+      APP_URL: http://localhost:${WEB_PORT:-8080}
+      SANCTUM_STATEFUL_DOMAINS: localhost:${WEB_PORT:-8080}
     # Instala dependencias, crea backend/.env y genera APP_KEY si faltan; después arranca PHP-FPM.
     entrypoint: ["sh", "/usr/local/bin/app-entrypoint.sh"]
     command: ["php-fpm"]
