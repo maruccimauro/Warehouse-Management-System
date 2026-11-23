@@ -38,3 +38,4 @@ app/Modules/{Nombre}/
 - Un módulo usa otro a través de sus Actions y modelos, nunca de sus controladores.
 - Lo transversal que no es de dominio (manejo de errores, controlador de health, provider base) va en `app/Shared`.
 - Un módulo nuevo se registra en `bootstrap/providers.php`. `tests/Feature/ModuleRegistrationTest.php` verifica que la lista coincida con ADR-001.
+- `tests/Architecture/ModuleBoundariesTest.php` hace cumplir estas reglas con las pruebas de arquitectura de Pest: `Shared` no depende de los módulos, ningún módulo usa la capa HTTP de otro y los modelos de `Inventory` solo se usan en `Inventory` y en `Reporting`.

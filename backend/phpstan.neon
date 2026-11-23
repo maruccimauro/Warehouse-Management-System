@@ -1,0 +1,17 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    # Nivel máximo desde el inicio: subirlo con código ya escrito es costoso (plan de E1.05).
+    level: max
+    paths:
+        - app
+        - bootstrap/app.php
+        - bootstrap/providers.php
+        - config
+        - database
+        - routes
+    # tests/ queda fuera: Pest declara el $this de sus closures como TestCall
+    # (@param-closure-this) aunque en ejecución es Tests\TestCase, y en nivel
+    # máximo eso genera falsos positivos en cada prueba.
+    tmpDir: storage/framework/cache/phpstan
