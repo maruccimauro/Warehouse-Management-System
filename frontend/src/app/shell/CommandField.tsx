@@ -4,13 +4,8 @@ import { useNavigate } from 'react-router';
 import { findTransaction, transactions } from '@/app/transactions';
 import { useUserPreferences } from '@/features/preferences/userPreferences';
 import { Icon } from '@/shared/ui/icons';
-import { parseCommand, transactionPath } from './command';
+import { openInNewWindow, parseCommand, transactionPath } from './command';
 import { useStatusBar } from './statusMessages';
-
-function openInNewWindow(path: string): void {
-  // noopener: la ventana nueva no recibe referencia a esta (window.opener).
-  window.open(path, '_blank', 'noopener');
-}
 
 export function CommandField() {
   const { t } = useTranslation(['shell', 'transactions']);

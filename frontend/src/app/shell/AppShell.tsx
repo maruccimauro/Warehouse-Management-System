@@ -6,18 +6,25 @@ import { useLogout } from '@/features/auth/session';
 import { useAuthenticatedUser } from '@/features/auth/useAuthenticatedUser';
 import { useUserPreferences } from '@/features/preferences/userPreferences';
 import { UserPreferencesProvider } from '@/features/preferences/UserPreferencesProvider';
+import { ContextMenu } from '@/shared/ui/ContextMenu';
+import { keepsNativeContextMenu, type ContextMenuItem } from '@/shared/ui/contextMenuItems';
 import { Icon } from '@/shared/ui/icons';
+import { useContextMenu } from '@/shared/ui/useContextMenu';
 import { CommandField } from './CommandField';
 import { useShellActions } from './shellActions';
+import { shellShortcuts } from './shortcuts';
 import { ShellActionsProvider } from './ShellActionsProvider';
 import { StandardToolbar } from './StandardToolbar';
 import { StatusBar } from './StatusBar';
 import { errorMessage, useStatusBar } from './statusMessages';
 import { StatusBarProvider } from './StatusBarProvider';
 import { TransactionTree } from './TransactionTree';
+import { useFavoriteToggle } from './useFavoriteToggle';
 import { useShellKeyboard } from './useShellKeyboard';
 
 const headingId = 'main-heading';
+
+type StandardCommand = keyof typeof shellShortcuts;
 
 function UserMenu() {
   const { t } = useTranslation(['shell', 'errors']);
@@ -54,8 +61,9 @@ function ShellLayout() {
   const user = useAuthenticatedUser();
   const navigate = useNavigate();
   const { available, run } = useShellActions();
-  const { preferences, toggleFavorite } = useUserPreferences();
-  const { show } = useStatusBar();
+  const { preferences } = useUserPreferences();
+  const toggleFavorite = useFavoriteToggle();
+  const workAreaMenu = useContextMenu<true>();
   const [menuOpen, setMenuOpen] = useState(false);
   const navId = useId();
   const mainRef = useRef<HTMLElement>(null);
@@ -79,6 +87,13 @@ function ShellLayout() {
 
   useShellKeyboard({ inTransaction, back, exit, run });
 
+  // Un menú abierto pierde sentido al cambiar de pantalla (por ejemplo, con F3).
+  const closeWorkAreaMenu = workAreaMenu.close;
+
+  useEffect(() => {
+    closeWorkAreaMenu();
+  }, [code, closeWorkAreaMenu]);
+
   // Al cambiar de transacción el foco va al primer campo editable, como el cursor de SAP
   // GUI, o al título si la pantalla no tiene campos. En la carga inicial no se mueve.
   const previousCode = useRef(code);
@@ -98,6 +113,43 @@ function ShellLayout() {
 
   const defaultWarehouse = user.warehouses.find((warehouse) => warehouse.code === preferences.parameters.LGN)?.code;
   const isFavorite = code !== undefined && preferences.favorites.includes(code);
+
+  // Clic secundario en el área de trabajo: las funciones estándar de la pantalla con sus
+  // teclas, como el menú contextual de SAP GUI. Mismas acciones y disponibilidad que la barra.
+  const standardItem = (command: StandardCommand, enabled: boolean, onSelect: () => void): ContextMenuItem => ({
+    kind: 'action',
+    id: command,
+    label: t(`toolbar.${command}`),
+    icon: command,
+    shortcut: shellShortcuts[command],
+    disabled: !enabled,
+    onSelect,
+  });
+
+  const workAreaItems = (): ContextMenuItem[] => {
+    const items: ContextMenuItem[] = [
+      standardItem('save', available.save, () => run('save')),
+      { kind: 'separator', id: 'separator-navigation' },
+      standardItem('back', inTransaction, back),
+      standardItem('exit', inTransaction, exit),
+      { kind: 'separator', id: 'separator-execute' },
+      standardItem('execute', available.execute, () => run('execute')),
+    ];
+
+    if (code !== undefined) {
+      items.push({ kind: 'separator', id: 'separator-favorite' }, {
+        kind: 'action',
+        id: 'favorite',
+        label: t(isFavorite ? 'contextMenu.removeFavorite' : 'contextMenu.addFavorite'),
+        icon: 'star',
+        onSelect: () => {
+          toggleFavorite(code);
+        },
+      });
+    }
+
+    return items;
+  };
 
   return (
     <div className="grid h-dvh grid-rows-[auto_1fr_auto] overflow-hidden">
@@ -147,12 +199,9 @@ function ShellLayout() {
               run('execute');
             }}
             onToggleFavorite={() => {
-              if (code === undefined) {
-                return;
+              if (code !== undefined) {
+                toggleFavorite(code);
               }
-
-              const added = toggleFavorite(code);
-              show({ type: 'S', text: t(added ? 'toolbar.favoriteAdded' : 'toolbar.favoriteRemoved', { code }) });
             }}
           />
         </div>
@@ -173,7 +222,15 @@ function ShellLayout() {
           <TransactionTree currentCode={code} />
         </nav>
 
-        <main ref={mainRef} className="min-h-0 overflow-auto">
+        <main
+          ref={mainRef}
+          className="min-h-0 overflow-auto"
+          onContextMenu={(event) => {
+            if (!keepsNativeContextMenu(event, { allowLinks: false })) {
+              workAreaMenu.open(event, true);
+            }
+          }}
+        >
           <div className="border-b border-border bg-surface px-4 py-2">
             <h1 id={headingId} ref={headingRef} tabIndex={-1} className="text-base font-semibold">
               {title}
@@ -182,6 +239,12 @@ function ShellLayout() {
           <div className="p-4">
             <Outlet />
           </div>
+          <ContextMenu
+            label={t('contextMenu.workAreaLabel')}
+            state={workAreaMenu.state}
+            items={workAreaMenu.state === null ? [] : workAreaItems()}
+            onClose={workAreaMenu.close}
+          />
         </main>
       </div>
 

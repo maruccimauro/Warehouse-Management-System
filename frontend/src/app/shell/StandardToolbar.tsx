@@ -1,23 +1,24 @@
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { KeyShortcut } from '@/shared/ui/contextMenuItems';
 import { Icon, type IconName } from '@/shared/ui/icons';
 import { useRovingToolbar } from '@/shared/ui/useRovingToolbar';
+import { shellShortcuts } from './shortcuts';
 
 type ToolbarCommand = 'save' | 'back' | 'exit' | 'execute' | 'favorite';
 
 interface ButtonConfig {
   icon: IconName;
-  // Atajo como se muestra en el tooltip y en el formato de aria-keyshortcuts.
-  shortcut?: { display: string; aria: string };
+  shortcut?: KeyShortcut;
   tone: string;
 }
 
 // Íconos, teclas y colores de la barra estándar de SAP GUI (ADR-016).
 const buttons: Record<ToolbarCommand, ButtonConfig> = {
-  save: { icon: 'save', shortcut: { display: 'Ctrl+S', aria: 'Control+S' }, tone: 'text-ink' },
-  back: { icon: 'back', shortcut: { display: 'F3', aria: 'F3' }, tone: 'text-success' },
-  exit: { icon: 'exit', shortcut: { display: 'Mayús+F3', aria: 'Shift+F3' }, tone: 'text-warning' },
-  execute: { icon: 'execute', shortcut: { display: 'F8', aria: 'F8' }, tone: 'text-success' },
+  save: { icon: 'save', shortcut: shellShortcuts.save, tone: 'text-ink' },
+  back: { icon: 'back', shortcut: shellShortcuts.back, tone: 'text-success' },
+  exit: { icon: 'exit', shortcut: shellShortcuts.exit, tone: 'text-warning' },
+  execute: { icon: 'execute', shortcut: shellShortcuts.execute, tone: 'text-success' },
   favorite: { icon: 'star', tone: 'text-ink' },
 };
 

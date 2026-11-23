@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { AuthenticatedUser } from '@/features/auth/authApi';
 import { stubApi, testUser, userResponse } from '@/test/fakeApi';
@@ -251,5 +251,99 @@ describe('SU3: parámetros de usuario', () => {
     expect(screen.getByLabelText('LGN')).toBeDisabled();
     expect(screen.getByLabelText('LGN')).toHaveDisplayValue('Sin depósitos asignados');
     expect(heading()).toHaveFocus();
+  });
+});
+
+describe('armazón: menús contextuales', () => {
+  async function rightClick(target: HTMLElement) {
+    await userEvent.pointer({ keys: '[MouseRight]', target });
+  }
+
+  function treeItem(name: string | RegExp) {
+    return within(screen.getByRole('tree', { name: 'Menú de transacciones' })).getByRole('treeitem', { name });
+  }
+
+  it('el clic secundario en una transacción del árbol la agrega a favoritos', async () => {
+    await renderShell();
+    const su3 = treeItem('Parámetros de usuario');
+
+    await rightClick(su3);
+
+    const menu = screen.getByRole('menu', { name: 'Acciones del menú de transacciones' });
+
+    expect(within(menu).getByRole('menuitem', { name: 'Ejecutar' })).toHaveFocus();
+
+    await userEvent.click(within(menu).getByRole('menuitem', { name: 'Agregar a favoritos' }));
+
+    expect(statusBar().getByRole('status')).toHaveTextContent('La transacción SU3 se agregó a favoritos.');
+    expect(within(treeItem(/^Favoritos/)).getByRole('treeitem', { name: 'Parámetros de usuario' })).toBeInTheDocument();
+    expect(su3).toHaveFocus();
+
+    await rightClick(su3);
+
+    expect(screen.getByRole('menuitem', { name: 'Quitar de favoritos' })).toBeInTheDocument();
+  });
+
+  it('ejecuta la transacción o la abre en una ventana nueva', async () => {
+    const open = vi.spyOn(window, 'open').mockReturnValue(null);
+    await renderShell();
+
+    await rightClick(treeItem('Parámetros de usuario'));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Abrir en ventana nueva' }));
+
+    expect(open).toHaveBeenCalledWith('/t/SU3', '_blank', 'noopener');
+
+    await rightClick(treeItem('Parámetros de usuario'));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Ejecutar' }));
+
+    expect(heading()).toHaveTextContent('Parámetros de usuario');
+  });
+
+  it('contrae una carpeta y muestra los códigos desde el menú', async () => {
+    await renderShell();
+
+    await rightClick(treeItem(/^Sistema/));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Contraer' }));
+
+    expect(treeItem(/^Sistema/)).toHaveAttribute('aria-expanded', 'false');
+
+    await rightClick(treeItem(/^Sistema/));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Expandir todo' }));
+
+    expect(treeItem(/^Datos de usuario/)).toHaveAttribute('aria-expanded', 'true');
+
+    await rightClick(treeItem(/^Sistema/));
+    await userEvent.keyboard('{End} ');
+
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Mostrar códigos de transacción' })).toHaveAttribute('aria-checked', 'true');
+    expect(treeItem('SU3 Parámetros de usuario')).toBeInTheDocument();
+    expect(screen.getByLabelText('Mostrar códigos de transacción')).toBeChecked();
+  });
+
+  it('el área de trabajo ofrece las funciones estándar con su disponibilidad', async () => {
+    await renderShell('/t/SU3', testUser({ warehouses }));
+
+    await rightClick(heading());
+
+    const menu = screen.getByRole('menu', { name: 'Funciones de la pantalla' });
+
+    expect(within(menu).getByRole('menuitem', { name: 'Grabar' })).toHaveAttribute('aria-keyshortcuts', 'Control+S');
+    expect(within(menu).getByRole('menuitem', { name: 'Ejecutar' })).toHaveAttribute('aria-disabled', 'true');
+
+    await userEvent.click(within(menu).getByRole('menuitem', { name: 'Atrás' }));
+
+    expect(heading()).toHaveTextContent('Menú de acceso al sistema');
+
+    await rightClick(heading());
+
+    expect(screen.getByRole('menuitem', { name: 'Atrás' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.queryByRole('menuitem', { name: 'Agregar a favoritos' })).not.toBeInTheDocument();
+  });
+
+  it('los campos de la transacción conservan el menú del navegador', async () => {
+    await renderShell('/t/SU3', testUser({ warehouses }));
+
+    expect(fireEvent.contextMenu(screen.getByLabelText('LGN'))).toBe(true);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });

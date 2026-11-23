@@ -44,5 +44,17 @@
     "defaultWarehouse": "Depósito por defecto",
     "none": "ninguno",
     "language": "Idioma"
+  },
+  "contextMenu": {
+    "treeLabel": "Acciones del menú de transacciones",
+    "workAreaLabel": "Funciones de la pantalla",
+    "execute": "Ejecutar",
+    "openInNewWindow": "Abrir en ventana nueva",
+    "addFavorite": "Agregar a favoritos",
+    "removeFavorite": "Quitar de favoritos",
+    "expand": "Expandir",
+    "collapse": "Contraer",
+    "expandAll": "Expandir todo",
+    "collapseAll": "Contraer todo"
   }
 }

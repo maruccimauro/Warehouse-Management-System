@@ -27,6 +27,7 @@ La interfaz necesita una dirección visual y de interacción común antes de que
 | ALV | Grilla con orden, filtro, totales, subtotales, selección de columnas, layouts y exportación | Grilla sobre TanStack Table (E2.0). Los layouts guardados quedan para después del MVP |
 | Pantalla de selección | Campos con desde/hasta, selección múltiple, exclusiones y variantes | Campos con rango y selección múltiple (E2.0). Exclusiones y variantes, después del MVP |
 | F1 | Ayuda del campo | Enlace a la wiki con claves de ayuda (E2.16) |
+| Menú contextual | Clic secundario en el árbol (ejecutar, agregar a favoritos) y en la pantalla (funciones disponibles con su tecla) | Igual en el árbol (ejecutar, abrir en ventana nueva, favoritos, expandir y contraer, mostrar códigos) y en el área de trabajo (grabar, atrás, finalizar, ejecutar y favorito, con la disponibilidad de la barra). Se abre también con Mayús+F10 o la tecla de menú. Los campos editables, los enlaces del área de trabajo y el texto seleccionado conservan el menú del navegador. Toda acción del menú existe también en otro control, así que no hace falta un botón visible para pantallas táctiles. Desde E2.0 la grilla suma el suyo (ordenar, filtrar, columnas) |
 
 ### Teclas
 

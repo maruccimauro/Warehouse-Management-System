@@ -1,10 +1,14 @@
-import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { findTransaction, menuTree, type MenuNode } from '@/app/transactions';
 import { useUserPreferences } from '@/features/preferences/userPreferences';
+import { ContextMenu } from '@/shared/ui/ContextMenu';
+import { keepsNativeContextMenu, type ContextMenuItem } from '@/shared/ui/contextMenuItems';
 import { Icon } from '@/shared/ui/icons';
-import { transactionPath } from './command';
+import { useContextMenu } from '@/shared/ui/useContextMenu';
+import { openInNewWindow, transactionPath } from './command';
+import { useFavoriteToggle } from './useFavoriteToggle';
 
 const favoritesId = 'favorites';
 const menuRootKey = 'menu';
@@ -23,6 +27,11 @@ function parentItem(item: HTMLElement): HTMLElement | null {
   return item.parentElement?.closest<HTMLElement>('[role="treeitem"]') ?? null;
 }
 
+// Sobre qué se hizo clic secundario: una transacción, una carpeta o el fondo del árbol.
+type TreeMenuTarget = { kind: 'transaction'; code: string } | { kind: 'folder'; id: string } | { kind: 'tree' };
+
+const allFolders = [favoritesId, ...allFolderIds(menuTree)];
+
 interface TransactionTreeProps {
   currentCode: string | undefined;
 }
@@ -34,7 +43,10 @@ interface TransactionTreeProps {
 export function TransactionTree({ currentCode }: TransactionTreeProps) {
   const { t } = useTranslation(['shell', 'transactions']);
   const { preferences, setShowTechnicalNames } = useUserPreferences();
-  const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set([favoritesId, ...allFolderIds(menuTree)]));
+  const toggleFavorite = useFavoriteToggle();
+  const navigate = useNavigate();
+  const treeMenu = useContextMenu<TreeMenuTarget>();
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set(allFolders));
   const [activeKey, setActiveKey] = useState<string>(favoritesId);
   const treeRef = useRef<HTMLUListElement>(null);
   const checkboxId = useId();
@@ -121,6 +133,120 @@ export function TransactionTree({ currentCode }: TransactionTreeProps) {
     }
   };
 
+  const closeTreeMenu = treeMenu.close;
+
+  useEffect(() => {
+    closeTreeMenu();
+  }, [currentCode, closeTreeMenu]);
+
+  // Clic secundario sobre un ítem: lo selecciona (como el explorador de archivos) y ofrece
+  // sus acciones. Todas existen también en otro lugar (Enter, /o en el campo de comando,
+  // botón Favorito, flechas, casilla de códigos), por eso no hace falta un botón visible.
+  const onContextMenu = (event: MouseEvent<HTMLUListElement>) => {
+    if (keepsNativeContextMenu(event)) {
+      return;
+    }
+
+    const item = event.target instanceof Element ? event.target.closest<HTMLElement>('[role="treeitem"]') : null;
+    const code = item?.dataset['code'];
+    const folderId = item?.dataset['folder'];
+
+    if (item === null || (code === undefined && folderId === undefined)) {
+      treeMenu.open(event, { kind: 'tree' });
+
+      return;
+    }
+
+    focusItem(item);
+    treeMenu.open(event, code === undefined ? { kind: 'folder', id: folderId ?? '' } : { kind: 'transaction', code }, item);
+  };
+
+  const treeMenuItems = (target: TreeMenuTarget): ContextMenuItem[] => {
+    const showCodes: ContextMenuItem = {
+      kind: 'checkbox',
+      id: 'show-codes',
+      label: t('tree.showCodes'),
+      checked: preferences.showTechnicalNames,
+      onChange: setShowTechnicalNames,
+    };
+    const expandAll: ContextMenuItem[] = [
+      {
+        kind: 'action',
+        id: 'expand-all',
+        label: t('contextMenu.expandAll'),
+        onSelect: () => {
+          setExpanded(new Set(allFolders));
+        },
+      },
+      {
+        kind: 'action',
+        id: 'collapse-all',
+        label: t('contextMenu.collapseAll'),
+        onSelect: () => {
+          setExpanded(new Set());
+        },
+      },
+      { kind: 'separator', id: 'separator-view' },
+      showCodes,
+    ];
+
+    if (target.kind === 'tree') {
+      return expandAll;
+    }
+
+    if (target.kind === 'folder') {
+      const isOpen = expanded.has(target.id);
+
+      return [
+        {
+          kind: 'action',
+          id: 'toggle',
+          label: t(isOpen ? 'contextMenu.collapse' : 'contextMenu.expand'),
+          onSelect: () => {
+            toggle(target.id, !isOpen);
+          },
+        },
+        { kind: 'separator', id: 'separator-all' },
+        ...expandAll,
+      ];
+    }
+
+    const path = transactionPath(target.code);
+    const isFavorite = preferences.favorites.includes(target.code);
+
+    return [
+      {
+        kind: 'action',
+        id: 'execute',
+        label: t('contextMenu.execute'),
+        icon: 'execute',
+        onSelect: () => {
+          void navigate(path);
+        },
+      },
+      {
+        kind: 'action',
+        id: 'new-window',
+        label: t('contextMenu.openInNewWindow'),
+        onSelect: () => {
+          openInNewWindow(path);
+        },
+      },
+      { kind: 'separator', id: 'separator-favorite' },
+      {
+        kind: 'action',
+        id: 'favorite',
+        label: t(isFavorite ? 'contextMenu.removeFavorite' : 'contextMenu.addFavorite'),
+        icon: 'star',
+        onSelect: () => {
+          toggleFavorite(target.code);
+        },
+      },
+      { kind: 'separator', id: 'separator-view' },
+      showCodes,
+    ];
+  };
+
   const label = (code: string, title: string) => (preferences.showTechnicalNames ? `${code} ${title}` : title);
 
   const renderTransaction = (code: string, key: string) => {
@@ -138,6 +264,7 @@ export function TransactionTree({ currentCode }: TransactionTreeProps) {
           role="treeitem"
           to={transactionPath(code)}
           data-key={key}
+          data-code={code}
           tabIndex={activeKey === key ? 0 : -1}
           aria-current={currentCode === code ? 'page' : undefined}
           className={`${itemClass} text-ink no-underline`}
@@ -221,6 +348,7 @@ export function TransactionTree({ currentCode }: TransactionTreeProps) {
         aria-label={t('tree.label')}
         className="flex-1 overflow-auto p-1.5 [&_[role=treeitem]:focus-visible]:outline-2 [&_[role=treeitem]:focus-visible]:outline-focus"
         onKeyDown={onKeyDown}
+        onContextMenu={onContextMenu}
       >
         {renderFolder(
           favoritesId,
@@ -231,6 +359,12 @@ export function TransactionTree({ currentCode }: TransactionTreeProps) {
         )}
         {menuTree.map((node) => renderNode(node, menuRootKey))}
       </ul>
+      <ContextMenu
+        label={t('contextMenu.treeLabel')}
+        state={treeMenu.state}
+        items={treeMenu.state === null ? [] : treeMenuItems(treeMenu.state.target)}
+        onClose={treeMenu.close}
+      />
       <div className="flex items-center gap-2 border-t border-border px-2 py-1.5 text-xs">
         <input
           id={checkboxId}

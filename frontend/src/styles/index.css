@@ -94,4 +94,44 @@
       @apply min-h-11;
     }
   }
+
+  /* Menú contextual (shared/ui/ContextMenu.tsx). El ancla es un punto invisible en la
+     posición del clic: con anclaje por CSS el menú se abre con su esquina ahí y se da vuelta
+     si no entra; sin anclaje lo ubica el script. */
+  .context-menu-anchor {
+    position: fixed;
+    inline-size: 0;
+    block-size: 0;
+  }
+
+  .context-menu {
+    @apply z-50 m-0 min-w-52 overflow-auto rounded-sm border border-border-strong bg-surface p-1 text-ink shadow-lg;
+    position: fixed;
+    inset: auto;
+    max-block-size: calc(100dvh - 0.5rem);
+  }
+
+  @supports (position-area: block-end) {
+    .context-menu[data-anchored] {
+      position-area: block-end span-inline-end;
+      position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .context-menu[popover] {
+      opacity: 0;
+      transition: opacity, display, overlay;
+      transition-duration: 0.1s;
+      transition-behavior: allow-discrete;
+    }
+
+    .context-menu[popover]:popover-open {
+      opacity: 1;
+
+      @starting-style {
+        opacity: 0;
+      }
+    }
+  }
 }

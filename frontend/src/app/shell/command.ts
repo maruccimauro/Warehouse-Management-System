@@ -38,3 +38,8 @@ export function parseCommand(input: string): Command {
 export function transactionPath(code: string): string {
   return `/t/${code}`;
 }
+
+export function openInNewWindow(path: string): void {
+  // noopener: la ventana nueva no recibe referencia a esta (window.opener).
+  window.open(path, '_blank', 'noopener');
+}
