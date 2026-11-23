@@ -11,7 +11,7 @@ El frontend es una SPA en React. La API necesita autenticación segura y autoriz
 
 Autenticación (implementada en E1.07):
 
-- Laravel Sanctum en modo SPA: cookie de sesión `HttpOnly` con `SameSite=Lax` y protección CSRF con la cookie `XSRF-TOKEN`, que el cliente obtiene en `GET /sanctum/csrf-cookie` y devuelve en la cabecera `X-XSRF-TOKEN`.
+- Laravel Sanctum en modo SPA: cookie de sesión `HttpOnly` con `SameSite=Lax` y protección CSRF con la cookie `XSRF-TOKEN`, que el cliente obtiene en `GET /sanctum/csrf-cookie` y devuelve en la cabecera `X-XSRF-TOKEN`. Laravel 13 verifica primero el origen (`PreventRequestForgery`): acepta la petición sin comparar tokens si el navegador envía `Sec-Fetch-Site: same-origin`, cabecera que el navegador fija y que ningún script puede modificar (Fetch Metadata). El token queda como respaldo para navegadores sin Fetch Metadata, y el cliente lo envía siempre; ante un 419 renueva la cookie y reintenta una sola vez.
 - Frontend y API se sirven bajo el mismo host a través de Nginx en todos los entornos. Las peticiones son del mismo origen: CORS no habilita ningún origen externo salvo configuración explícita (`CORS_ALLOWED_ORIGINS`).
 - Solo sesión, sin tokens. La lectura de bearer tokens de Sanctum está desactivada: una petición con `Authorization: Bearer` se trata como no autenticada.
 - `POST /api/v1/auth/login` requiere una petición de un dominio con estado (`SANCTUM_STATEFUL_DOMAINS`); sin sesión responde 400 `SESSION_REQUIRED`. Las credenciales incorrectas responden 422 `INVALID_CREDENTIALS`, con el mismo mensaje si falla el email o la contraseña. El login regenera el identificador de sesión para evitar la fijación de sesión, y el logout invalida la sesión y el token CSRF.
@@ -38,3 +38,4 @@ Autorización (se implementa en E2):
 - Clientes que no sean la SPA (integraciones, scripts) no pueden autenticarse; si aparecen, se evalúan tokens de Sanctum con un ADR nuevo.
 - La UI oculta acciones sin permiso solo por usabilidad; la autorización real está en el backend.
 - Enmendado el 23/11/2026 con lo implementado en E1.07: detalle de la autenticación, desactivación de tokens, límites de login y códigos de error. Pasa a Aceptado en E2, al implementarse la autorización.
+- Enmendado el 23/11/2026 en E1.09: verificación de origen por `Sec-Fetch-Site` previa al token CSRF, comprobada en el navegador contra el backend.
