@@ -19,7 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: ModuleServiceProvider::API_PREFIX,
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Sanctum en modo SPA (ADR-009): las peticiones de SANCTUM_STATEFUL_DOMAINS
+        // a /api usan sesión por cookie y verificación CSRF.
+        $middleware->statefulApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Contrato de errores de la API: Problem Details con código estable (ADR-010).

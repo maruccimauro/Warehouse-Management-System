@@ -20,6 +20,12 @@ final readonly class ProblemDetails
     public const DOMAIN_TYPE_PREFIX = 'urn:wms:problem:';
 
     /**
+     * Estados que Symfony no incluye en Response::$statusTexts. 419 lo usa
+     * Laravel para el token CSRF inválido o expirado.
+     */
+    private const NON_STANDARD_STATUS_TEXTS = [419 => 'Page Expired'];
+
+    /**
      * @param  array<string, mixed>  $extensions  Miembros adicionales (errors, context, debug).
      * @param  array<string, string>  $headers
      */
@@ -39,7 +45,7 @@ final readonly class ProblemDetails
         return new self(
             status: $status,
             code: $code,
-            title: Response::$statusTexts[$status] ?? 'Error',
+            title: Response::$statusTexts[$status] ?? self::NON_STANDARD_STATUS_TEXTS[$status] ?? 'Error',
             detail: $detail,
         );
     }
