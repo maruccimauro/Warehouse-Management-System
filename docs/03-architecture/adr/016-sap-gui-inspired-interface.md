@@ -1,0 +1,95 @@
+# ADR-016: Interfaz inspirada en SAP GUI
+
+- Estado: Propuesto
+- Fecha: 23/11/2026
+- Relacionados: ADR-009, ADR-010, ADR-014
+
+## Contexto
+
+SAP es la referencia funcional del sistema (movimientos, reversiones y estados de documentos, ADR-014). Quien opera un depósito con SAP trabaja con un conjunto de mecánicas de interfaz que resuelven bien el uso intensivo con teclado: un árbol de transacciones, códigos para abrir cada pantalla sin pasar por el menú, grillas de datos con orden, filtros y totales, ayudas de búsqueda sobre cada campo y una barra de estado que informa el resultado de cada acción.
+
+La interfaz necesita una dirección visual y de interacción común antes de que E2 agregue las primeras pantallas de datos maestros. Sin ella, cada pantalla resuelve por su cuenta la navegación, las tablas y la selección de valores.
+
+## Decisión
+
+### Mecánicas que se toman de SAP GUI
+
+| Pieza | En SAP | En el WMS |
+| - | - | - |
+| Árbol de transacciones | SAP Easy Access, con carpeta de favoritos y la opción de mostrar nombres técnicos | Panel lateral con el árbol por área funcional, favoritos y opción de mostrar los códigos. Desde E2 se filtra por los permisos del usuario |
+| Campo de comando | Código de transacción, `/nXXXX` en la misma ventana, `/oXXXX` en una ventana nueva, `/n` para salir de la transacción | Las mismas formas, con historial y sugerencias. Desviación: un código sin prefijo abre la transacción también desde dentro de otra, sin exigir `/n` |
+| Rutas | No aplica | Cada transacción es una ruta (`/t/MIGO`): el botón atrás del navegador, los enlaces y las pestañas funcionan |
+| Barra de herramientas estándar | Confirmar, grabar, atrás, finalizar, cancelar | Confirmar, grabar, atrás, finalizar y agregar a favoritos. Cada transacción habilita las acciones que admite |
+| Barra de estado | Mensajes tipo S (éxito), W (advertencia), E (error) e I (información), con clase y número de mensaje | Mismos tipos. El identificador del mensaje es el `code` del Problem Details (ADR-010). A la derecha muestra transacción, depósito por defecto, usuario e idioma |
+| Parámetros de usuario | SU3, con IDs de parámetro (`LGN` número de almacén, `WRK` centro) que completan los campos de las pantallas iniciales | Transacción `SU3` con el parámetro `LGN` (depósito por defecto). En E1 se guarda en el navegador; en E2 pasa al servidor |
+| Selección de depósito | Campo en la pantalla inicial de cada transacción, completado desde el parámetro, con F4 | Igual: no existe un depósito activo global. Cada pantalla muestra el depósito sobre el que opera y F4 ofrece solo los asignados al usuario (REG-005) |
+| F4 | Ayuda de búsqueda con criterios y lista de resultados | Componente genérico de campo con ayuda de búsqueda (E2.0): depósito, producto, ubicación, código de movimiento |
+| ALV | Grilla con orden, filtro, totales, subtotales, selección de columnas, layouts y exportación | Grilla sobre TanStack Table (E2.0). Los layouts guardados quedan para después del MVP |
+| Pantalla de selección | Campos con desde/hasta, selección múltiple, exclusiones y variantes | Campos con rango y selección múltiple (E2.0). Exclusiones y variantes, después del MVP |
+| F1 | Ayuda del campo | Enlace a la wiki con claves de ayuda (E2.16) |
+
+### Teclas
+
+| Tecla | Acción | Nota |
+| - | - | - |
+| Enter | Confirmar | En el campo de comando ejecuta el código |
+| F1 | Ayuda | Desde E2.16 |
+| F3 | Atrás | El navegador usa F3 para buscar; se intercepta |
+| Mayús+F3 | Finalizar: vuelve al menú | |
+| F4 | Ayuda de búsqueda del campo | Desde E2.0 |
+| F8 | Ejecutar | En pantallas de selección |
+| Ctrl+S | Grabar | Se intercepta el guardado de página del navegador |
+
+F5, F11 y F12 no se interceptan: recargar, pantalla completa y herramientas de desarrollo son del navegador y no se pueden capturar de forma confiable. Cancelar (F12 en SAP) queda como botón.
+
+### Códigos de transacción
+
+Se usa el código de SAP donde la transacción tiene equivalente y el rango `ZW` para las propias, con la misma regla que ADR-014 aplica a los movimientos (`Z` es el espacio de nombres de cliente en SAP). La tabla es indicativa: cada etapa confirma sus códigos al implementar la pantalla y la página de referencia de la wiki documenta en qué se aparta cada una de su par de SAP.
+
+| Etapa | Código | Transacción | Equivalente SAP |
+| - | - | - | - |
+| E1 | `SU3` | Parámetros de usuario | SU3 |
+| E2 | `SU01` | Usuarios | SU01 |
+| E2 | `PFCG` | Roles y permisos | PFCG |
+| E2 | `ZW01` | Depósitos | Configuración (sin transacción de usuario) |
+| E2 | `ZW02` | Zonas | Tipos de almacén en configuración |
+| E2 | `LS01N`, `LS02N`, `LS03N` | Crear, modificar y visualizar ubicación | LS01N, LS02N, LS03N |
+| E2 | `MM01`, `MM02`, `MM03` | Crear, modificar y visualizar producto | MM01, MM02, MM03 |
+| E2 | `XK01`, `XK02`, `XK03` | Crear, modificar y visualizar proveedor | XK01 a XK03 (BP en S/4HANA) |
+| E3 | `MMBE` | Resumen de stock | MMBE |
+| E3 | `MB51` | Lista de documentos de material | MB51 |
+| E3 | `LT10` | Transferencia entre ubicaciones | LT10 |
+| E3 | `ZW03` | Ajuste de stock | Sin transacción directa (diferencias por MI07) |
+| E4 | `ME21N`, `ME22N`, `ME23N` | Crear, modificar y visualizar orden de compra | ME21N a ME23N |
+| E4 | `MIGO` | Entrada de mercadería | MIGO |
+| E4 | `LT06` | Ubicación de lo recibido | LT06 |
+| E5 | `VA01`, `VA02`, `VA03` | Crear, modificar y visualizar pedido | VA01 a VA03 |
+| E5 | `LT03` | Picking de un pedido | LT03 |
+| E5 | `ZW04` | Empaque | Embalaje en VL02N |
+| E5 | `VL02N`, `VL09` | Despacho y su reversión | VL02N, VL09 |
+| E6 | `MI01`, `MI04`, `MI07`, `MI20` | Inventario físico: documento, conteo, contabilización de diferencias, lista de diferencias | MI01, MI04, MI07, MI20 |
+| E7 | `MB52`, `MB5B` | Stock por depósito y stock a una fecha | MB52, MB5B |
+
+### Apariencia
+
+- Tailwind CSS 4 con los tokens del tema en `@theme` (colores, densidad, alturas de fila) y componentes base que concentran las clases.
+- Densidad alta: filas de 24 a 28 px y campos compactos, con objetivos táctiles de al menos 24 px y mayores con puntero grueso.
+- Paleta propia en la línea del tema claro de SAP y fuente IBM Plex Sans (OFL-1.1). No se usan el nombre, el logo ni la fuente "72" de SAP: la interfaz se inspira en las mecánicas, no reproduce la marca.
+
+## Alternativas consideradas
+
+| Alternativa | Motivo de descarte |
+| - | - |
+| SAP Fiori con UI5 Web Components (Apache 2.0) | Fiori organiza el acceso en un launchpad de tiles, sin árbol ni códigos de transacción, que son lo que se busca. La biblioteca es pesada y su sistema de temas no convive bien con Tailwind |
+| Selector global de depósito activo en el encabezado | El contexto queda fuera de la pantalla: quien cambia de depósito y lo olvida registra operaciones en el depósito equivocado. Tampoco permite reportes sobre varios depósitos |
+| Códigos propios para todas las transacciones | Pierden el reconocimiento inmediato de quien viene de SAP |
+| Biblioteca de componentes genérica (MUI, Mantine) | Aspecto genérico y acoplamiento a su sistema de temas; no aporta árbol de transacciones, ALV ni ayudas de búsqueda con el comportamiento de SAP |
+| CSS propio sin framework | Viable, pero Tailwind 4 resuelve los tokens y la densidad con menos código propio |
+
+## Consecuencias
+
+- Toda pantalla nueva es una transacción registrada con código, título, carpeta del árbol, clave de ayuda y, desde E2, permiso requerido.
+- Las pantallas de E2 en adelante usan los componentes de E2.0 (grilla, campo con F4, pantalla de selección) y no tablas ni selectores propios.
+- El depósito es un campo de cada pantalla operativa; las consultas del frontend incluyen el depósito en su clave de caché.
+- Los parámetros de usuario y los favoritos pasan al servidor en E2, junto con `users.locale`.
+- Pasa a Aceptado al cerrar E2.0, con lo aprendido al construir la grilla y las ayudas de búsqueda.

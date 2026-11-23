@@ -21,6 +21,7 @@ Estados posibles: Propuesto, Aceptado, Reemplazado por ADR-NNN, Obsoleto.
 | [ADR-013](013-partial-reversal-by-line.md) | Reversión parcial por posición, con límite garantizado por la base | Propuesto |
 | [ADR-014](014-sap-movement-codes.md) | Códigos de movimiento de SAP y rango 9xx para movimientos internos | Propuesto |
 | [ADR-015](015-movements-tasks-states.md) | Separación de movimientos, tareas físicas y estados del proceso | Propuesto |
+| [ADR-016](016-sap-gui-inspired-interface.md) | Interfaz inspirada en SAP GUI | Propuesto |
 
 Cada ADR pasa a Aceptado en la etapa en que se implementa, ajustado con lo aprendido al implementar. Mientras está Propuesto se enmienda directamente y la enmienda queda anotada en sus consecuencias; una vez Aceptado, un cambio requiere un ADR nuevo que lo reemplace.
 
