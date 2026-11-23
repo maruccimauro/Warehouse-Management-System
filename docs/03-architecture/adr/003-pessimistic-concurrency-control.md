@@ -10,8 +10,8 @@ Varios operadores modifican las mismas filas de stock al mismo tiempo (retiros, 
 
 ## Decisión
 
-- Toda operación bloquea las filas de `stocks` afectadas con `SELECT ... FOR UPDATE` dentro de la transacción, en una sola consulta y en orden ascendente de `id`.
-- Las ubicaciones involucradas se leen con `FOR SHARE` para que un bloqueo de ubicación concurrente no se cruce con el movimiento.
+- Toda transacción bloquea en un orden global único: 1) cabecera del documento raíz (`FOR UPDATE`); 2) documentos dependientes y líneas, por `id` ascendente; 3) ubicaciones involucradas, por `id` (`FOR SHARE` para mover, `FOR UPDATE` para cambiar su estado); 4) filas de `stocks` afectadas (`FOR UPDATE`), en una sola consulta y por `id` ascendente.
+- Las ubicaciones se bloquean antes que las existencias. Con el orden inverso, la aprobación de un inventario físico (que bloquea ubicaciones y luego existencias) y un movimiento concurrente sobre esas ubicaciones forman un ciclo de espera; con un único orden jerárquico el ciclo no puede formarse.
 - La disponibilidad se valida después de obtener el bloqueo, nunca antes.
 - Las restricciones `CHECK` de la tabla actúan como última barrera.
 
@@ -26,5 +26,6 @@ Varios operadores modifican las mismas filas de stock al mismo tiempo (retiros, 
 ## Consecuencias
 
 - Ninguna carrera puede producir stock negativo ni actualizaciones perdidas.
-- El orden por `id` elimina deadlocks entre operaciones de este motor; los residuales se tratan según ADR-004.
+- El orden global y el orden por `id` dentro de cada nivel eliminan los deadlocks entre operaciones de este motor y con las transiciones de documentos; los residuales se tratan según ADR-004.
+- Corregido el 23/11/2026 durante E0.08: la versión inicial bloqueaba existencias antes que ubicaciones (ver [database-design.md](../database-design.md#concurrencia)).
 - Contención en filas calientes: límite conocido, a medir con pruebas de carga.
