@@ -201,6 +201,7 @@ Notas:
 - `users.locale` es el idioma preferido que resuelve el middleware de idioma. La base exige solo el formato; la lista de idiomas admitidos es configuración (`app.supported_locales`) y se valida en la aplicación, para que agregar un idioma no requiera migración.
 - Una restricción `CHECK` se cumple cuando la expresión es nula; por eso `max_units > 0` y las dimensiones del producto admiten `NULL` sin cláusula adicional.
 - `locations.is_system` es una columna generada a partir de `system_role` y no puede contradecirlo. El glosario conserva `Location.is_system`.
+- Al crear un depósito, la Action `CreateWarehouse` agrega en la misma transacción una zona de sistema por rol (`is_system`, tipos `receiving`, `packing` y `dispatch`) con una ubicación cada una; zona y ubicación comparten el código: `RECEPCION`, `PACKING` y `DESPACHO`.
 - La ubicación de sistema `dispatch` se crea con el depósito (E2.02) pero no recibe movimientos en el MVP: el despacho descuenta desde `packing`. Queda disponible para una etapa de preparación de carga.
 - `UNIQUE NULLS NOT DISTINCT (parent_id, name)` impide dos categorías raíz con el mismo nombre; un `UNIQUE` común lo permitiría. Los ciclos de más de un nivel en la jerarquía los valida la Action.
 

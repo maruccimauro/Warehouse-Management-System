@@ -3,13 +3,14 @@
 namespace Database\Seeders;
 
 use App\Modules\Identity\Database\Seeders\IdentitySeeder;
+use App\Modules\Warehouse\Database\Seeders\WarehouseSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use RuntimeException;
 
 /**
  * Orquesta los seeders de desarrollo de cada módulo, en orden de dependencia.
- * Cada etapa agrega el de su módulo (E2: Warehouse y Catalog).
+ * Cada etapa agrega el de su módulo.
  */
 class DatabaseSeeder extends Seeder
 {
@@ -30,6 +31,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             IdentitySeeder::class,
+            WarehouseSeeder::class,
         ]);
     }
 }
