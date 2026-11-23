@@ -23,11 +23,11 @@ La interfaz necesita una dirección visual y de interacción común antes de que
 | Barra de estado | Mensajes tipo S (éxito), W (advertencia), E (error) e I (información), con clase y número de mensaje | Mismos tipos. El identificador del mensaje es el `code` del Problem Details (ADR-010). A la derecha muestra transacción, depósito por defecto, usuario e idioma |
 | Parámetros de usuario | SU3, con IDs de parámetro (`LGN` número de almacén, `WRK` centro) que completan los campos de las pantallas iniciales | Transacción `SU3` con el parámetro `LGN` (depósito por defecto). En E1 se guarda en el navegador; en E2 pasa al servidor |
 | Selección de depósito | Campo en la pantalla inicial de cada transacción, completado desde el parámetro, con F4 | Igual: no existe un depósito activo global. Cada pantalla muestra el depósito sobre el que opera y F4 ofrece solo los asignados al usuario (REG-005) |
-| F4 | Ayuda de búsqueda con criterios y lista de resultados | Componente genérico de campo con ayuda de búsqueda (E2.0): depósito, producto, ubicación, código de movimiento |
-| ALV | Grilla con orden, filtro, totales, subtotales, selección de columnas, layouts y exportación | Grilla sobre TanStack Table (E2.0). Los layouts guardados quedan para después del MVP |
-| Pantalla de selección | Campos con desde/hasta, selección múltiple, exclusiones y variantes | Campos con rango y selección múltiple (E2.0). Exclusiones y variantes, después del MVP |
+| F4 | Ayuda de búsqueda con criterios y lista de resultados | Componente genérico de campo con ayuda de búsqueda (E2.17): depósito, producto, ubicación, código de movimiento |
+| ALV | Grilla con orden, filtro, totales, subtotales, selección de columnas, layouts y exportación | Grilla sobre TanStack Table (E2.00). Los layouts guardados quedan para después del MVP |
+| Pantalla de selección | Campos con desde/hasta, selección múltiple, exclusiones y variantes | Campos con rango y selección múltiple (E2.18). Exclusiones y variantes, después del MVP |
 | F1 | Ayuda del campo | Enlace a la wiki con claves de ayuda (E2.16) |
-| Menú contextual | Clic secundario en el árbol (ejecutar, agregar a favoritos) y en la pantalla (funciones disponibles con su tecla) | Igual en el árbol (ejecutar, abrir en ventana nueva, favoritos, expandir y contraer, mostrar códigos) y en el área de trabajo (grabar, atrás, finalizar, ejecutar y favorito, con la disponibilidad de la barra). Se abre también con Mayús+F10 o la tecla de menú. Los campos editables, los enlaces del área de trabajo y el texto seleccionado conservan el menú del navegador. Toda acción del menú existe también en otro control, así que no hace falta un botón visible para pantallas táctiles. Desde E2.0 la grilla suma el suyo (ordenar, filtrar, columnas) |
+| Menú contextual | Clic secundario en el árbol (ejecutar, agregar a favoritos) y en la pantalla (funciones disponibles con su tecla) | Igual en el árbol (ejecutar, abrir en ventana nueva, favoritos, expandir y contraer, mostrar códigos) y en el área de trabajo (grabar, atrás, finalizar, ejecutar y favorito, con la disponibilidad de la barra). Se abre también con Mayús+F10 o la tecla de menú. Los campos editables, los enlaces del área de trabajo y el texto seleccionado conservan el menú del navegador. Toda acción del menú existe también en otro control, así que no hace falta un botón visible para pantallas táctiles. Desde E2.00 la grilla suma el suyo (ordenar, filtrar, columnas) |
 
 ### Teclas
 
@@ -37,7 +37,7 @@ La interfaz necesita una dirección visual y de interacción común antes de que
 | F1 | Ayuda | Desde E2.16 |
 | F3 | Atrás | El navegador usa F3 para buscar; se intercepta |
 | Mayús+F3 | Finalizar: vuelve al menú | |
-| F4 | Ayuda de búsqueda del campo | Desde E2.0 |
+| F4 | Ayuda de búsqueda del campo | Desde E2.17 |
 | F8 | Ejecutar | En pantallas de selección |
 | Ctrl+S | Grabar | Se intercepta el guardado de página del navegador |
 
@@ -90,7 +90,7 @@ Se usa el código de SAP donde la transacción tiene equivalente y el rango `ZW`
 ## Consecuencias
 
 - Toda pantalla nueva es una transacción registrada con código, título, carpeta del árbol, clave de ayuda y, desde E2, permiso requerido.
-- Las pantallas de E2 en adelante usan los componentes de E2.0 (grilla, campo con F4, pantalla de selección) y no tablas ni selectores propios.
+- Las pantallas de E2 en adelante usan los componentes de E2.00, E2.17 y E2.18 (grilla, campo con F4, pantalla de selección) y no tablas ni selectores propios.
 - El depósito es un campo de cada pantalla operativa; las consultas del frontend incluyen el depósito en su clave de caché.
 - Los parámetros de usuario y los favoritos pasan al servidor en E2, junto con `users.locale`.
-- Pasa a Aceptado al cerrar E2.0, con lo aprendido al construir la grilla y las ayudas de búsqueda.
+- Pasa a Aceptado al cerrar E2.00, E2.17 y E2.18, con lo aprendido al construir la grilla y las ayudas de búsqueda.
