@@ -2,8 +2,11 @@
 
 namespace App\Modules\Identity;
 
+use App\Modules\Identity\Console\SyncAuthorizationCommand;
+use App\Modules\Identity\Models\User;
 use App\Shared\Providers\ModuleServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Sanctum\Sanctum;
@@ -25,6 +28,21 @@ class IdentityServiceProvider extends ModuleServiceProvider
 
         $this->disableTokenAuthentication();
         $this->registerLoginRateLimiter();
+        $this->registerMorphAliases();
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([SyncAuthorizationCommand::class]);
+        }
+    }
+
+    /**
+     * Las columnas polimórficas guardan alias, no nombres de clase
+     * (database-design.md). El morph map es obligatorio para todo el sistema:
+     * cada módulo registra los alias de sus modelos.
+     */
+    private function registerMorphAliases(): void
+    {
+        Relation::enforceMorphMap(['user' => User::class]);
     }
 
     /**

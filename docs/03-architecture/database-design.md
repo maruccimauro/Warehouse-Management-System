@@ -194,7 +194,7 @@ CREATE TABLE product_supplier (
 CREATE INDEX product_supplier_supplier_id_index ON product_supplier (supplier_id);
 ```
 
-Más las tablas de `spatie/laravel-permission` (`roles`, `permissions`, `model_has_roles`, `model_has_permissions`, `role_has_permissions`) y las de infraestructura de Laravel (`sessions`, `cache`, `jobs`, `password_reset_tokens`), sin cambios respecto de sus migraciones publicadas.
+Más las tablas de `spatie/laravel-permission` (`roles`, `permissions`, `model_has_roles`, `model_has_permissions`, `role_has_permissions`), con la estructura de su migración publicada sin equipos y los tipos adaptados a las convenciones (`IDENTITY`, `TIMESTAMPTZ`); sus pivotes conservan `ON DELETE CASCADE` porque son configuración de acceso, no historia, y `model_type` guarda el alias del morph map (`user`). Las tablas de infraestructura de Laravel (`sessions`, `cache`, `jobs`, `password_reset_tokens`) quedan sin cambios respecto de sus migraciones publicadas.
 
 Notas:
 

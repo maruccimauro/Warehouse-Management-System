@@ -353,12 +353,15 @@ Ejemplo: una recepción con 101 × 50 de un producto admite un 102 × 10 sobre e
 
 ## Catálogo de permisos
 
-Permisos que exigen las transiciones de este documento. El seeder de roles de E2.07 los asigna a los roles.
+Permisos que exigen las transiciones de este documento y la administración de datos maestros, con nomenclatura `modulo.accion`. El código los define en `App\Modules\Identity\Authorization\Permission` y el comando `wms:sync-authorization` los lleva a la base en cada entorno (E2.07); un permiso nuevo se agrega en los dos lugares en el mismo cambio. Las consultas de datos maestros no exigen permiso propio: alcanza con la sesión y el alcance por depósito (REG-005), salvo usuarios y roles, que exigen `users.manage`.
 
 | Permiso | Alcance |
 | - | - |
+| `warehouses.manage` | Alta, edición y desactivación de depósitos |
 | `locations.manage` | Alta, edición y desactivación de zonas y ubicaciones |
 | `locations.block` | Bloqueo y desbloqueo de ubicaciones |
+| `catalog.manage` | Alta y edición de categorías, unidades de medida y productos |
+| `suppliers.manage` | Alta y edición de proveedores y de su relación con los productos |
 | `inventory.transfer` | Transferencias manuales |
 | `inventory.adjust` | Ajustes con motivo |
 | `inventory.adjust.approve` | Ajustes negativos por encima del umbral (INV-008) |
@@ -392,6 +395,18 @@ Permisos que exigen las transiciones de este documento. El seeder de roles de E2
 | `stocktake.reverse` | Revertir inventarios físicos aprobados |
 | `users.manage` | Usuarios, roles y asignación de depósitos |
 | `audit.view` | Consulta de auditoría |
+
+### Roles
+
+Los roles son datos del sistema con identificador estable; la interfaz traduce su nombre. Cada rol tiene exactamente estos permisos, definidos en `App\Modules\Identity\Authorization\Role`. La edición de roles desde la interfaz queda fuera del MVP.
+
+| Rol | Identificador | Permisos |
+| - | - | - |
+| Administrador | `administrator` | Todos, como `SAP_ALL`. Las reglas de segregación por documento (REG-001, INV-010, DM-08) también lo alcanzan |
+| Supervisor | `supervisor` | `locations.block`, todos los de `inventory`, `procurement.approve`, `procurement.cancel`, `procurement.close`, todos los de `receiving`, `putaway`, `orders`, `picking`, `packing` y `dispatch`, `stocktake.manage`, `stocktake.approve`, `stocktake.reverse` y `audit.view` |
+| Operador | `operator` | `inventory.transfer`, `receiving.create`, `receiving.confirm`, `putaway.execute`, `putaway.reverse`, `picking.execute`, `packing.execute`, `dispatch.execute` y `stocktake.count` |
+| Compras | `purchasing` | `suppliers.manage`, `procurement.create` y `procurement.cancel` |
+| Auditor | `auditor` | `audit.view` |
 
 ## Decisiones de modelado
 
