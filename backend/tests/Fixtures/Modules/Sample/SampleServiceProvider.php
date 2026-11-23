@@ -5,12 +5,21 @@ namespace Tests\Fixtures\Modules\Sample;
 use App\Shared\Providers\ModuleServiceProvider;
 
 /**
- * Módulo ficticio con rutas, migraciones y policies para probar la convención
- * de ModuleServiceProvider sin depender de los módulos reales.
+ * Módulo ficticio con rutas, migraciones, policies y traducciones de errores
+ * de base de datos para probar las convenciones de ModuleServiceProvider y el
+ * contrato de errores sin depender de los módulos reales.
  */
 class SampleServiceProvider extends ModuleServiceProvider
 {
     protected array $policies = [
         SampleRecord::class => SampleRecordPolicy::class,
+    ];
+
+    protected array $constraintErrors = [
+        'sample_quantity_check' => SampleRuleViolated::class,
+    ];
+
+    protected array $triggerErrors = [
+        'SAMPLE_TRIGGER_CONFLICT' => SampleConflict::class,
     ];
 }
