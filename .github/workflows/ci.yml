@@ -1,0 +1,135 @@
+# Integración continua: verificación del backend contra PostgreSQL real y del frontend.
+# Las versiones de PHP, Node y PostgreSQL replican las del entorno de Docker
+# (infrastructure/docker y docker-compose.yml). Las actions se fijan por SHA de
+# commit porque un tag es mutable; el comentario indica la versión.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # En main cada commit conserva su resultado; en una PR solo importa el último.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      # Nunca SQLite: las restricciones y los triggers son parte del sistema bajo prueba.
+      # phpunit.xml fuerza la base wms_testing, que el servicio crea al iniciar.
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: wms_testing
+          POSTGRES_USER: wms
+          POSTGRES_PASSWORD: wms
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U wms -d wms_testing"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Las variables del entorno tienen prioridad sobre backend/.env.
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USERNAME: wms
+      DB_PASSWORD: wms
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.5'
+          # Mismas extensiones que infrastructure/docker/php/Dockerfile.
+          extensions: bcmath, intl, pcntl, pdo_pgsql, zip
+          ini-values: date.timezone=UTC, memory_limit=512M
+          coverage: none
+          tools: composer:v2
+
+      - name: Ubicar la caché de Composer
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Instalar dependencias
+        id: deps
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Preparar el entorno
+        id: env
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+
+      # Los tres pasos corren aunque falle uno, para informar todas las fallas en una sola ejecución.
+      - name: Estilo (Pint)
+        if: ${{ !cancelled() && steps.env.conclusion == 'success' }}
+        run: composer lint
+
+      - name: Análisis estático (PHPStan)
+        if: ${{ !cancelled() && steps.env.conclusion == 'success' }}
+        run: composer analyse -- --no-progress
+
+      - name: Pruebas (Pest)
+        if: ${{ !cancelled() && steps.env.conclusion == 'success' }}
+        run: composer test
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          # Misma versión mayor que la imagen node:26-alpine de docker-compose.yml.
+          node-version: '26'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependencias
+        id: deps
+        run: npm ci --no-audit --no-fund
+
+      - name: Tipos (tsc)
+        if: ${{ !cancelled() && steps.deps.conclusion == 'success' }}
+        run: npm run typecheck
+
+      - name: Estilo (ESLint)
+        if: ${{ !cancelled() && steps.deps.conclusion == 'success' }}
+        run: npm run lint
+
+      - name: Pruebas (Vitest)
+        if: ${{ !cancelled() && steps.deps.conclusion == 'success' }}
+        run: npm run test
+
+      - name: Build de producción
+        if: ${{ !cancelled() && steps.deps.conclusion == 'success' }}
+        run: npm run build
