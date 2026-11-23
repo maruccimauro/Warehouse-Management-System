@@ -1,0 +1,9 @@
+{
+  "app": {
+    "name": "WMS",
+    "fullName": "Sistema de gestión de depósitos"
+  },
+  "actions": {
+    "backToHome": "Volver al inicio"
+  }
+}

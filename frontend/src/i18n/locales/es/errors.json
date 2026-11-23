@@ -1,0 +1,16 @@
+{
+  "codes": {
+    "VALIDATION_FAILED": "Los datos ingresados no son válidos.",
+    "UNAUTHENTICATED": "La sesión expiró o no se inició. Es necesario ingresar nuevamente.",
+    "FORBIDDEN": "No tiene permisos para realizar esta acción.",
+    "NOT_FOUND": "El recurso solicitado no existe.",
+    "METHOD_NOT_ALLOWED": "La operación solicitada no está permitida.",
+    "CSRF_TOKEN_MISMATCH": "La página estuvo inactiva demasiado tiempo. Recargue la página e intente nuevamente.",
+    "TOO_MANY_REQUESTS": "Se realizaron demasiados intentos. Espere unos minutos antes de volver a intentar.",
+    "INTERNAL_ERROR": "Ocurrió un error inesperado. Si el problema continúa, contacte al administrador.",
+    "INVALID_CREDENTIALS": "El correo electrónico o la contraseña no son correctos.",
+    "SESSION_REQUIRED": "La autenticación requiere una sesión del navegador.",
+    "NETWORK_ERROR": "No fue posible conectar con el servidor. Verifique la conexión e intente nuevamente.",
+    "UNKNOWN": "No fue posible completar la operación."
+  }
+}

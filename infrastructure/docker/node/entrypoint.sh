@@ -2,7 +2,7 @@
 # Arranque del servidor de desarrollo de Vite.
 set -eu
 
-# El proyecto React se crea en E1.08; hasta entonces el servicio queda en espera.
+# Sin package.json (por ejemplo, un checkout parcial) el servicio queda en espera en lugar de reiniciarse en bucle.
 if [ ! -f package.json ]; then
     echo "frontend: package.json no existe todavía; servicio en espera." >&2
     exec tail -f /dev/null

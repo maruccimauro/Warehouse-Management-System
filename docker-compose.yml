@@ -68,6 +68,9 @@ services:
   frontend:
     image: node:26-alpine
     working_dir: /app
+    environment:
+      # Puerto público de Nginx: el cliente de HMR de Vite abre el WebSocket contra él.
+      WEB_PORT: ${WEB_PORT:-8080}
     entrypoint: ["sh", "/entrypoint.sh"]
     volumes:
       - ./frontend:/app
