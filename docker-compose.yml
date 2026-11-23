@@ -18,8 +18,12 @@ services:
       DB_DATABASE: ${DB_DATABASE:-wms}
       DB_USERNAME: ${DB_USERNAME:-wms}
       DB_PASSWORD: ${DB_PASSWORD:-wms}
+    # Instala dependencias, crea backend/.env y genera APP_KEY si faltan; después arranca PHP-FPM.
+    entrypoint: ["sh", "/usr/local/bin/app-entrypoint.sh"]
+    command: ["php-fpm"]
     volumes:
       - ./backend:/var/www/backend
+      - ./infrastructure/docker/php/entrypoint.sh:/usr/local/bin/app-entrypoint.sh:ro
     depends_on:
       db:
         condition: service_healthy
@@ -39,6 +43,8 @@ services:
 
   db:
     image: postgres:18-alpine
+    # Zona horaria del servidor en UTC para cualquier cliente, no solo la aplicación.
+    command: ["postgres", "-c", "timezone=UTC", "-c", "log_timezone=UTC"]
     environment:
       POSTGRES_DB: ${DB_DATABASE:-wms}
       POSTGRES_USER: ${DB_USERNAME:-wms}
@@ -49,6 +55,8 @@ services:
       # Desde PostgreSQL 18 la imagen guarda los datos en /var/lib/postgresql/<versión>/docker:
       # se monta el directorio padre para que un cambio de versión mayor no pise datos.
       - db_data:/var/lib/postgresql
+      # Crea la base wms_testing al inicializar un volumen vacío.
+      - ./infrastructure/docker/postgres/initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
       interval: 5s

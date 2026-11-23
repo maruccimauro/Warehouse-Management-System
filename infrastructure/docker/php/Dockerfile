@@ -7,13 +7,15 @@ ARG UID=1000
 ARG GID=1000
 
 RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS icu-dev libzip-dev postgresql-dev \
-    && apk add --no-cache icu-libs libzip libpq git unzip shadow \
+    && apk add --no-cache icu-libs libzip libpq git unzip shadow su-exec \
     && docker-php-ext-install -j"$(nproc)" bcmath intl pcntl pdo_pgsql zip \
     && apk del .build-deps \
     && groupmod -o -g "${GID}" www-data \
     && usermod -o -u "${UID}" -g www-data www-data
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# Caché de Composer escribible por www-data.
+ENV COMPOSER_HOME=/tmp/composer
 COPY php.ini /usr/local/etc/php/conf.d/zz-app.ini
 
 WORKDIR /var/www/backend
