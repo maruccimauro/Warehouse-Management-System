@@ -78,11 +78,19 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    'locale' => env('APP_LOCALE', 'es'),
 
-    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
+    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'es'),
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
+
+    /*
+    | Idiomas que acepta la API, en orden de preferencia: el primero es el que se
+    | usa cuando Accept-Language no pide ninguno de la lista. Agregar un idioma es
+    | agregar su carpeta en lang/ y su código acá (SetLocale).
+    */
+
+    'supported_locales' => ['es', 'en'],
 
     /*
     |--------------------------------------------------------------------------

@@ -3,6 +3,7 @@
 use App\Shared\Database\DatabaseErrorTranslator;
 use App\Shared\Exceptions\DomainException;
 use App\Shared\Exceptions\ProblemDetailsRenderer;
+use App\Shared\Http\Middleware\SetLocale;
 use App\Shared\Providers\ModuleServiceProvider;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
@@ -22,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Sanctum en modo SPA (ADR-009): las peticiones de SANCTUM_STATEFUL_DOMAINS
         // a /api usan sesión por cookie y verificación CSRF.
         $middleware->statefulApi();
+
+        // Idioma de la respuesta según el usuario y Accept-Language (SetLocale).
+        $middleware->append(SetLocale::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Contrato de errores de la API: Problem Details con código estable (ADR-010).

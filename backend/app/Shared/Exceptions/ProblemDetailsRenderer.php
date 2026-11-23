@@ -41,16 +41,11 @@ final readonly class ProblemDetailsRenderer
     ];
 
     /**
-     * Detalles genéricos: el mensaje de la excepción puede exponer nombres de
-     * clases o rutas internas (ModelNotFoundException, por ejemplo).
+     * Estados con detalle propio, traducido en lang/{idioma}/problems.php. El
+     * mensaje de la excepción puede exponer nombres de clases o rutas internas
+     * (ModelNotFoundException, por ejemplo), por eso se reemplaza.
      */
-    private const HTTP_DETAILS = [
-        401 => 'Se requiere una sesión iniciada.',
-        404 => 'El recurso solicitado no existe.',
-        405 => 'El método HTTP no está permitido para este recurso.',
-        419 => 'El token CSRF no es válido o expiró. Obtené uno nuevo en /sanctum/csrf-cookie.',
-        429 => 'Se superó el límite de solicitudes. Reintentá más tarde.',
-    ];
+    private const HTTP_DETAIL_STATUSES = [401, 404, 405, 419, 429];
 
     public function __construct(
         private DatabaseErrorTranslator $databaseErrors,
@@ -73,7 +68,7 @@ final readonly class ProblemDetailsRenderer
         return match (true) {
             $exception instanceof DomainException => $this->fromDomain($exception),
             $exception instanceof ValidationException => $this->fromValidation($exception),
-            $exception instanceof AuthenticationException => ProblemDetails::forHttpStatus(401, self::HTTP_CODES[401], self::HTTP_DETAILS[401]),
+            $exception instanceof AuthenticationException => ProblemDetails::forHttpStatus(401, self::HTTP_CODES[401], $this->httpDetail(401)),
             $exception instanceof HttpExceptionInterface => $this->fromHttp($exception),
             default => $this->internalError($exception),
         };
@@ -96,8 +91,8 @@ final readonly class ProblemDetailsRenderer
         return new ProblemDetails(
             status: 422,
             code: 'VALIDATION_FAILED',
-            title: 'Los datos enviados no son válidos.',
-            detail: 'Uno o más campos tienen errores.',
+            title: $this->translate('problems.validation.title'),
+            detail: $this->translate('problems.validation.detail'),
             extensions: ['errors' => $exception->errors()],
         );
     }
@@ -109,7 +104,7 @@ final readonly class ProblemDetailsRenderer
         // El mensaje de 403 lo escriben las policies para el usuario; el resto se reemplaza.
         $detail = $status === 403
             ? ($exception->getMessage() !== '' ? $exception->getMessage() : null)
-            : (self::HTTP_DETAILS[$status] ?? null);
+            : $this->httpDetail($status);
 
         $headers = [];
         foreach ($exception->getHeaders() as $name => $value) {
@@ -124,7 +119,7 @@ final readonly class ProblemDetailsRenderer
 
     private function internalError(Throwable $exception): ProblemDetails
     {
-        $problem = ProblemDetails::forHttpStatus(500, 'INTERNAL_ERROR', 'Ocurrió un error inesperado.');
+        $problem = ProblemDetails::forHttpStatus(500, 'INTERNAL_ERROR', $this->translate('problems.internal'));
 
         if (! $this->debug) {
             return $problem;
@@ -142,5 +137,23 @@ final readonly class ProblemDetailsRenderer
                 'line' => $exception->getLine(),
             ]],
         );
+    }
+
+    private function httpDetail(int $status): ?string
+    {
+        return in_array($status, self::HTTP_DETAIL_STATUSES, true)
+            ? $this->translate('problems.http.'.$status)
+            : null;
+    }
+
+    /**
+     * Texto en el idioma de la petición (SetLocale). __() devuelve la clave si no
+     * hay traducción; el tipo se verifica porque también puede devolver arrays.
+     */
+    private function translate(string $key): string
+    {
+        $text = __($key);
+
+        return is_string($text) ? $text : $key;
     }
 }

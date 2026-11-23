@@ -17,6 +17,6 @@ final class InvalidCredentials extends DomainException
 
     public function title(): string
     {
-        return __('Las credenciales no son válidas.');
+        return __('identity.invalid_credentials');
     }
 }

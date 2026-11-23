@@ -18,7 +18,7 @@ final class SessionRequired extends DomainException
 
     public function title(): string
     {
-        return __('La autenticación requiere una sesión del frontend.');
+        return __('identity.session_required');
     }
 
     public function status(): int

@@ -211,6 +211,21 @@ describe('cliente HTTP', () => {
     });
   });
 
+  it('envía el idioma activo de la interfaz en Accept-Language', async () => {
+    const fetch = vi.fn(() => Promise.resolve(new Response(null, { status: 204 })));
+    const client = createApiClient({
+      fetch: fetch as unknown as typeof globalThis.fetch,
+      readCookies: () => '',
+      language: () => 'es',
+    });
+
+    await client.request('GET', '/health');
+
+    const init = (fetch.mock.calls[0] as unknown as [string, RequestInit])[1];
+
+    expect(new Headers(init.headers).get('Accept-Language')).toBe('es');
+  });
+
   it('envía el cuerpo como JSON y la Idempotency-Key recibida', async () => {
     const { client, calls, setCookies } = fakeServer([() => new Response(null, { status: 204 })]);
     setCookies('XSRF-TOKEN=t');

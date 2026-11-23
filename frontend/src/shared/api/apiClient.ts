@@ -1,4 +1,5 @@
 import type { z } from 'zod';
+import { i18n } from '@/i18n';
 import { ApiError, codeForStatus, problemDetailsSchema } from './ApiError';
 import { readXsrfToken } from './csrf';
 
@@ -22,6 +23,9 @@ export interface ApiClientConfig {
   csrfCookieUrl?: string;
   fetch?: typeof fetch;
   readCookies?: () => string;
+  // Idioma activo de la interfaz: el backend responde en ese idioma (SetLocale), no en el
+  // que tenga configurado el navegador.
+  language?: () => string | undefined;
 }
 
 export interface ApiClient {
@@ -84,6 +88,7 @@ export function createApiClient(config: ApiClientConfig = {}): ApiClient {
   const csrfCookieUrl = config.csrfCookieUrl ?? '/sanctum/csrf-cookie';
   const fetchFn = config.fetch ?? globalThis.fetch.bind(globalThis);
   const readCookies = config.readCookies ?? (() => document.cookie);
+  const language = config.language ?? (() => undefined);
 
   // Peticiones simultáneas comparten una sola obtención de la cookie CSRF.
   let pendingCsrf: Promise<void> | undefined;
@@ -130,6 +135,11 @@ export function createApiClient(config: ApiClientConfig = {}): ApiClient {
   ): Promise<Response> {
     const headers = new Headers({ Accept: 'application/json' });
     const init: RequestInit = { method, headers };
+    const currentLanguage = language();
+
+    if (currentLanguage !== undefined) {
+      headers.set('Accept-Language', currentLanguage);
+    }
 
     if (options.body !== undefined) {
       headers.set('Content-Type', 'application/json');
@@ -195,4 +205,4 @@ export function createApiClient(config: ApiClientConfig = {}): ApiClient {
 }
 
 // Instancia única de la aplicación.
-export const api = createApiClient();
+export const api = createApiClient({ language: () => i18n.resolvedLanguage });
