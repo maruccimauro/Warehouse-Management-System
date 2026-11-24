@@ -348,6 +348,18 @@ Las transferencias siguen la columna de lo abierto. Las reversiones no se valida
 
 Un proveedor inactivo no admite órdenes de compra nuevas (REG-018, 422 `SUPPLIER_INACTIVE` desde E4) y deja enviar, aprobar y recibir las existentes. El identificador fiscal se puede corregir, como `STCD1` en SAP, porque las órdenes referencian el id. Un proveedor nunca se borra; sus vínculos con productos sí (DM-22).
 
+### User
+
+| Desde | Hacia | Disparador | Permiso | Condiciones y reglas |
+| - | - | - | - | - |
+| (nuevo) | activo, con contraseña inicial | `POST /users` | `users.manage` | Roles y depósitos en la misma transacción, solo roles cuyos permisos tiene quien opera (REG-023). Auditado (`user.created`) |
+| activo | inactivo | `PATCH /users/{id}` con `is_active: false` | `users.manage` | No sobre uno mismo (422 `SELF_DEACTIVATION_NOT_ALLOWED`) ni sobre el último administrador activo (409 `LAST_ADMINISTRATOR`, REG-022). Cierra sus sesiones (REG-020). Auditado (`user.deactivated`) |
+| inactivo | activo | `PATCH /users/{id}` con `is_active: true` | `users.manage` | Sin condiciones. Auditado (`user.activated`) |
+| contraseña vigente | contraseña inicial | `PATCH /users/{id}` con `password` | `users.manage` | Cierra sus sesiones. Auditado sin el valor (`user.password_reset`) |
+| contraseña inicial | contraseña vigente | `PUT /me/password` | Sesión del propio usuario | Exige la contraseña actual; cierra las demás sesiones (REG-021). Auditado (`user.password_changed`) |
+
+Los cambios de roles y depósitos se auditan (`user.roles_changed`, `user.warehouses_changed`) y rigen en la petición siguiente sin cerrar la sesión. Nombre, email e idioma son datos maestros y no se auditan. Un usuario nunca se borra: los documentos lo referencian (DM-23).
+
 ### StockReservation, StockBlock y PutawayTask
 
 | Entidad | Desde | Hacia | Disparador |
@@ -434,7 +446,7 @@ Permisos que exigen las transiciones de este documento y la administración de d
 | `stocktake.count` | Registrar conteos y reconteos |
 | `stocktake.approve` | Aprobar inventarios físicos (INV-010) |
 | `stocktake.reverse` | Revertir inventarios físicos aprobados |
-| `users.manage` | Usuarios, roles y asignación de depósitos |
+| `users.manage` | Usuarios, roles y asignación de depósitos, y consulta de los roles con sus permisos. Solo sobre usuarios y roles cuyos permisos tiene quien opera (REG-023) |
 | `audit.view` | Consulta de auditoría |
 
 ### Roles
@@ -475,3 +487,4 @@ Los roles son datos del sistema con identificador estable; la interfaz traduce s
 | DM-20 | El SKU de un producto y el código de una unidad de medida no cambian después del alta. La unidad base del producto tampoco cambia por ahora; E3 puede habilitar el cambio mientras el producto no tenga movimientos. El código de barras, el nombre, la categoría y las dimensiones sí se editan. `is_lot_tracked` queda en `false` y la API no lo escribe mientras los lotes estén fuera del alcance | El SKU va en etiquetas y documentos, como el número de material (`MATNR`) de SAP, que no se renombra. Todas las cantidades del libro están en la unidad base (ADR-005): cambiarla convertiría 10 unidades en 10 gramos, y SAP bloquea el cambio cuando existe stock. El código de barras se edita como el `EAN11` de SAP, porque el fabricante puede cambiarlo |
 | DM-21 | El producto es global; lo que tiene de propio en cada depósito va en `product_warehouse_settings`, empezando por el stock mínimo. Sin fila, el producto usa los valores por defecto en ese depósito (stock mínimo 0). Se edita con `PUT /products/{id}/warehouse-settings/{warehouseId}` (`catalog.manage` y alcance de operación sobre el depósito) y es mantenimiento de datos maestros: admite depósitos inactivos | Equivale a la separación de SAP entre los datos generales del material (`MARA`) y los datos de centro (`MARC`), donde está el punto de pedido (`MINBE`). El stock crítico se calcula por producto y depósito (E7.04): un mínimo global obligaría a usar el mismo valor en un depósito central y en uno chico |
 | DM-22 | El vínculo de un producto con un proveedor (`product_supplier`) guarda el código con que el proveedor identifica el producto y su plazo de entrega en días. Se escribe bajo el proveedor con `PUT` y `DELETE /suppliers/{id}/products/{productId}` (`suppliers.manage`) y se lee en los dos sentidos: `GET /suppliers/{id}/products`, paginado, y `GET /products/{id}/suppliers`. El `PUT` reemplaza el vínculo completo y el borrado es físico, porque ningún documento lo referencia. El código del proveedor es único dentro de cada proveedor y se guarda tal como lo usa el proveedor. Es mantenimiento de datos maestros: admite proveedores inactivos y productos discontinuados o bloqueados. Una orden de compra solo admite productos vinculados a su proveedor (REG-019) | Equivale al registro info de compras de SAP (`EINA` y `EINE`, transacciones `ME11` a `ME13`), con clave material y proveedor, usado con lista de fuentes obligatoria. La unicidad del código evita que el código de un remito apunte a dos productos al recibir (E4.09). Hacer obligatorio el vínculo deja la orden de compra limitada a lo que el proveedor efectivamente vende, a cambio de mantener el vínculo antes de comprar |
+| DM-23 | Un usuario se administra entero desde su ficha (SU01): `POST` y `PATCH /users` llevan datos, estado, contraseña, roles y depósitos, y roles y depósitos, cuando vienen, reemplazan la asignación completa en la misma transacción. Se admiten depósitos inactivos, porque asignarlos es mantenimiento de datos maestros. El email es editable y único; las referencias usan el id. La contraseña que fija el administrador es inicial y obliga a cambiarla antes de operar (`users.password_change_required`, REG-021). Los roles se consultan con sus permisos en `GET /roles` y no se editan | Equivale a SU01 de SAP, donde la ficha, los roles y la clave inicial se graban juntos y la clave inicial exige el cambio en el primer acceso. Una sola petición evita estados intermedios no atómicos (un usuario con roles nuevos y depósitos viejos) y deja una auditoría coherente del cambio de acceso |

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use LogicException;
 
 /**
  * Petición de listado con paginación por página, filtros y orden con lista
@@ -192,8 +193,22 @@ abstract class ListRequest extends FormRequest
                 FilterMode::Exact => $query->where($column, $value),
                 FilterMode::Partial => $query->whereLike($column, '%'.self::escapeLike(self::asString($value)).'%'),
                 FilterMode::In => $query->whereIn($column, (array) $value),
+                FilterMode::Custom => $this->applyCustomFilter($query, $field, $value),
             };
         }
+    }
+
+    /**
+     * Aplica un filtro declarado con FilterMode::Custom, con el valor ya
+     * validado y no vacío. El listado que declara uno redefine este método.
+     *
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     */
+    protected function applyCustomFilter(Builder $query, string $field, mixed $value): void
+    {
+        throw new LogicException(static::class." declara el filtro {$field} como Custom sin aplicarlo.");
     }
 
     private static function asString(mixed $value): string

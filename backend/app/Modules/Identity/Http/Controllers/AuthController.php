@@ -5,6 +5,7 @@ namespace App\Modules\Identity\Http\Controllers;
 use App\Modules\Identity\Authorization\WarehouseAccess;
 use App\Modules\Identity\Exceptions\InvalidCredentials;
 use App\Modules\Identity\Exceptions\SessionRequired;
+use App\Modules\Identity\Exceptions\UserInactive;
 use App\Modules\Identity\Http\Requests\LoginRequest;
 use App\Modules\Identity\Http\Resources\AuthenticatedUserResource;
 use App\Modules\Identity\Models\User;
@@ -28,7 +29,26 @@ class AuthController
             throw new SessionRequired;
         }
 
-        if (! Auth::guard('web')->attempt($request->credentials())) {
+        // El estado de la cuenta se evalúa solo con la contraseña ya verificada
+        // (REG-020, D1): un usuario inactivo con la contraseña correcta recibe
+        // USER_INACTIVE; cualquier otro fallo, INVALID_CREDENTIALS, sin revelar
+        // si la cuenta existe o está desactivada. attemptWhen conserva el
+        // timebox del guard contra la medición de tiempos.
+        $inactive = false;
+        $authenticated = Auth::guard('web')->attemptWhen(
+            $request->credentials(),
+            function (User $user) use (&$inactive): bool {
+                $inactive = ! $user->is_active;
+
+                return ! $inactive;
+            },
+        );
+
+        if ($inactive) {
+            throw new UserInactive;
+        }
+
+        if (! $authenticated) {
             throw new InvalidCredentials;
         }
 

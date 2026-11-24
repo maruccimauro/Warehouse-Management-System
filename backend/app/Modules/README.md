@@ -62,7 +62,7 @@ Reproducen el DDL de `docs/03-architecture/database-design.md`.
 | Listado de datos maestros | El Form Request extiende `App\Shared\Http\Listing\ListRequest` y el controlador devuelve `XResource::collection($request->paginate($query))` | Paginación por página con total: la grilla muestra el total y salta de página. El libro de movimientos de E3 usa cursor |
 | Forma del listado | `data`, `links` (`first`, `last`, `prev`, `next`) y `meta` (`current_page`, `last_page`, `per_page`, `total`, `from`, `to`, `path`) del paginador de Laravel | Formato estándar del framework |
 | Página | `page` desde 1; `per_page` de 50 por defecto y 200 como máximo | Acota el costo de una petición |
-| Filtros | `filter[campo]=valor`; cada listado declara sus campos en `filters()` con `FilterMode::Exact`, `Partial` (fragmento sin distinguir mayúsculas, comodines escapados) o `In` (`filter[campo][]=a&filter[campo][]=b`). Los valores que no son texto llevan su regla en `filterValueRules()` | Lista blanca: la columna sale de la declaración, nunca de la petición. Un criterio vacío no restringe, como en una pantalla de selección |
+| Filtros | `filter[campo]=valor`; cada listado declara sus campos en `filters()` con `FilterMode::Exact`, `Partial` (fragmento sin distinguir mayúsculas, comodines escapados) o `In` (`filter[campo][]=a&filter[campo][]=b`). Un criterio que no es una columna del modelo (una relación, como `filter[role]` en usuarios) se declara `Custom` y lo aplica el listado en `applyCustomFilter()`. Los valores que no son texto llevan su regla en `filterValueRules()` | Lista blanca: la columna sale de la declaración, nunca de la petición. Un criterio vacío no restringe, como en una pantalla de selección |
 | Orden | `sort=campo` o `sort=-campo`, entre los campos de `sorts()`; sin `sort`, `defaultSort()`. La clave primaria desempata | Sin desempate, dos páginas pueden repetir o saltear filas con el mismo valor |
 | Parámetro no declarado | 422 `VALIDATION_FAILED` con el campo en `errors` | Un filtro ignorado en silencio devuelve datos que el usuario cree filtrados |
 | Modelos de la ruta | Vinculación explícita con `Route::model()` en el provider del módulo; los identificadores con patrón `[1-9][0-9]{0,17}` | El Form Request usa el modelo antes del controlador, y la vinculación implícita solo resuelve lo que declara la firma del controlador. Un identificador no numérico o fuera de `BIGINT` responde 404 y no un error de conversión de PostgreSQL |
@@ -78,13 +78,22 @@ Todo recurso que pertenece a un depósito respeta REG-005 con `App\Modules\Ident
 - La Policy devuelve `authorizeView()` para consultar y `authorizeOperation()` con el permiso de la acción para operar. El orden es 404 fuera del alcance de consulta, 403 sin operación en el depósito y 403 sin el permiso.
 - Toda Action que opera sobre un depósito (movimientos, documentos, bloqueo de ubicaciones) llama primero, dentro de su transacción, a `App\Modules\Warehouse\Actions\LockActiveWarehouse`: toma la fila del depósito con `FOR SHARE` (nivel 0 de ADR-003) y responde 422 `WAREHOUSE_INACTIVE` si está inactivo (REG-015). El mantenimiento de zonas y ubicaciones no es una operación y no la llama.
 
+## Estado de la cuenta
+
+`IdentityServiceProvider` agrega al grupo `api` dos middlewares que valen para toda ruta autenticada de cualquier módulo, sin declararlos en cada archivo de rutas:
+
+- `EnsureUserIsActive`: la sesión de un usuario desactivado se cierra con 401 (REG-020).
+- `RequirePasswordChange`: con una contraseña inicial o reseteada, solo `auth.me`, `auth.logout` y `me.password.update` responden; el resto, 403 `PASSWORD_CHANGE_REQUIRED` (REG-021). Una ruta nueva que deba admitirse en ese estado se agrega a `RequirePasswordChange::ALLOWED_ROUTES`.
+
+El modelo `User` repite en `$attributes` los valores por defecto de la base (`is_active`, `password_change_required`, `locale`): sin ellos, un usuario recién creado no los tiene en memoria y el middleware lo tomaría como inactivo.
+
 ## Auditoría
 
 Las operaciones críticas (INV-012) se auditan con el contrato `App\Modules\Audit\Contracts\AuditLogger` (ADR-008):
 
 - La Action lo recibe por inyección y llama a `record()` dentro de su `DB::transaction`, después de aplicar el cambio, con la acción en la forma `entidad.verbo` (`location.blocked`) y los valores afectados antes y después como valores planos.
 - El modelo auditado necesita un alias en el morph map, que el provider de su módulo registra con `Relation::morphMap()`: Identity activa `enforceMorphMap`.
-- Acciones registradas: `location.blocked`, `location.unblocked`, `warehouse.activated`, `warehouse.deactivated` y `product.status_changed` (sin depósito: el catálogo es global).
+- Acciones registradas: `location.blocked`, `location.unblocked`, `warehouse.activated` y `warehouse.deactivated`; sin depósito, porque son globales, `product.status_changed`, `supplier.activated`, `supplier.deactivated`, `user.created`, `user.activated`, `user.deactivated`, `user.roles_changed`, `user.warehouses_changed`, `user.password_reset` y `user.password_changed` (estas dos sin valores: la contraseña nunca se audita).
 - Hasta E3 el binding es `NullAuditLogger`; E3 crea `audit_logs` con su trigger de inmutabilidad y reemplaza el binding sin tocar las Actions. Las pruebas reemplazan el contrato por `Tests\Support\RecordingAuditLogger`, un registro en memoria que verifica que se audita dentro de la transacción.
 
 ## Reglas

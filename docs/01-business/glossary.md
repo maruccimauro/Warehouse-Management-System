@@ -97,6 +97,8 @@ Términos del dominio, su nombre en el código y su definición. El código usa 
 | - | - | - |
 | Rol | `Role` | Conjunto de permisos: administrador, supervisor, operador, compras, auditor |
 | Permiso | `Permission` | Autorización para una acción, con nombre `modulo.accion` (por ejemplo `inventory.adjust`) |
+| Usuario inactivo | `User.is_active` | Usuario desactivado: se conserva con su historial, no inicia sesión y pierde las sesiones abiertas |
+| Contraseña inicial | `User.password_change_required` | Contraseña que fija el administrador al dar de alta o resetear un usuario; hay que cambiarla antes de operar |
 | Segregación de funciones | regla | Quien ejecuta una acción no puede aprobarla (orden de compra, inventario físico) |
 | Auditoría | `AuditLog` | Registro inmutable de quién hizo qué, cuándo, sobre qué entidad y con qué valores antes y después |
 | Clave de idempotencia | `Idempotency-Key` | Identificador que el cliente envía con una operación para que sus reintentos no la dupliquen |

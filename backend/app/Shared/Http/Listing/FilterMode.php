@@ -21,4 +21,11 @@ enum FilterMode
      * selección de SAP: filter[status][]=active&filter[status][]=blocked.
      */
     case In;
+
+    /**
+     * Criterio que no es una columna del modelo (una relación, por ejemplo
+     * filter[role]=operator en usuarios). Lo aplica el listado en
+     * ListRequest::applyCustomFilter(); el nombre sigue siendo de lista blanca.
+     */
+    case Custom;
 }

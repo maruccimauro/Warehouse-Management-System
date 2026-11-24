@@ -35,6 +35,7 @@ it('logs in with valid credentials and returns the authenticated user', function
             'id' => $this->user->id,
             'name' => 'Operador de Prueba',
             'email' => 'operador@wms.test',
+            'password_change_required' => false,
             'roles' => [],
             'permissions' => [],
             'warehouses' => [],

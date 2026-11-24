@@ -41,6 +41,7 @@ El DDL de este documento es la referencia que reproducen las migraciones de Lara
 | Cola de picking | `GET /picking-tasks/next` toma la tarea con `FOR UPDATE SKIP LOCKED` para que dos operadores no compitan por la misma |
 | Estado del producto | Las operaciones de E3 a E6 leen el producto con `FOR SHARE` para validar su estado (REG-017); `UpdateProduct` lo cambia con `FOR NO KEY UPDATE`, igual que el nivel 0 del depósito. No necesita nivel en el orden global: `FOR SHARE` no se excluye consigo mismo, y `UpdateProduct` no tiene otro bloqueo tomado, así que no puede cerrar un ciclo de espera. `FOR NO KEY UPDATE` tampoco frena el `FOR KEY SHARE` de las claves foráneas hacia `products` |
 | Proveedor y vínculo con productos | E4.01 lee el proveedor con `FOR SHARE` al crear una orden (REG-018) y el vínculo `product_supplier` con `FOR SHARE` al agregar una línea y al enviar la orden a aprobación (REG-019). `UpdateSupplier` cambia el proveedor con `FOR NO KEY UPDATE`; el `PUT` del vínculo es un `INSERT ... ON CONFLICT DO UPDATE` y la baja un `DELETE`, que toman la fila del vínculo en modo excluyente y esperan a la orden en curso. Igual que el estado del producto, no ocupa nivel en el orden global: quien toma el bloqueo excluyente no tiene otro bloqueo tomado |
+| Administradores activos | `UpdateUser` toma el bloqueo consultivo de transacción `pg_advisory_xact_lock(209001)` antes que la fila del usuario cuando cambia roles o desactiva, y cuenta los administradores activos después de aplicar el cambio (REG-022). Sin él, dos administradores que se quitan el rol mutuamente verían "quedan dos" y confirmarían los dos. Un cambio que no toca roles ni estado toma solo la fila (`FOR NO KEY UPDATE`) y nunca espera el consultivo teniéndola, así que no hay ciclo de espera. Es mantenimiento de datos maestros y no ocupa nivel en el orden global |
 | Árbol de categorías | Todo cambio de estructura (alta con padre, cambio de padre) toma `pg_advisory_xact_lock(205001)` antes de recorrer el árbol (REG-016). Sin él, mover A bajo B y B bajo A en paralelo crearía un ciclo que ninguna de las dos transacciones ve. No participa del orden global: ninguna operación de inventario lo toma |
 
 El orden 3 antes de 4 es el de [ADR-003](adr/003-pessimistic-concurrency-control.md), corregido en E0.08. Con el orden inverso, la aprobación de un inventario físico (que bloquea ubicaciones y luego existencias) y un movimiento concurrente sobre esas ubicaciones (que bloquea existencias y luego ubicaciones) forman un ciclo que PostgreSQL resuelve abortando una de las dos transacciones. Con un único orden jerárquico, ubicación antes que existencia, el ciclo no puede formarse.
@@ -54,6 +55,7 @@ CREATE TABLE users (
   email VARCHAR(255) NOT NULL,
   password VARCHAR(255) NOT NULL,
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  password_change_required BOOLEAN NOT NULL DEFAULT FALSE,
   locale VARCHAR(10) NOT NULL DEFAULT 'es',
   remember_token VARCHAR(100),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -218,6 +220,8 @@ Más las tablas de `spatie/laravel-permission` (`roles`, `permissions`, `model_h
 Notas:
 
 - `users.locale` es el idioma preferido que resuelve el middleware de idioma. La base exige solo el formato; la lista de idiomas admitidos es configuración (`app.supported_locales`) y se valida en la aplicación, para que agregar un idioma no requiera migración.
+- `users.password_change_required` marca una contraseña inicial o reseteada por el administrador (REG-021). Se agregó en E2.09 con una migración propia y no reescribiendo la de `users`, porque la base de desarrollo ya tenía las tablas que la referencian. Vale `FALSE` por defecto para que los usuarios de desarrollo entren sin cambio; `CreateUser` la pone en `TRUE`.
+- Desactivar un usuario o resetear su contraseña borra sus filas de `sessions` por `user_id` (REG-020), con el índice que trae la migración publicada de Laravel. Sin borrado de usuarios: las claves foráneas de los documentos hacia `users` no tienen `ON DELETE`.
 - Una restricción `CHECK` se cumple cuando la expresión es nula; por eso `max_units > 0` y las dimensiones del producto admiten `NULL` sin cláusula adicional.
 - `locations.is_system` es una columna generada a partir de `system_role` y no puede contradecirlo. El glosario conserva `Location.is_system`.
 - Al crear un depósito, la Action `CreateWarehouse` agrega en la misma transacción una zona de sistema por rol (`is_system`, tipos `receiving`, `packing` y `dispatch`) con una ubicación cada una; zona y ubicación comparten el código: `RECEPCION`, `PACKING` y `DESPACHO`.

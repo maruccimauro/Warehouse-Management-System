@@ -21,18 +21,32 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $email
  * @property string $password
  * @property bool $is_active
+ * @property bool $password_change_required
  * @property string $locale
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'locale'])]
 #[Hidden(['password', 'remember_token'])]
 #[UseFactory(UserFactory::class)]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasRoles, Notifiable;
+
+    /**
+     * Los mismos valores por defecto que la base (database-design.md): sin
+     * ellos, un usuario recién creado no tiene is_active en memoria hasta
+     * releerlo, y EnsureUserIsActive lo tomaría como inactivo.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'is_active' => true,
+        'password_change_required' => false,
+        'locale' => 'es',
+    ];
 
     /**
      * Get the attributes that should be cast.
@@ -44,6 +58,7 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'password_change_required' => 'boolean',
         ];
     }
 

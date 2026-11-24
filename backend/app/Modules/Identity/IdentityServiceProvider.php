@@ -3,12 +3,18 @@
 namespace App\Modules\Identity;
 
 use App\Modules\Identity\Console\SyncAuthorizationCommand;
+use App\Modules\Identity\Http\Middleware\EnsureUserIsActive;
+use App\Modules\Identity\Http\Middleware\RequirePasswordChange;
 use App\Modules\Identity\Models\User;
+use App\Modules\Identity\Policies\UserPolicy;
 use App\Shared\Providers\ModuleServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\Rules\Password;
 use Laravel\Sanctum\Sanctum;
 
 /**
@@ -22,6 +28,16 @@ class IdentityServiceProvider extends ModuleServiceProvider
     /** Intentos de login por dirección IP, por minuto, para cualquier email. */
     public const LOGIN_ATTEMPTS_PER_IP = 20;
 
+    /** Intentos de cambio de la propia contraseña por usuario, por minuto. */
+    public const PASSWORD_CHANGE_ATTEMPTS = 5;
+
+    /** Largo mínimo de una contraseña (Password::defaults()). */
+    public const PASSWORD_MIN_LENGTH = 12;
+
+    protected array $policies = [
+        User::class => UserPolicy::class,
+    ];
+
     protected array $uniqueConstraintFields = [
         'users_email_unique' => 'email',
     ];
@@ -32,7 +48,13 @@ class IdentityServiceProvider extends ModuleServiceProvider
 
         $this->disableTokenAuthentication();
         $this->registerLoginRateLimiter();
+        $this->registerPasswordChangeRateLimiter();
         $this->registerMorphAliases();
+        $this->registerAccountStateMiddleware();
+
+        Route::model('user', User::class);
+
+        Password::defaults(fn (): Password => Password::min(self::PASSWORD_MIN_LENGTH)->max(255));
 
         if ($this->app->runningInConsole()) {
             $this->commands([SyncAuthorizationCommand::class]);
@@ -74,5 +96,33 @@ class IdentityServiceProvider extends ModuleServiceProvider
                 Limit::perMinute(self::LOGIN_ATTEMPTS_PER_IP)->by('login:ip:'.$ip),
             ];
         });
+    }
+
+    /**
+     * Contra la adivinación de la contraseña actual desde una sesión abierta y
+     * desatendida.
+     */
+    private function registerPasswordChangeRateLimiter(): void
+    {
+        RateLimiter::for('password-change', function (Request $request): Limit {
+            $user = $request->user();
+            $key = $user instanceof User ? (string) $user->id : (string) $request->ip();
+
+            return Limit::perMinute(self::PASSWORD_CHANGE_ATTEMPTS)->by('password-change:'.$key);
+        });
+    }
+
+    /**
+     * Estado de la cuenta en cada petición de la API (REG-020, REG-021): una
+     * sesión de un usuario desactivado se cierra con 401, y una con contraseña
+     * inicial o reseteada solo admite cambiarla. Van en el grupo api, después
+     * del middleware de Sanctum que inicia la sesión, para no depender de que
+     * cada módulo los declare en sus rutas.
+     */
+    private function registerAccountStateMiddleware(): void
+    {
+        $router = $this->app->make(Router::class);
+        $router->pushMiddlewareToGroup('api', EnsureUserIsActive::class);
+        $router->pushMiddlewareToGroup('api', RequirePasswordChange::class);
     }
 }

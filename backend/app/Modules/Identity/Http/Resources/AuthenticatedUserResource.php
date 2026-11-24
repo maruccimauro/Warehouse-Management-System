@@ -32,7 +32,7 @@ class AuthenticatedUserResource extends JsonResource
     }
 
     /**
-     * @return array{id: int, name: string, email: string, roles: list<string>, permissions: list<string>, warehouses: list<array{id: int, code: string, name: string}>}
+     * @return array{id: int, name: string, email: string, password_change_required: bool, roles: list<string>, permissions: list<string>, warehouses: list<array{id: int, code: string, name: string}>}
      */
     public function toArray(Request $request): array
     {
@@ -40,6 +40,9 @@ class AuthenticatedUserResource extends JsonResource
             'id' => $this->resource->id,
             'name' => $this->resource->name,
             'email' => $this->resource->email,
+            // Con true, la SPA muestra el cambio de contraseña: el resto de la
+            // API responde 403 PASSWORD_CHANGE_REQUIRED (REG-021).
+            'password_change_required' => $this->resource->password_change_required,
             'roles' => self::sortedNames($this->resource->getRoleNames()),
             'permissions' => self::sortedNames($this->resource->getAllPermissions()->pluck('name')),
             'warehouses' => array_values($this->warehouses
