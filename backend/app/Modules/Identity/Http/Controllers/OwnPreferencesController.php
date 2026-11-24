@@ -19,9 +19,9 @@ use Illuminate\Http\Request;
 /**
  * Preferencias del usuario autenticado (E2.21, ADR-016): parámetros de SU3,
  * favoritos del árbol, idioma y mostrar códigos. Cada usuario solo lee y
- * escribe las suyas, por eso no hay Policy: alcanza con la sesión. Los
- * @var documentan el tipo en OpenAPI, que Scramble no infiere de is_string()
- * sobre los valores leídos de la base (ADR-012).
+ * escribe las suyas, por eso no hay Policy: alcanza con la sesión. Las
+ * anotaciones de tipo de cada respuesta documentan el esquema en OpenAPI, que
+ * Scramble no infiere de is_string() sobre valores de la base (ADR-012).
  */
 final class OwnPreferencesController
 {
