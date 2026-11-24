@@ -8,36 +8,14 @@ use App\Modules\Warehouse\Actions\CreateWarehouse;
 use App\Modules\Warehouse\Enums\LocationStatus;
 use App\Modules\Warehouse\Enums\ZoneType;
 use App\Modules\Warehouse\Models\Location;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Tests\Support\RecordingAuditLogger;
 
 /*
 | Bloqueo y desbloqueo de ubicaciones (E2.04): máquina de estados de Location
 | en domain-model.md, motivo obligatorio y auditoría dentro de la transacción
 | (INV-012, ADR-008). El alcance por depósito se prueba en WarehouseAccessTest.
 */
-
-/**
- * Registra cada llamada con el nivel de transacción del momento, para probar
- * que la auditoría ocurre dentro de la transacción del cambio.
- */
-final class RecordingAuditLogger implements AuditLogger
-{
-    /** @var list<array{action: string, auditable: Model, warehouse_id: int|null, before: array<string, mixed>|null, after: array<string, mixed>|null, transaction_level: int}> */
-    public array $records = [];
-
-    public function record(string $action, Model $auditable, ?int $warehouseId, ?array $before, ?array $after): void
-    {
-        $this->records[] = [
-            'action' => $action,
-            'auditable' => $auditable,
-            'warehouse_id' => $warehouseId,
-            'before' => $before,
-            'after' => $after,
-            'transaction_level' => DB::transactionLevel(),
-        ];
-    }
-}
 
 beforeEach(function () {
     app(SyncRolesAndPermissions::class)();
@@ -172,6 +150,45 @@ describe('unblock', function () {
             ->assertNotFound();
 
         expect($this->location->refresh()->status)->toBe(LocationStatus::Blocked);
+    });
+});
+
+describe('inactive warehouse (REG-015)', function () {
+    it('rejects with 422 blocking or unblocking a location of an inactive warehouse', function (string $action, LocationStatus $current) {
+        $this->location->forceFill(['status' => $current, 'status_reason' => $current === LocationStatus::Blocked ? 'Rack dañado' : null])->save();
+        $this->central->update(['is_active' => false]);
+
+        $this->actingAs($this->supervisor)
+            ->postJson("/api/v1/locations/{$this->location->id}/{$action}", ['reason' => 'Rack dañado'])
+            ->assertStatus(422)
+            ->assertHeader('Content-Type', 'application/problem+json')
+            ->assertJsonPath('code', 'WAREHOUSE_INACTIVE')
+            ->assertJsonPath('detail', __('warehouse.warehouse_inactive.detail', ['code' => 'CENTRAL']))
+            ->assertJsonPath('context', ['warehouse_id' => $this->central->id]);
+
+        expect($this->location->refresh()->status)->toBe($current)
+            ->and($this->audit->records)->toBe([]);
+    })->with([
+        'bloqueo' => ['block', LocationStatus::Active],
+        'desbloqueo' => ['unblock', LocationStatus::Blocked],
+    ]);
+
+    it('checks the warehouse before the state of the location', function () {
+        $this->location->forceFill(['status' => LocationStatus::Counting])->save();
+        $this->central->update(['is_active' => false]);
+
+        $this->actingAs($this->supervisor)
+            ->postJson("/api/v1/locations/{$this->location->id}/block", ['reason' => 'Rack dañado'])
+            ->assertStatus(422)
+            ->assertJsonPath('code', 'WAREHOUSE_INACTIVE');
+    });
+
+    it('keeps the authorization before the warehouse rule', function () {
+        $this->central->update(['is_active' => false]);
+
+        $this->actingAs(userWithAccess(Role::Operator, [$this->central]))
+            ->postJson("/api/v1/locations/{$this->location->id}/block", ['reason' => 'Rack dañado'])
+            ->assertForbidden();
     });
 });
 

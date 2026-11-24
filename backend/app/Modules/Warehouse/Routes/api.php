@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Warehouse\Http\Controllers\LocationController;
+use App\Modules\Warehouse\Http\Controllers\WarehouseController;
 use App\Modules\Warehouse\Http\Controllers\ZoneController;
 use Illuminate\Support\Facades\Route;
 
@@ -9,6 +10,11 @@ use Illuminate\Support\Facades\Route;
 $id = '[1-9][0-9]{0,17}';
 
 Route::middleware('auth:sanctum')->group(function () use ($id) {
+    Route::get('/warehouses', [WarehouseController::class, 'index'])->name('warehouses.index');
+    Route::post('/warehouses', [WarehouseController::class, 'store'])->name('warehouses.store');
+    Route::get('/warehouses/{warehouse}', [WarehouseController::class, 'show'])->where('warehouse', $id)->name('warehouses.show');
+    Route::patch('/warehouses/{warehouse}', [WarehouseController::class, 'update'])->where('warehouse', $id)->name('warehouses.update');
+
     Route::prefix('/warehouses/{warehouse}')->where(['warehouse' => $id])->name('warehouses.')->group(function () {
         Route::get('/zones', [ZoneController::class, 'index'])->name('zones.index');
         Route::post('/zones', [ZoneController::class, 'store'])->name('zones.store');

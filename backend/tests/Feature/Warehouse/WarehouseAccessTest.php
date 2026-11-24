@@ -9,7 +9,6 @@ use App\Modules\Warehouse\Models\Location;
 use App\Modules\Warehouse\Models\Warehouse;
 use App\Modules\Warehouse\Models\Zone;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Route;
 
 /*
 | Alcance por depósito (E2.08, REG-005, ADR-009). Dos niveles, como la
@@ -18,8 +17,7 @@ use Illuminate\Support\Facades\Route;
 | asignación). Fuera del alcance de consulta, 404; visible pero sin operación
 | o sin permiso de la acción, 403.
 |
-| La ruta de prueba de consulta de depósito ejercita la Policy por HTTP hasta
-| que exista el ABM de depósitos; las operaciones usan el bloqueo real de
+| La consulta usa GET /warehouses/{id} y las operaciones, el bloqueo de
 | ubicaciones (E2.04).
 */
 
@@ -28,14 +26,6 @@ beforeEach(function () {
 
     $this->central = app(CreateWarehouse::class)('CENTRAL', 'Depósito central');
     $this->norte = app(CreateWarehouse::class)('NORTE', 'Depósito norte');
-
-    Route::middleware(['api', 'auth:sanctum'])->prefix('api/v1/__tests')->group(function () {
-        Route::get('/warehouses/{warehouse}', function (Warehouse $warehouse) {
-            Gate::authorize('view', $warehouse);
-
-            return ['code' => $warehouse->code];
-        });
-    });
 });
 
 function receivingLocationOf(Warehouse $warehouse): Location
@@ -82,7 +72,7 @@ it('lets the administrator operate in every warehouse without assignments', func
 
 it('answers 404 for a warehouse outside the viewing scope', function () {
     $this->actingAs(userWithAccess(null, [$this->central]))
-        ->getJson("/api/v1/__tests/warehouses/{$this->norte->id}")
+        ->getJson("/api/v1/warehouses/{$this->norte->id}")
         ->assertNotFound()
         ->assertHeader('Content-Type', 'application/problem+json')
         ->assertJsonPath('code', 'NOT_FOUND')
@@ -98,9 +88,9 @@ it('answers 404 to an operation outside the viewing scope', function () {
 
 it('shows a warehouse that is visible but not assigned', function () {
     $this->actingAs(userWithAccess(Role::Operator, [$this->central]))
-        ->getJson("/api/v1/__tests/warehouses/{$this->norte->id}")
+        ->getJson("/api/v1/warehouses/{$this->norte->id}")
         ->assertOk()
-        ->assertJsonPath('code', 'NORTE');
+        ->assertJsonPath('data.code', 'NORTE');
 });
 
 it('answers 403 to an operation in a visible warehouse that is not assigned', function () {

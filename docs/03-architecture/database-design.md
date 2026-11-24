@@ -37,7 +37,7 @@ El DDL de este documento es la referencia que reproducen las migraciones de Lara
 | - | - |
 | Aislamiento | `READ COMMITTED` (predeterminado) con bloqueos explícitos; la disponibilidad se valida después de bloquear ([ADR-003](adr/003-pessimistic-concurrency-control.md)) |
 | Reintentos | `DB::transaction($callback, 3)` ante deadlock y falla de serialización ([ADR-004](adr/004-concurrency-retries.md)) |
-| Orden global de bloqueo | 1) cabecera del documento raíz (`FOR UPDATE`); 2) documentos dependientes y líneas, por `id` ascendente; 3) ubicaciones (`FOR SHARE` para mover, `FOR UPDATE` para cambiar su estado), por `id`; 4) filas de `stocks` (`FOR UPDATE`), por `id` en una sola consulta |
+| Orden global de bloqueo | 0) fila del depósito (`FOR SHARE` para operar, `FOR NO KEY UPDATE` para desactivarlo, REG-015); 1) cabecera del documento raíz (`FOR UPDATE`); 2) documentos dependientes y líneas, por `id` ascendente; 3) ubicaciones (`FOR SHARE` para mover, `FOR UPDATE` para cambiar su estado), por `id`; 4) filas de `stocks` (`FOR UPDATE`), por `id` en una sola consulta |
 | Cola de picking | `GET /picking-tasks/next` toma la tarea con `FOR UPDATE SKIP LOCKED` para que dos operadores no compitan por la misma |
 
 El orden 3 antes de 4 es el de [ADR-003](adr/003-pessimistic-concurrency-control.md), corregido en E0.08. Con el orden inverso, la aprobación de un inventario físico (que bloquea ubicaciones y luego existencias) y un movimiento concurrente sobre esas ubicaciones (que bloquea existencias y luego ubicaciones) forman un ciclo que PostgreSQL resuelve abortando una de las dos transacciones. Con un único orden jerárquico, ubicación antes que existencia, el ciclo no puede formarse.

@@ -74,6 +74,7 @@ Todo recurso que pertenece a un depósito respeta REG-005 con `App\Modules\Ident
 
 - El modelo usa el trait `App\Modules\Warehouse\Models\Concerns\ScopedByWarehouse`, que da los scopes `visibleTo($user)` para listados y `operableBy($user)` para elegir dónde operar. Si la columna no es `warehouse_id`, el modelo redefine `warehouseScopeColumn()`.
 - La Policy devuelve `authorizeView()` para consultar y `authorizeOperation()` con el permiso de la acción para operar. El orden es 404 fuera del alcance de consulta, 403 sin operación en el depósito y 403 sin el permiso.
+- Toda Action que opera sobre un depósito (movimientos, documentos, bloqueo de ubicaciones) llama primero, dentro de su transacción, a `App\Modules\Warehouse\Actions\LockActiveWarehouse`: toma la fila del depósito con `FOR SHARE` (nivel 0 de ADR-003) y responde 422 `WAREHOUSE_INACTIVE` si está inactivo (REG-015). El mantenimiento de zonas y ubicaciones no es una operación y no la llama.
 
 ## Auditoría
 
@@ -81,7 +82,8 @@ Las operaciones críticas (INV-012) se auditan con el contrato `App\Modules\Audi
 
 - La Action lo recibe por inyección y llama a `record()` dentro de su `DB::transaction`, después de aplicar el cambio, con la acción en la forma `entidad.verbo` (`location.blocked`) y los valores afectados antes y después como valores planos.
 - El modelo auditado necesita un alias en el morph map, que el provider de su módulo registra con `Relation::morphMap()`: Identity activa `enforceMorphMap`.
-- Hasta E3 el binding es `NullAuditLogger`; E3 crea `audit_logs` con su trigger de inmutabilidad y reemplaza el binding sin tocar las Actions. Las pruebas reemplazan el contrato por un registro en memoria para verificar que se audita dentro de la transacción.
+- Acciones registradas: `location.blocked`, `location.unblocked`, `warehouse.activated` y `warehouse.deactivated`.
+- Hasta E3 el binding es `NullAuditLogger`; E3 crea `audit_logs` con su trigger de inmutabilidad y reemplaza el binding sin tocar las Actions. Las pruebas reemplazan el contrato por `Tests\Support\RecordingAuditLogger`, un registro en memoria que verifica que se audita dentro de la transacción.
 
 ## Reglas
 

@@ -11,16 +11,22 @@ use Illuminate\Support\Facades\DB;
 /**
  * Desbloqueo de una ubicación (domain-model.md, máquina de estados de
  * Location; INV-012). Solo desde blocked, con FOR UPDATE como BlockLocation;
- * desde otro estado, 409 INVALID_STATE_TRANSITION. El motivo del bloqueo se
- * limpia de la ubicación y queda en el registro de auditoría.
+ * desde otro estado, 409 INVALID_STATE_TRANSITION. En un depósito inactivo,
+ * 422 WAREHOUSE_INACTIVE (REG-015): se reactiva el depósito y después se
+ * desbloquea. El motivo del bloqueo se limpia de la ubicación y queda en el
+ * registro de auditoría.
  */
 final class UnblockLocation
 {
-    public function __construct(private readonly AuditLogger $audit) {}
+    public function __construct(
+        private readonly AuditLogger $audit,
+        private readonly LockActiveWarehouse $lockActiveWarehouse,
+    ) {}
 
     public function __invoke(Location $location): Location
     {
         return DB::transaction(function () use ($location): Location {
+            ($this->lockActiveWarehouse)($location->warehouse_id);
             $location = Location::query()->lockForUpdate()->findOrFail($location->id);
 
             if ($location->status !== LocationStatus::Blocked) {

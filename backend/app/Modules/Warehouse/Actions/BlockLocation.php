@@ -20,17 +20,24 @@ use Illuminate\Support\Facades\DB;
  * - El motivo queda en status_reason; la base lo exige con
  *   locations_blocked_reason_check.
  *
+ * Es una operación del depósito: si está inactivo, 422 WAREHOUSE_INACTIVE
+ * (REG-015). El depósito se bloquea primero con FOR SHARE (ADR-003, nivel 0).
+ *
  * La fila se bloquea con FOR UPDATE y el estado se valida después de obtener
  * el bloqueo, para que un bloqueo y una desactivación o un inicio de
  * inventario simultáneos no partan del mismo estado.
  */
 final class BlockLocation
 {
-    public function __construct(private readonly AuditLogger $audit) {}
+    public function __construct(
+        private readonly AuditLogger $audit,
+        private readonly LockActiveWarehouse $lockActiveWarehouse,
+    ) {}
 
     public function __invoke(Location $location, string $reason): Location
     {
         return DB::transaction(function () use ($location, $reason): Location {
+            ($this->lockActiveWarehouse)($location->warehouse_id);
             $location = Location::query()->lockForUpdate()->findOrFail($location->id);
 
             if ($location->status !== LocationStatus::Active) {

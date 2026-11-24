@@ -160,6 +160,7 @@ Reglas de negocio que no son invariantes del inventario pero se aplican con el m
 | REG-012 | Toda operación es reversible, como en SAP: las de un documento solo desde el documento, que corrige su estado y sus cantidades; las transferencias y los ajustes desde el libro. La reversión es por posición y por cantidad, repetible hasta agotar el saldo de cada posición; revertir el documento completo es revertir todas sus posiciones por el saldo. Se revierte en orden inverso de la cadena, aplicado por cantidad, con usuario, motivo y permiso `*.reverse` | 409 `OPERATION_NOT_REVERSIBLE`. 409 `DEPENDENT_DOCUMENTS_NOT_REVERSED`. 422 `REVERSAL_EXCEEDS_REMAINING` | E3 a E6 |
 | REG-013 | Un inventario físico no se inicia sobre ubicaciones con reservas activas sin confirmación explícita, porque congelarlas impediría pickear esos pedidos | 409 `LOCATION_HAS_ACTIVE_RESERVATIONS` | E6 |
 | REG-014 | Ni una transferencia manual ni un ajuste positivo manual tienen como destino una ubicación de sistema (RECEPCION, PACKING o DESPACHO); solo sus documentos cargan esas ubicaciones. Los ajustes negativos sí se admiten. Se valida en `TransferStock` y `AdjustStock` | 422 `SYSTEM_LOCATION_NOT_ALLOWED` | E3 |
+| REG-015 | Un depósito inactivo no admite operaciones: movimientos, recepciones, pedidos, inventarios físicos ni bloqueo o desbloqueo de ubicaciones. Se consulta con su historial y admite el mantenimiento de zonas y ubicaciones. Se desactiva solo sin stock ni documentos abiertos, condición que cada etapa valida en `UpdateWarehouse` cuando existe su tabla; la reactivación no tiene condiciones. Toda operación empieza con `LockActiveWarehouse`, que toma la fila del depósito con `FOR SHARE` (nivel 0 de [ADR-003](../03-architecture/adr/003-pessimistic-concurrency-control.md)); la desactivación la toma con `FOR NO KEY UPDATE` y se audita. Equivale a la marca para borrado de SAP: el objeto queda para el historial y no acepta contabilizaciones nuevas | 422 `WAREHOUSE_INACTIVE`. 409 `WAREHOUSE_NOT_EMPTY` | E2 a E6 |
 
 ## Catálogo de códigos de error de dominio
 
@@ -186,6 +187,8 @@ Reglas de negocio que no son invariantes del inventario pero se aplican con el m
 | `RECOUNT_REQUIRED` | 409 | REG-011 |
 | `LOCATION_HAS_ACTIVE_RESERVATIONS` | 409 | REG-013 |
 | `SYSTEM_LOCATION_NOT_ALLOWED` | 422 | REG-014 |
+| `WAREHOUSE_INACTIVE` | 422 | REG-015 |
+| `WAREHOUSE_NOT_EMPTY` | 409 | REG-015 (desde E3) |
 | `CONCURRENCY_CONFLICT` | 503 | ADR-004 |
 | `VALUE_ALREADY_EXISTS` | 422 | Unicidad de códigos de datos maestros (código de depósito, de zona y de ubicación por depósito, email de usuario; SKU, código de barras y CUIT desde E2.05 y E2.06). Respaldo de la validación ante una carrera; `context.field` indica el campo |
 | `INVALID_CREDENTIALS` | 422 | ADR-009 |
