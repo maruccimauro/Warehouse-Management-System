@@ -97,9 +97,14 @@ jobs:
 
       # La especificación versionada (ADR-012) tiene que coincidir con la que
       # genera el código: un cambio de contrato sin regenerarla falla acá.
+      # Scramble lee las columnas de los modelos desde la base, por eso se
+      # migra antes; el servicio solo crea wms_testing.
       - name: Especificación OpenAPI al día
         if: ${{ !cancelled() && steps.env.conclusion == 'success' }}
+        env:
+          DB_DATABASE: wms_testing
         run: |
+          php artisan migrate --force --no-interaction
           composer openapi
           git diff --exit-code -- ../docs/03-architecture/openapi.json
 
