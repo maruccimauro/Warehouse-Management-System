@@ -95,6 +95,23 @@
     }
   }
 
+  /* Confirmación modal (shared/ui/ConfirmDialog.tsx) sobre <dialog> nativo. overscroll-behavior
+     en el diálogo y en ::backdrop (que necesita overflow para ser contenedor de scroll) evita
+     que el desplazamiento llegue a la página de abajo, sin bloquear el scroll de html o body. */
+  .confirm-dialog {
+    @apply m-auto w-[min(32rem,calc(100vw-2rem))] rounded-sm border border-border-strong bg-surface p-0 text-ink shadow-lg;
+  }
+
+  .confirm-dialog:modal {
+    overscroll-behavior: contain;
+  }
+
+  .confirm-dialog::backdrop {
+    overflow: hidden;
+    overscroll-behavior: contain;
+    background-color: rgb(28 43 58 / 0.35);
+  }
+
   /* Menú contextual (shared/ui/ContextMenu.tsx). El ancla es un punto invisible en la
      posición del clic: con anclaje por CSS el menú se abre con su esquina ahí y se da vuelta
      si no entra; sin anclaje lo ubica el script. */

@@ -1,7 +1,6 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useMatch, useNavigate } from 'react-router';
-import { findTransaction } from '@/app/transactions';
 import { useLogout } from '@/features/auth/session';
 import { useAuthenticatedUser } from '@/features/auth/useAuthenticatedUser';
 import { useUserPreferences } from '@/features/preferences/userPreferences';
@@ -18,9 +17,13 @@ import { StandardToolbar } from './StandardToolbar';
 import { StatusBar } from './StatusBar';
 import { errorMessage, useStatusBar } from './statusMessages';
 import { StatusBarProvider } from './StatusBarProvider';
+import type { TransactionOutletContext } from './TransactionScreen';
 import { TransactionTree } from './TransactionTree';
+import { useUnsavedChangesContext } from './unsavedChanges';
+import { UnsavedChangesProvider } from './UnsavedChangesProvider';
 import { useFavoriteToggle } from './useFavoriteToggle';
 import { useShellKeyboard } from './useShellKeyboard';
+import { useTransactionAccess } from './useTransactionAccess';
 
 const headingId = 'main-heading';
 
@@ -31,6 +34,7 @@ function UserMenu() {
   const user = useAuthenticatedUser();
   const logoutMutation = useLogout();
   const { show } = useStatusBar();
+  const { confirmDiscard } = useUnsavedChangesContext();
 
   return (
     <div className="flex items-center gap-3">
@@ -43,10 +47,13 @@ function UserMenu() {
         className="min-h-7 rounded-sm px-2 text-shell-fg hover:bg-shell-raised disabled:opacity-60 pointer-coarse:min-h-11"
         disabled={logoutMutation.isPending}
         onClick={() => {
-          logoutMutation.mutate(undefined, {
-            onError: (error) => {
-              show(errorMessage(error, t('codes.UNKNOWN', { ns: 'errors' })));
-            },
+          // Como el cierre de sesión de SAP, con datos sin grabar pide confirmación.
+          confirmDiscard(() => {
+            logoutMutation.mutate(undefined, {
+              onError: (error) => {
+                show(errorMessage(error, t('codes.UNKNOWN', { ns: 'errors' })));
+              },
+            });
           });
         }}
       >
@@ -62,6 +69,7 @@ function ShellLayout() {
   const navigate = useNavigate();
   const { available, run } = useShellActions();
   const { preferences } = useUserPreferences();
+  const { allowed } = useTransactionAccess();
   const toggleFavorite = useFavoriteToggle();
   const workAreaMenu = useContextMenu<true>();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -70,7 +78,8 @@ function ShellLayout() {
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   const match = useMatch('/t/:code');
-  const transaction = match?.params.code === undefined ? undefined : findTransaction(match.params.code);
+  // Una ruta sin autorización la rechaza TransactionScreen; acá no se muestra su título.
+  const transaction = match?.params.code === undefined ? undefined : allowed(match.params.code);
   const code = transaction?.code;
   const title = transaction === undefined ? t('menuTitle') : t(transaction.titleKey, { ns: 'transactions' });
   const inTransaction = transaction !== undefined;
@@ -95,21 +104,27 @@ function ShellLayout() {
   }, [code, closeWorkAreaMenu]);
 
   // Al cambiar de transacción el foco va al primer campo editable, como el cursor de SAP
-  // GUI, o al título si la pantalla no tiene campos. En la carga inicial no se mueve.
-  const previousCode = useRef(code);
+  // GUI, o al título si la pantalla no tiene campos. En la carga inicial no se mueve. Con
+  // la carga diferida, el foco espera a que TransactionScreen avise que el contenido está.
+  const [readyCode, setReadyCode] = useState<string | undefined>(undefined);
+  const focusedFor = useRef(code);
+  const onTransactionReady = useCallback((ready: string | undefined) => {
+    setReadyCode(ready);
+  }, []);
+  const outletContext = useMemo<TransactionOutletContext>(() => ({ onTransactionReady }), [onTransactionReady]);
 
   useEffect(() => {
-    if (previousCode.current === code) {
+    if (focusedFor.current === code || (code !== undefined && readyCode !== code)) {
       return;
     }
 
-    previousCode.current = code;
+    focusedFor.current = code;
     const firstField = mainRef.current?.querySelector<HTMLElement>(
       'input:not([disabled]), select:not([disabled]), textarea:not([disabled])',
     );
 
     (firstField ?? headingRef.current)?.focus();
-  }, [code]);
+  }, [code, readyCode]);
 
   const defaultWarehouse = user.warehouses.find((warehouse) => warehouse.code === preferences.parameters.LGN)?.code;
   const isFavorite = code !== undefined && preferences.favorites.includes(code);
@@ -237,7 +252,7 @@ function ShellLayout() {
             </h1>
           </div>
           <div className="p-4">
-            <Outlet />
+            <Outlet context={outletContext} />
           </div>
           <ContextMenu
             label={t('contextMenu.workAreaLabel')}
@@ -262,7 +277,9 @@ export function AppShell() {
     <UserPreferencesProvider key={user.id} userId={user.id}>
       <StatusBarProvider>
         <ShellActionsProvider>
-          <ShellLayout />
+          <UnsavedChangesProvider>
+            <ShellLayout />
+          </UnsavedChangesProvider>
         </ShellActionsProvider>
       </StatusBarProvider>
     </UserPreferencesProvider>

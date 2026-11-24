@@ -1,26 +1,28 @@
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { findTransaction, transactions } from '@/app/transactions';
 import { useUserPreferences } from '@/features/preferences/userPreferences';
 import { Icon } from '@/shared/ui/icons';
 import { openInNewWindow, parseCommand, transactionPath } from './command';
 import { useStatusBar } from './statusMessages';
+import { useTransactionAccess } from './useTransactionAccess';
 
 export function CommandField() {
   const { t } = useTranslation(['shell', 'transactions']);
   const navigate = useNavigate();
   const { show, clear } = useStatusBar();
   const { preferences, addToHistory } = useUserPreferences();
+  const { resolve, allowed, allowedTransactions } = useTransactionAccess();
   const [value, setValue] = useState('');
   const id = useId();
   const listId = `${id}-transactions`;
 
   // Sugerencias: primero el historial del usuario, después el resto de las transacciones.
-  const history = preferences.commandHistory.filter((code) => findTransaction(code) !== undefined);
+  // Solo las que el usuario puede abrir.
+  const history = preferences.commandHistory.filter((code) => allowed(code) !== undefined);
   const suggestions = [
     ...history,
-    ...transactions.map((transaction) => transaction.code).filter((code) => !history.includes(code)),
+    ...allowedTransactions.map((transaction) => transaction.code).filter((code) => !history.includes(code)),
   ];
 
   const execute = () => {
@@ -45,8 +47,11 @@ export function CommandField() {
 
         return;
       case 'open': {
-        if (findTransaction(command.code) === undefined) {
-          show({ type: 'E', text: t('command.unknownTransaction', { code: command.code }) });
+        const access = resolve(command.code);
+
+        if (access.status !== 'allowed') {
+          const key = access.status === 'unknown' ? 'command.unknownTransaction' : 'command.notAuthorized';
+          show({ type: 'E', text: t(key, { code: command.code }) });
 
           return;
         }
@@ -90,7 +95,7 @@ export function CommandField() {
       />
       <datalist id={listId}>
         {suggestions.map((code) => {
-          const transaction = findTransaction(code);
+          const transaction = allowed(code);
 
           return (
             <option key={code} value={code}>

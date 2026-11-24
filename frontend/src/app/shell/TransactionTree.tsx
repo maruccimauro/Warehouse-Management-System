@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
-import { findTransaction, menuTree, type MenuNode } from '@/app/transactions';
+import { menuTree, type MenuNode } from '@/app/transactions';
 import { useUserPreferences } from '@/features/preferences/userPreferences';
 import { ContextMenu } from '@/shared/ui/ContextMenu';
 import { keepsNativeContextMenu, type ContextMenuItem } from '@/shared/ui/contextMenuItems';
@@ -9,6 +9,7 @@ import { Icon } from '@/shared/ui/icons';
 import { useContextMenu } from '@/shared/ui/useContextMenu';
 import { openInNewWindow, transactionPath } from './command';
 import { useFavoriteToggle } from './useFavoriteToggle';
+import { useTransactionAccess } from './useTransactionAccess';
 
 const favoritesId = 'favorites';
 const menuRootKey = 'menu';
@@ -44,6 +45,7 @@ export function TransactionTree({ currentCode }: TransactionTreeProps) {
   const { t } = useTranslation(['shell', 'transactions']);
   const { preferences, setShowTechnicalNames } = useUserPreferences();
   const toggleFavorite = useFavoriteToggle();
+  const { allowed } = useTransactionAccess();
   const navigate = useNavigate();
   const treeMenu = useContextMenu<TreeMenuTarget>();
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set(allFolders));
@@ -250,7 +252,7 @@ export function TransactionTree({ currentCode }: TransactionTreeProps) {
   const label = (code: string, title: string) => (preferences.showTechnicalNames ? `${code} ${title}` : title);
 
   const renderTransaction = (code: string, key: string) => {
-    const transaction = findTransaction(code);
+    const transaction = allowed(code);
 
     if (transaction === undefined) {
       return null;
@@ -324,18 +326,28 @@ export function TransactionTree({ currentCode }: TransactionTreeProps) {
     );
   };
 
-  const renderNode = (node: MenuNode, path: string): ReactNode =>
-    node.kind === 'folder'
+  // Una carpeta sin transacciones permitidas no se muestra, como el menú de roles de SAP.
+  const hasAllowed = (node: MenuNode): boolean =>
+    node.kind === 'folder' ? node.children.some(hasAllowed) : allowed(node.code) !== undefined;
+
+  const renderNode = (node: MenuNode, path: string): ReactNode => {
+    if (!hasAllowed(node)) {
+      return null;
+    }
+
+    return node.kind === 'folder'
       ? renderFolder(
           node.id,
           t(node.labelKey, { ns: 'transactions' }),
           'folder',
           () => node.children.map((child) => renderNode(child, `${path}/${node.id}`)),
-          node.children.length === 0,
+          false,
         )
       : renderTransaction(node.code, `${path}/${node.code}`);
+  };
 
-  const favorites = preferences.favorites.filter((code) => findTransaction(code) !== undefined);
+  // Un favorito sin autorización se conserva por si el permiso vuelve, pero no se muestra.
+  const favorites = preferences.favorites.filter((code) => allowed(code) !== undefined);
 
   return (
     <div className="flex h-full flex-col">

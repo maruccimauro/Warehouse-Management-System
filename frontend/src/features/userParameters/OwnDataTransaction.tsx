@@ -2,6 +2,7 @@ import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useShellActions, useTransactionActions } from '@/app/shell/shellActions';
 import { useStatusBar } from '@/app/shell/statusMessages';
+import { useUnsavedChanges } from '@/app/shell/unsavedChanges';
 import { useAuthenticatedUser } from '@/features/auth/useAuthenticatedUser';
 import { useUserPreferences } from '@/features/preferences/userPreferences';
 
@@ -23,7 +24,10 @@ export function OwnDataTransaction() {
   // Un depósito guardado que ya no está asignado no se ofrece como valor.
   const assignedCodes = new Set(user.warehouses.map((warehouse) => warehouse.code));
   const savedLgn = preferences.parameters.LGN;
-  const [lgn, setLgn] = useState(savedLgn !== undefined && assignedCodes.has(savedLgn) ? savedLgn : '');
+  const savedValue = savedLgn !== undefined && assignedCodes.has(savedLgn) ? savedLgn : '';
+  const [lgn, setLgn] = useState(savedValue);
+
+  useUnsavedChanges(lgn !== savedValue);
 
   useTransactionActions({
     save: () => {

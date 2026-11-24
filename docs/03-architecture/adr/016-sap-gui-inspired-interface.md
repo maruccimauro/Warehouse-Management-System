@@ -43,6 +43,18 @@ La interfaz necesita una dirección visual y de interacción común antes de que
 
 F5, F11 y F12 no se interceptan: recargar, pantalla completa y herramientas de desarrollo son del navegador y no se pueden capturar de forma confiable. Cancelar (F12 en SAP) queda como botón.
 
+### Registro de transacciones y acceso
+
+Desde E2.20 cada transacción del registro (`frontend/src/app/transactions.ts`) declara el permiso de negocio que exige abrirla (`catalog.manage` para `MM01`, por ejemplo) o `null` si basta con tener sesión. No se usa un permiso propio por transacción como el objeto `S_TCODE` de SAP: en SAP abrir la pantalla y operar en ella son dos autorizaciones, lo que permite la combinación de abrir `MM01` y recibir un rechazo en cada grabación. Con un único permiso, lo que la interfaz muestra coincide con lo que el backend deja hacer.
+
+- El árbol, las sugerencias del campo de comando y los favoritos muestran solo las transacciones permitidas según `me.permissions`; una carpeta sin transacciones permitidas no se muestra. Un favorito sin autorización se conserva por si el permiso vuelve.
+- Como en SAP, una transacción inexistente y una sin autorización dan mensajes distintos en la barra de estado (tipo E). Una ruta `/t/CÓDIGO` sin autorización vuelve al menú con ese mensaje. Ocultar es usabilidad: el backend autoriza cada operación.
+- Cada transacción se carga en diferido (`React.lazy` con `import()`) y las dependencias van en chunks propios (`codeSplitting` de Rolldown en `vite.config.ts`), que el navegador conserva en caché entre despliegues. Un chunk que no carga, por ejemplo en una pestaña abierta durante un despliegue, muestra un error con la opción de recargar sin romper el armazón.
+
+### Datos sin grabar
+
+Equivale a `POPUP_TO_CONFIRM_LOSS_OF_DATA` de SAP. La transacción declara si tiene cambios (`useUnsavedChanges`) y el armazón intercepta toda salida: F3, Mayús+F3, `/n`, el árbol, el botón Atrás del navegador (`useBlocker` del router), el cierre de sesión y el cierre o la recarga de la pestaña (`beforeunload`, con el aviso propio del navegador). El diálogo es un `<dialog>` modal nativo con dos acciones, "Salir sin grabar" y "Seguir editando"; el foco inicial va a la segunda, que es la acción segura. No se ofrece "Grabar y salir" como tercer botón: grabar puede fallar por validación y encadenar grabación y salida suma estados de error sin un formulario que lo necesite todavía. `/o` abre otra ventana y no pasa por el aviso.
+
 ### Códigos de transacción
 
 Se usa el código de SAP donde la transacción tiene equivalente y el rango `ZW` para las propias, con la misma regla que ADR-014 aplica a los movimientos (`Z` es el espacio de nombres de cliente en SAP). La tabla es indicativa: cada etapa confirma sus códigos al implementar la pantalla y la página de referencia de la wiki documenta en qué se aparta cada una de su par de SAP.

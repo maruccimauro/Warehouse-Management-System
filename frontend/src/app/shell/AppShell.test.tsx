@@ -40,7 +40,10 @@ describe('armazón: campo de comando', () => {
     await runCommand('su3');
 
     expect(heading()).toHaveTextContent('Parámetros de usuario');
-    expect(screen.getByLabelText('LGN')).toHaveFocus();
+    // La transacción se carga en diferido: el foco llega cuando su contenido está en el DOM.
+    await waitFor(() => {
+      expect(screen.getByLabelText('LGN')).toHaveFocus();
+    });
     expect(statusBar().getByText('SU3')).toBeInTheDocument();
     expect(document.title).toBe('SU3 Parámetros de usuario · WMS');
     expect(screen.getByLabelText('Campo de comando')).toHaveValue('');

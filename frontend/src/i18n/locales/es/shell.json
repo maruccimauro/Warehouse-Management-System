@@ -12,7 +12,8 @@
     "label": "Campo de comando",
     "confirm": "Confirmar",
     "unknownTransaction": "La transacción {{code}} no existe.",
-    "invalid": "El comando {{command}} no es válido. Use un código de transacción, /n, /nCÓDIGO u /oCÓDIGO."
+    "invalid": "El comando {{command}} no es válido. Use un código de transacción, /n, /nCÓDIGO u /oCÓDIGO.",
+    "notAuthorized": "No tiene autorización para la transacción {{code}}."
   },
   "toolbar": {
     "label": "Barra de herramientas estándar",
@@ -56,5 +57,16 @@
     "collapse": "Contraer",
     "expandAll": "Expandir todo",
     "collapseAll": "Contraer todo"
+  },
+  "transaction": {
+    "loading": "Cargando la transacción…",
+    "loadFailed": "No fue posible cargar la transacción {{code}}. Si se publicó una versión nueva del sistema, recargue la página.",
+    "reload": "Recargar la página"
+  },
+  "unsavedChanges": {
+    "title": "Salir sin grabar",
+    "message": "Los datos que no se grabaron se perderán. ¿Desea salir de todos modos?",
+    "discard": "Salir sin grabar",
+    "keepEditing": "Seguir editando"
   }
 }
