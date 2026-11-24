@@ -34,7 +34,9 @@ app/Modules/{Nombre}/
 ├── Http/Resources/               forma pública de cada modelo en la API
 ├── Models/
 ├── Policies/                     declaradas en $policies del provider
-├── Services/                     implementaciones de los contratos, enlazadas en el provider
+├── Rules/                        reglas de validación propias del dominio (código de barras)
+├── Services/                     implementaciones de los contratos, enlazadas en el provider, y
+│                                 servicios de dominio que comparten varias Actions (CategoryHierarchy)
 └── Routes/api.php                registrado bajo /api/v1 con el grupo de middleware api
 ```
 
@@ -82,7 +84,7 @@ Las operaciones críticas (INV-012) se auditan con el contrato `App\Modules\Audi
 
 - La Action lo recibe por inyección y llama a `record()` dentro de su `DB::transaction`, después de aplicar el cambio, con la acción en la forma `entidad.verbo` (`location.blocked`) y los valores afectados antes y después como valores planos.
 - El modelo auditado necesita un alias en el morph map, que el provider de su módulo registra con `Relation::morphMap()`: Identity activa `enforceMorphMap`.
-- Acciones registradas: `location.blocked`, `location.unblocked`, `warehouse.activated` y `warehouse.deactivated`.
+- Acciones registradas: `location.blocked`, `location.unblocked`, `warehouse.activated`, `warehouse.deactivated` y `product.status_changed` (sin depósito: el catálogo es global).
 - Hasta E3 el binding es `NullAuditLogger`; E3 crea `audit_logs` con su trigger de inmutabilidad y reemplaza el binding sin tocar las Actions. Las pruebas reemplazan el contrato por `Tests\Support\RecordingAuditLogger`, un registro en memoria que verifica que se audita dentro de la transacción.
 
 ## Reglas

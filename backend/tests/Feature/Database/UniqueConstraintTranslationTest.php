@@ -1,5 +1,8 @@
 <?php
 
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\UnitOfMeasure;
 use App\Modules\Identity\Models\User;
 use App\Modules\Warehouse\Actions\CreateWarehouse;
 use App\Modules\Warehouse\Models\Warehouse;
@@ -53,6 +56,27 @@ it('translates the unique constraints of E2 to VALUE_ALREADY_EXISTS with the for
         User::factory()->create(['email' => 'duplicado@wms.test']);
         User::factory()->create(['email' => 'duplicado@wms.test']);
     }, 'email'],
+    'nombre de categoría raíz' => [function (): void {
+        Category::query()->create(['name' => 'Ferretería']);
+        Category::query()->create(['name' => 'Ferretería']);
+    }, 'name'],
+    'nombre de categoría por padre' => [function (): void {
+        $parent = Category::query()->create(['name' => 'Ferretería']);
+        Category::query()->create(['name' => 'Tornillería', 'parent_id' => $parent->id]);
+        Category::query()->create(['name' => 'Tornillería', 'parent_id' => $parent->id]);
+    }, 'name'],
+    'código de unidad de medida' => [function (): void {
+        UnitOfMeasure::query()->create(['code' => 'UN', 'name' => 'Unidad']);
+        UnitOfMeasure::query()->create(['code' => 'UN', 'name' => 'Otra']);
+    }, 'code'],
+    'SKU' => [function (): void {
+        Product::factory()->create(['sku' => 'TOR-M6-30']);
+        Product::factory()->create(['sku' => 'TOR-M6-30']);
+    }, 'sku'],
+    'código de barras' => [function (): void {
+        Product::factory()->create(['barcode' => '7790000000010']);
+        Product::factory()->create(['barcode' => '7790000000010']);
+    }, 'barcode'],
 ]);
 
 it('allows the same zone and location code in different warehouses', function () {

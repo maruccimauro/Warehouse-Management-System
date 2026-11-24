@@ -161,6 +161,8 @@ Reglas de negocio que no son invariantes del inventario pero se aplican con el m
 | REG-013 | Un inventario físico no se inicia sobre ubicaciones con reservas activas sin confirmación explícita, porque congelarlas impediría pickear esos pedidos | 409 `LOCATION_HAS_ACTIVE_RESERVATIONS` | E6 |
 | REG-014 | Ni una transferencia manual ni un ajuste positivo manual tienen como destino una ubicación de sistema (RECEPCION, PACKING o DESPACHO); solo sus documentos cargan esas ubicaciones. Los ajustes negativos sí se admiten. Se valida en `TransferStock` y `AdjustStock` | 422 `SYSTEM_LOCATION_NOT_ALLOWED` | E3 |
 | REG-015 | Un depósito inactivo no admite operaciones: movimientos, recepciones, pedidos, inventarios físicos ni bloqueo o desbloqueo de ubicaciones. Se consulta con su historial y admite el mantenimiento de zonas y ubicaciones. Se desactiva solo sin stock ni documentos abiertos, condición que cada etapa valida en `UpdateWarehouse` cuando existe su tabla; la reactivación no tiene condiciones. Toda operación empieza con `LockActiveWarehouse`, que toma la fila del depósito con `FOR SHARE` (nivel 0 de [ADR-003](../03-architecture/adr/003-pessimistic-concurrency-control.md)); la desactivación la toma con `FOR NO KEY UPDATE` y se audita. Equivale a la marca para borrado de SAP: el objeto queda para el historial y no acepta contabilizaciones nuevas | 422 `WAREHOUSE_INACTIVE`. 409 `WAREHOUSE_NOT_EMPTY` | E2 a E6 |
+| REG-016 | La jerarquía de categorías no tiene ciclos de ningún nivel y tiene hasta 5 niveles, contando la raíz. El nombre es único entre las hijas de un mismo padre, también entre las raíces. Mover una categoría arrastra su subárbol: el nuevo padre no puede ser ella ni una descendiente, y la rama movida no puede pasar del nivel 5. Todo cambio de estructura se valida con el árbol bloqueado (`CategoryHierarchy`, [ADR-003](../03-architecture/adr/003-pessimistic-concurrency-control.md)). Las categorías no se borran | 422 `CATEGORY_HIERARCHY_CYCLE`. 422 `CATEGORY_HIERARCHY_TOO_DEEP` | E2 |
+| REG-017 | El estado del producto define qué operaciones admite, como el estado de material (`MSTAE`) de SAP. `active` admite todo. `discontinued` rechaza documentos nuevos (orden de compra, pedido) y deja terminar lo abierto (recepción de una orden aprobada, picking, despacho, ajustes, inventario físico) para agotar el stock. `blocked` rechaza todo movimiento salvo el inventario físico y los ajustes, que sirven para corregir. Las transiciones son libres y se auditan (`product.status_changed`). Cada etapa valida el estado en sus Actions leyendo el producto con `FOR SHARE`; `UpdateProduct` lo cambia con `FOR NO KEY UPDATE` | 422 `PRODUCT_NOT_OPERABLE`, con el estado en `context` | E2 (estados), E3 a E6 (validación) |
 
 ## Catálogo de códigos de error de dominio
 
@@ -189,6 +191,9 @@ Reglas de negocio que no son invariantes del inventario pero se aplican con el m
 | `SYSTEM_LOCATION_NOT_ALLOWED` | 422 | REG-014 |
 | `WAREHOUSE_INACTIVE` | 422 | REG-015 |
 | `WAREHOUSE_NOT_EMPTY` | 409 | REG-015 (desde E3) |
+| `CATEGORY_HIERARCHY_CYCLE` | 422 | REG-016 |
+| `CATEGORY_HIERARCHY_TOO_DEEP` | 422 | REG-016 |
+| `PRODUCT_NOT_OPERABLE` | 422 | REG-017 (desde E3) |
 | `CONCURRENCY_CONFLICT` | 503 | ADR-004 |
 | `VALUE_ALREADY_EXISTS` | 422 | Unicidad de códigos de datos maestros (código de depósito, de zona y de ubicación por depósito, email de usuario; SKU, código de barras y CUIT desde E2.05 y E2.06). Respaldo de la validación ante una carrera; `context.field` indica el campo |
 | `INVALID_CREDENTIALS` | 422 | ADR-009 |

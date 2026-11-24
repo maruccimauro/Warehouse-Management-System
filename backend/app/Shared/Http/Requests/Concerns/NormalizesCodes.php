@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Warehouse\Http\Requests\Concerns;
+namespace App\Shared\Http\Requests\Concerns;
 
 use Illuminate\Foundation\Http\FormRequest;
 

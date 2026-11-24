@@ -47,7 +47,8 @@ Organización según [ADR-001](adr/001-modular-monolith.md). Solo `Inventory` es
 | | asignación usuario depósito | `user_warehouse` | Alcance de seguridad (REG-005) |
 | Catalog | `Category` | `categories` | Jerarquía de productos |
 | | `UnitOfMeasure` | `units_of_measure` | Unidad base ([ADR-005](adr/005-integer-quantities.md)) |
-| | `Product` | `products` | Artículo maestro |
+| | `Product` | `products` | Artículo maestro, global a todos los depósitos, con estado propio (ver máquina de estados) |
+| | `ProductWarehouseSetting` | `product_warehouse_settings` | Datos del producto propios de un depósito, como el stock mínimo (DM-21) |
 | | `Supplier` | `suppliers`, `product_supplier` | Proveedor y su código de producto |
 | | `Customer` | `customers` | Destinatario de pedidos |
 | Inventory | `Stock` | `stocks` | Proyección por producto, ubicación y lote |
@@ -319,6 +320,23 @@ Un depósito inactivo no admite operaciones (REG-015, 422 `WAREHOUSE_INACTIVE`);
 
 Solo `active` admite movimientos (INV-009). `blocked` y `counting` no se encadenan: no se bloquea una ubicación en conteo ni se cuenta una bloqueada.
 
+### Product
+
+| Desde | Hacia | Disparador | Permiso | Condiciones y reglas |
+| - | - | - | - | - |
+| (nuevo) | `active` | `POST /products` | `catalog.manage` | Sin seguimiento por lote. El SKU y la unidad base quedan fijos (DM-20) |
+| cualquiera | cualquier otro | `PATCH /products/{id}` con `status` | `catalog.manage` | Transiciones libres. Auditado (`product.status_changed`, INV-012) |
+
+Qué admite cada estado (REG-017, 422 `PRODUCT_NOT_OPERABLE` desde E3):
+
+| Estado | Documentos nuevos (orden de compra, pedido) | Lo abierto (recepción de una orden aprobada, picking, despacho) | Ajustes e inventario físico |
+| - | - | - | - |
+| `active` | Sí | Sí | Sí |
+| `discontinued` | No | Sí, para agotar el stock | Sí |
+| `blocked` | No | No | Sí |
+
+Las transferencias siguen la columna de lo abierto. Las reversiones no se validan contra el estado: corrigen lo que ya ocurrió (REG-012). Un producto nunca se borra.
+
 ### StockReservation, StockBlock y PutawayTask
 
 | Entidad | Desde | Hacia | Disparador |
@@ -372,7 +390,7 @@ Permisos que exigen las transiciones de este documento y la administración de d
 | `warehouses.manage` | Alta, edición y desactivación de depósitos |
 | `locations.manage` | Alta, edición y desactivación de zonas y ubicaciones |
 | `locations.block` | Bloqueo y desbloqueo de ubicaciones |
-| `catalog.manage` | Alta y edición de categorías, unidades de medida y productos |
+| `catalog.manage` | Alta y edición de categorías, unidades de medida y productos. Los datos de un producto en un depósito (DM-21) exigen además operar en ese depósito, como los datos de centro con el campo `WERKS` |
 | `suppliers.manage` | Alta y edición de proveedores y de su relación con los productos |
 | `inventory.transfer` | Transferencias manuales |
 | `inventory.adjust` | Ajustes con motivo |
@@ -443,3 +461,5 @@ Los roles son datos del sistema con identificador estable; la interfaz traduce s
 | DM-17 | Lo revertido de un despacho vuelve a PACKING como stock libre, con una solicitud de guardado de retorno. Ni el despacho ni el pedido cambian de estado: muestran despachado, revertido y neto, también cuando el neto es cero. Un pedido tiene un solo despacho; un reenvío es un pedido nuevo | Es como en SAP: la anulación es otro documento y el original conserva su historia. Evita estados conceptuales como cancelar un pedido que sí se despachó, y varios despachos vigentes por pedido. Reemplaza el flujo anterior de DM-10, en el que una reversión total devolvía el pedido a `packed` para despacharlo de nuevo |
 | DM-18 | Tres capas separadas, como en SAP: movimientos (verdad del stock, se corrigen con otro movimiento), tareas físicas (se ejecutan, se revierten o se confirman con diferencia) y estados del proceso (solo el paso del trámite). Una reversión nunca cambia un estado; lo calculable a partir de cantidades no se guarda como estado, y el sistema no cancela documentos por su cuenta. Por eso la orden de compra no tiene estados de recepción, el pedido no tiene estados de reserva, el faltante y lo revertido son cantidades, una reversión de picking genera una tarea nueva y una solicitud de guardado revertida por completo queda `completed` con guardado 0 | Evita estados conceptuales que contradicen las cantidades (un pedido despachado y cancelado a la vez, una orden recibida que vuelve a aprobada) y alinea el modelo con cómo lo resuelve SAP: estados de proceso por documento y estados de cantidades calculados de los documentos de material (ver [Principios](#principios-movimientos-tareas-y-estados-dm-18)) |
 | DM-19 | El código de un depósito, el de una zona y el de una ubicación no cambian después del alta; se corrigen creando el nuevo y desactivando el anterior. Las zonas de sistema no cambian de tipo y no admiten ubicaciones dadas de alta a mano; las ubicaciones de sistema no cambian de zona ni se desactivan. La generación masiva crea las ubicaciones de una plantilla (pasillos por letra, estanterías, niveles y posiciones por número, con código `A-01-01` o `A-01-01-01`) en una sola transacción, todas o ninguna | El código es la clave que llevan las etiquetas y los documentos, y se escanea en la operación (REG-008), como las coordenadas de la ubicación en SAP WM; el del depósito, como el centro (`WERKS`) de SAP, que no se renombra. Las ubicaciones de las zonas de sistema las crea el depósito, como las del área intermedia de SAP (902, 916), que no se dan de alta a mano; así REG-014 se apoya en una sola ubicación de sistema por rol. La plantilla equivale a la generación de ubicaciones con estructura de coordenadas de LS10; un lote parcial obligaría a buscar a mano qué faltó |
+| DM-20 | El SKU de un producto y el código de una unidad de medida no cambian después del alta. La unidad base del producto tampoco cambia por ahora; E3 puede habilitar el cambio mientras el producto no tenga movimientos. El código de barras, el nombre, la categoría y las dimensiones sí se editan. `is_lot_tracked` queda en `false` y la API no lo escribe mientras los lotes estén fuera del alcance | El SKU va en etiquetas y documentos, como el número de material (`MATNR`) de SAP, que no se renombra. Todas las cantidades del libro están en la unidad base (ADR-005): cambiarla convertiría 10 unidades en 10 gramos, y SAP bloquea el cambio cuando existe stock. El código de barras se edita como el `EAN11` de SAP, porque el fabricante puede cambiarlo |
+| DM-21 | El producto es global; lo que tiene de propio en cada depósito va en `product_warehouse_settings`, empezando por el stock mínimo. Sin fila, el producto usa los valores por defecto en ese depósito (stock mínimo 0). Se edita con `PUT /products/{id}/warehouse-settings/{warehouseId}` (`catalog.manage` y alcance de operación sobre el depósito) y es mantenimiento de datos maestros: admite depósitos inactivos | Equivale a la separación de SAP entre los datos generales del material (`MARA`) y los datos de centro (`MARC`), donde está el punto de pedido (`MINBE`). El stock crítico se calcula por producto y depósito (E7.04): un mínimo global obligaría a usar el mismo valor en un depósito central y en uno chico |

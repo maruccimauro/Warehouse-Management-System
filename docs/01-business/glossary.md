@@ -23,7 +23,7 @@ Términos del dominio, su nombre en el código y su definición. El código usa 
 | Código de barras | `barcode` | Código EAN, UPC u otro impreso en el producto; único si existe |
 | Unidad base | `base_uom` | Unidad mínima en la que se expresan todas las cantidades del producto (unidad, gramo, mililitro) |
 | Categoría | `Category` | Clasificación jerárquica de productos |
-| Stock mínimo | `min_stock` | Cantidad disponible por debajo de la cual se genera una alerta de stock crítico |
+| Stock mínimo | `min_stock` | Cantidad disponible por debajo de la cual se genera una alerta de stock crítico. Se define por producto y depósito (`product_warehouse_settings`); sin valor, es 0 |
 | Proveedor | `Supplier` | Empresa que provee productos mediante órdenes de compra |
 | Cliente | `Customer` | Destinatario de los pedidos |
 

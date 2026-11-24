@@ -5,19 +5,19 @@ namespace App\Modules\Warehouse\Http\Requests\Concerns;
 use App\Modules\Warehouse\Models\Location;
 use App\Modules\Warehouse\Models\Warehouse;
 use App\Modules\Warehouse\Models\Zone;
-use Illuminate\Database\Eloquent\Model;
+use App\Shared\Http\Requests\Concerns\ResolvesRouteModel;
 use Illuminate\Foundation\Http\FormRequest;
-use LogicException;
 
 /**
- * Modelos de la ruta, ya resueltos por la vinculación explícita que registra
- * WarehouseServiceProvider. Si el parámetro no es del tipo esperado, la ruta
- * está mal declarada: es un error de programación, no de la petición.
+ * Modelos de la ruta del módulo, ya resueltos por la vinculación explícita que
+ * registra WarehouseServiceProvider.
  *
  * @mixin FormRequest
  */
 trait ResolvesRouteModels
 {
+    use ResolvesRouteModel;
+
     public function warehouse(): Warehouse
     {
         return $this->routeModel('warehouse', Warehouse::class);
@@ -31,22 +31,5 @@ trait ResolvesRouteModels
     protected function routeLocation(): Location
     {
         return $this->routeModel('location', Location::class);
-    }
-
-    /**
-     * @template TModel of Model
-     *
-     * @param  class-string<TModel>  $class
-     * @return TModel
-     */
-    private function routeModel(string $parameter, string $class): Model
-    {
-        $model = $this->route($parameter);
-
-        if (! $model instanceof $class) {
-            throw new LogicException("El parámetro {$parameter} de la ruta no es un {$class}.");
-        }
-
-        return $model;
     }
 }

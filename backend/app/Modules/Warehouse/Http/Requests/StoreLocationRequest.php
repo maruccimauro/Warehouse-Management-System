@@ -2,10 +2,10 @@
 
 namespace App\Modules\Warehouse\Http\Requests;
 
-use App\Modules\Warehouse\Http\Requests\Concerns\NormalizesCodes;
 use App\Modules\Warehouse\Http\Requests\Concerns\ResolvesRouteModels;
 use App\Modules\Warehouse\Models\Location;
 use App\Modules\Warehouse\Models\Zone;
+use App\Shared\Http\Requests\Concerns\NormalizesCodes;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
