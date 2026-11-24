@@ -1,0 +1,83 @@
+{
+  "toolbar": {
+    "label": "Funciones de la lista",
+    "sortAscending": "Orden ascendente",
+    "sortDescending": "Orden descendente",
+    "filter": "Definir filtro",
+    "clearFilters": "Quitar todos los filtros",
+    "total": "Total",
+    "subtotal": "Subtotales",
+    "columns": "Modificar disposición",
+    "export": "Exportar a hoja de cálculo",
+    "currentColumn": "{{action}} ({{column}})"
+  },
+  "menu": {
+    "label": "Funciones de la columna {{column}}",
+    "removeFilter": "Quitar filtro",
+    "hideColumn": "Ocultar columna"
+  },
+  "filters": {
+    "label": "Filtros activos",
+    "remove": "Quitar filtro: {{filter}}",
+    "contains": "{{column}} contiene «{{value}}»",
+    "equals": "{{column}} = «{{value}}»",
+    "in": "{{column}} es {{values}}",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "filterDialog": {
+    "title": "Filtro: {{column}}",
+    "contains": "Contiene",
+    "equals": "Igual a",
+    "in": "Valores",
+    "any": "(Cualquiera)",
+    "apply": "Aplicar",
+    "remove": "Quitar filtro",
+    "cancel": "Cancelar"
+  },
+  "columnsDialog": {
+    "title": "Modificar disposición",
+    "visible": "Columnas visibles",
+    "moveUp": "Subir {{column}}",
+    "moveDown": "Bajar {{column}}",
+    "atLeastOne": "Tiene que quedar al menos una columna visible.",
+    "reset": "Disposición inicial",
+    "apply": "Aplicar",
+    "cancel": "Cancelar"
+  },
+  "selection": {
+    "all": "Seleccionar todas las filas visibles",
+    "row": "Seleccionar fila"
+  },
+  "rows": {
+    "total": "Total",
+    "subtotal": "Subtotal {{value}}",
+    "empty": "No hay datos para los criterios indicados.",
+    "loading": "Cargando datos…",
+    "error": "No se pudieron cargar los datos."
+  },
+  "footer": {
+    "count_one": "{{count}} fila",
+    "count_other": "{{count}} filas",
+    "filteredCount": "{{count}} de {{total}} filas",
+    "range": "{{from}}–{{to}} de {{total}}",
+    "page": "Página {{page}} de {{pages}}",
+    "pagination": "Páginas",
+    "first": "Primera página",
+    "previous": "Página anterior",
+    "next": "Página siguiente",
+    "last": "Última página"
+  },
+  "announce": {
+    "sorted": "Ordenado por {{column}}, {{direction}}",
+    "ascending": "ascendente",
+    "descending": "descendente"
+  },
+  "messages": {
+    "exported_one": "Se exportó {{count}} fila.",
+    "exported_other": "Se exportaron {{count}} filas.",
+    "exportTruncated": "Se exportaron las primeras {{count}} filas de {{total}}. Restrinja la selección para exportar el resto.",
+    "exportFailed": "No se pudo exportar la lista.",
+    "loadFailed": "No se pudieron cargar los datos de la lista."
+  }
+}

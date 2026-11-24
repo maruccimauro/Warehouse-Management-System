@@ -1,6 +1,7 @@
 import esAuth from './locales/es/auth.json';
 import esCommon from './locales/es/common.json';
 import esErrors from './locales/es/errors.json';
+import esGrid from './locales/es/grid.json';
 import esHome from './locales/es/home.json';
 import esNotFound from './locales/es/notFound.json';
 import esShell from './locales/es/shell.json';
@@ -14,6 +15,7 @@ export const resources = {
     auth: esAuth,
     common: esCommon,
     errors: esErrors,
+    grid: esGrid,
     home: esHome,
     notFound: esNotFound,
     shell: esShell,

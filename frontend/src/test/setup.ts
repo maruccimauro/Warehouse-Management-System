@@ -23,6 +23,14 @@ if (typeof HTMLDialogElement.prototype.showModal !== 'function') {
   };
 }
 
+// jsdom no implementa scrollIntoView: la navegación con teclado de la grilla lo usa para
+// mantener visible la celda con foco.
+if (typeof Element.prototype.scrollIntoView !== 'function') {
+  Element.prototype.scrollIntoView = function scrollIntoView() {
+    // Sin diseño en jsdom: no hay nada que desplazar.
+  };
+}
+
 afterEach(() => {
   cleanup();
   // Estado del navegador que sobrevive entre pruebas en jsdom.

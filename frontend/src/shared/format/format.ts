@@ -4,7 +4,7 @@ import { fallbackLanguage, isSupportedLanguage, languages } from '@/i18n/resourc
 // Todo número y fecha visible pasa por estas funciones: el formato sigue al idioma activo
 // y no depende de la configuración regional del navegador.
 
-function intlLocale(): string {
+export function intlLocale(): string {
   const language = i18n.resolvedLanguage ?? fallbackLanguage;
 
   return languages[isSupportedLanguage(language) ? language : fallbackLanguage].intlLocale;

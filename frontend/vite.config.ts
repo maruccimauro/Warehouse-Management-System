@@ -25,7 +25,9 @@ export default defineConfig({
           groups: [
             { name: 'vendor-react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
             { name: 'vendor-router', test: /node_modules[\\/]react-router[\\/]/ },
-            { name: 'vendor-query', test: /node_modules[\\/]@tanstack[\\/]/ },
+            { name: 'vendor-query', test: /node_modules[\\/]@tanstack[\\/](react-query|query-core)[\\/]/ },
+            // La grilla (E2.00) solo la cargan las transacciones con listas: chunk propio.
+            { name: 'vendor-table', test: /node_modules[\\/]@tanstack[\\/](react-table|table-core|react-store|store)[\\/]/ },
             { name: 'vendor-i18n', test: /node_modules[\\/](i18next|react-i18next)[\\/]/ },
             { name: 'vendor-forms', test: /node_modules[\\/](zod|react-hook-form|@hookform)[\\/]/ },
           ],
