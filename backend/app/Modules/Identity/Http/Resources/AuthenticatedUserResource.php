@@ -43,7 +43,10 @@ class AuthenticatedUserResource extends JsonResource
             // Con true, la SPA muestra el cambio de contraseña: el resto de la
             // API responde 403 PASSWORD_CHANGE_REQUIRED (REG-021).
             'password_change_required' => $this->resource->password_change_required,
+            // El @var documenta el tipo en OpenAPI, que Scramble no infiere de sort() (ADR-012).
+            /** @var list<string> */
             'roles' => self::sortedNames($this->resource->getRoleNames()),
+            /** @var list<string> */
             'permissions' => self::sortedNames($this->resource->getAllPermissions()->pluck('name')),
             'warehouses' => array_values($this->warehouses
                 ->map(fn (Warehouse $warehouse): array => [

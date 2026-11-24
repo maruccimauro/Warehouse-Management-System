@@ -4,6 +4,7 @@ namespace App\Modules\Catalog\Actions;
 
 use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Services\CategoryHierarchy;
+use App\Shared\Exceptions\ValueAlreadyExists;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -19,6 +20,8 @@ final class UpdateCategory
 
     /**
      * @param  bool  $moves  Si cambia el padre; $parent null la pasa a raíz
+     *
+     * @throws ValueAlreadyExists respaldo de la restricción única ante dos peticiones simultáneas (ADR-010)
      */
     public function __invoke(Category $category, ?string $name = null, bool $moves = false, ?Category $parent = null): Category
     {

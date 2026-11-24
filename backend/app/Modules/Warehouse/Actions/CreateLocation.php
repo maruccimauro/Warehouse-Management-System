@@ -4,6 +4,7 @@ namespace App\Modules\Warehouse\Actions;
 
 use App\Modules\Warehouse\Models\Location;
 use App\Modules\Warehouse\Models\Zone;
+use App\Shared\Exceptions\ValueAlreadyExists;
 use InvalidArgumentException;
 
 /**
@@ -15,6 +16,8 @@ final class CreateLocation
 {
     /**
      * @param  array{aisle?: string|null, rack?: string|null, level?: string|null, position?: string|null, max_units?: int|null}  $attributes
+     *
+     * @throws ValueAlreadyExists respaldo de la restricción única ante dos peticiones simultáneas (ADR-010)
      */
     public function __invoke(Zone $zone, string $code, array $attributes = []): Location
     {

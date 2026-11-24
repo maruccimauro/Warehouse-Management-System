@@ -17,4 +17,10 @@ return [
 
     // Usuarios ficticios para probar listados y búsquedas (usuario01@wms.test en adelante).
     'demo_users' => (int) env('WMS_DEMO_USERS', 10),
+
+    // Interfaz de la documentación OpenAPI en /api/docs (ADR-012). Nunca se
+    // registra en producción, aunque la variable esté activa.
+    'api_docs' => [
+        'enabled' => (bool) env('WMS_API_DOCS_ENABLED', false),
+    ],
 ];

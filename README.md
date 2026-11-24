@@ -53,12 +53,16 @@ The first start takes a few minutes: it builds the PHP image and installs the ba
 | Follow the backend start | `docker compose logs -f app` |
 | Backend checks (Pint, PHPStan, Pest) | `docker compose exec app composer check` |
 | Frontend checks (tsc, ESLint, Vitest) | `docker compose exec frontend npm run check` |
+| API documentation (OpenAPI, development only) | <http://localhost:8080/api/docs> |
+| Regenerate the versioned OpenAPI specification | `docker compose exec app composer openapi` |
 | Stop | `docker compose down` |
 | Reset the database | `docker compose down -v` |
 
 Configuration is optional. To change ports or database credentials, copy `.env.example` to `.env` at the repository root before starting. On Linux, set `UID` and `GID` there to the output of `id -u` and `id -g` and rebuild with `docker compose build app`, so generated files belong to your user. Application settings (administrator credentials, number of fictitious users) live in `backend/.env`, created on the first start.
 
 Tests always run against PostgreSQL in a separate `wms_testing` database, never SQLite: constraints and triggers are part of the system under test.
+
+The API contract is generated from the code with Scramble ([ADR-012](docs/03-architecture/adr/012-openapi-scramble.md)) and versioned in [`docs/03-architecture/openapi.json`](docs/03-architecture/openapi.json); CI fails if it is out of date. The interactive interface is enabled by `WMS_API_DOCS_ENABLED=true` in `backend/.env` and never exists in production.
 
 ## Español
 
@@ -109,12 +113,16 @@ El primer arranque tarda unos minutos: construye la imagen de PHP e instala las 
 | Seguir el arranque del backend | `docker compose logs -f app` |
 | Verificación del backend (Pint, PHPStan, Pest) | `docker compose exec app composer check` |
 | Verificación del frontend (tsc, ESLint, Vitest) | `docker compose exec frontend npm run check` |
+| Documentación de la API (OpenAPI, solo en desarrollo) | <http://localhost:8080/api/docs> |
+| Regenerar la especificación OpenAPI versionada | `docker compose exec app composer openapi` |
 | Detener | `docker compose down` |
 | Reiniciar la base de datos | `docker compose down -v` |
 
 La configuración es opcional. Para cambiar puertos o credenciales de la base, copiar `.env.example` a `.env` en la raíz antes de arrancar. En Linux, definir ahí `UID` y `GID` con la salida de `id -u` e `id -g` y reconstruir con `docker compose build app`, para que los archivos generados sean del usuario. La configuración de la aplicación (credenciales del administrador, cantidad de usuarios ficticios) vive en `backend/.env`, que se crea en el primer arranque.
 
 Las pruebas corren siempre contra PostgreSQL en una base aparte, `wms_testing`, nunca SQLite: las restricciones y los triggers son parte del sistema bajo prueba.
+
+El contrato de la API se genera desde el código con Scramble ([ADR-012](docs/03-architecture/adr/012-openapi-scramble.md)) y se versiona en [`docs/03-architecture/openapi.json`](docs/03-architecture/openapi.json); el CI falla si quedó desactualizado. La interfaz interactiva se habilita con `WMS_API_DOCS_ENABLED=true` en `backend/.env` y nunca existe en producción.
 
 ## Roadmap
 

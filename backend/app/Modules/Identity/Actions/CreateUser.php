@@ -6,6 +6,7 @@ use App\Modules\Audit\Contracts\AuditLogger;
 use App\Modules\Identity\Authorization\Role;
 use App\Modules\Identity\Models\User;
 use App\Modules\Identity\Services\UserAssignments;
+use App\Shared\Exceptions\ValueAlreadyExists;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -22,6 +23,8 @@ final class CreateUser
      * @param  array{name: string, email: string, password: string, locale?: string}  $attributes
      * @param  list<Role>  $roles
      * @param  list<int>  $warehouseIds
+     *
+     * @throws ValueAlreadyExists respaldo de la restricción única ante dos peticiones simultáneas (ADR-010)
      */
     public function __invoke(array $attributes, array $roles, array $warehouseIds): User
     {

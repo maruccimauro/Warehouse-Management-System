@@ -9,6 +9,7 @@ use App\Modules\Identity\Models\User;
 use App\Modules\Identity\Services\AdministratorContinuity;
 use App\Modules\Identity\Services\UserAssignments;
 use App\Modules\Identity\Services\UserSessions;
+use App\Shared\Exceptions\ValueAlreadyExists;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -47,6 +48,8 @@ final class UpdateUser
     /**
      * @param  string|null  $currentSessionId  sesión de quien hace el cambio, que
      *                                         nunca se cierra
+     *
+     * @throws ValueAlreadyExists respaldo de la restricción única ante dos peticiones simultáneas (ADR-010)
      */
     public function __invoke(User $actor, User $user, UserChanges $changes, ?string $currentSessionId = null): User
     {

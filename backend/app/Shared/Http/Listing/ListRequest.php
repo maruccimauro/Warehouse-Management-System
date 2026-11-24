@@ -85,8 +85,14 @@ abstract class ListRequest extends FormRequest
      */
     public function rules(): array
     {
+        // Sin filtros declarados, prohibited equivale a array con la lista vacía
+        // (un filter con claves es 422) y Scramble lo puede documentar.
+        $filterRule = $this->filters() === []
+            ? ['prohibited']
+            : ['sometimes', 'array:'.implode(',', array_keys($this->filters()))];
+
         $rules = [
-            'filter' => ['sometimes', 'array:'.implode(',', array_keys($this->filters()))],
+            'filter' => $filterRule,
             'sort' => ['sometimes', 'string', Rule::in($this->sortValues())],
             'page' => ['sometimes', 'integer', 'min:1'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:'.self::MAX_PER_PAGE],

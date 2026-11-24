@@ -17,7 +17,7 @@ Estados posibles: Propuesto, Aceptado, Reemplazado por ADR-NNN, Obsoleto.
 | [ADR-009](009-spa-authentication-authorization.md) | Autenticación SPA con Sanctum y autorización por permisos y depósito | Aceptado |
 | [ADR-010](010-problem-details-errors.md) | Errores HTTP con Problem Details y códigos de dominio estables | Aceptado |
 | [ADR-011](011-redis-deferred.md) | Incorporación diferida de Redis | Propuesto |
-| [ADR-012](012-openapi-scramble.md) | Documentación OpenAPI generada con Scramble | Propuesto |
+| [ADR-012](012-openapi-scramble.md) | Documentación OpenAPI generada con Scramble | Aceptado |
 | [ADR-013](013-partial-reversal-by-line.md) | Reversión parcial por posición, con límite garantizado por la base | Propuesto |
 | [ADR-014](014-sap-movement-codes.md) | Códigos de movimiento de SAP y rango 9xx para movimientos internos | Propuesto |
 | [ADR-015](015-movements-tasks-states.md) | Separación de movimientos, tareas físicas y estados del proceso | Propuesto |

@@ -4,6 +4,7 @@ namespace App\Modules\Warehouse\Actions;
 
 use App\Modules\Warehouse\Enums\SystemLocationRole;
 use App\Modules\Warehouse\Models\Warehouse;
+use App\Shared\Exceptions\ValueAlreadyExists;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -13,6 +14,9 @@ use Illuminate\Support\Facades\DB;
  */
 final class CreateWarehouse
 {
+    /**
+     * @throws ValueAlreadyExists respaldo de la restricción única ante dos peticiones simultáneas (ADR-010)
+     */
     public function __invoke(string $code, string $name, ?string $address = null): Warehouse
     {
         return DB::transaction(function () use ($code, $name, $address): Warehouse {

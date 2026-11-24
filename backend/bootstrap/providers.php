@@ -10,6 +10,7 @@ use App\Modules\Receiving\ReceivingServiceProvider;
 use App\Modules\Reporting\ReportingServiceProvider;
 use App\Modules\Stocktaking\StocktakingServiceProvider;
 use App\Modules\Warehouse\WarehouseServiceProvider;
+use App\Providers\ApiDocumentationServiceProvider;
 use App\Providers\AppServiceProvider;
 
 return [
@@ -26,4 +27,7 @@ return [
     StocktakingServiceProvider::class,
     ReportingServiceProvider::class,
     AuditServiceProvider::class,
+
+    // Después de los módulos: documenta sus rutas (ADR-012).
+    ApiDocumentationServiceProvider::class,
 ];

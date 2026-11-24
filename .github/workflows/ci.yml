@@ -95,6 +95,14 @@ jobs:
         if: ${{ !cancelled() && steps.env.conclusion == 'success' }}
         run: composer test
 
+      # La especificación versionada (ADR-012) tiene que coincidir con la que
+      # genera el código: un cambio de contrato sin regenerarla falla acá.
+      - name: Especificación OpenAPI al día
+        if: ${{ !cancelled() && steps.env.conclusion == 'success' }}
+        run: |
+          composer openapi
+          git diff --exit-code -- ../docs/03-architecture/openapi.json
+
   frontend:
     name: Frontend
     runs-on: ubuntu-24.04

@@ -28,6 +28,9 @@ services:
     command: ["php-fpm"]
     volumes:
       - ./backend:/var/www/backend
+      # docs/ para que las pruebas lean el catálogo de business-rules.md y
+      # scramble:export escriba docs/03-architecture/openapi.json (ADR-012).
+      - ./docs:/var/www/docs
       - ./infrastructure/docker/php/entrypoint.sh:/usr/local/bin/app-entrypoint.sh:ro
     depends_on:
       db:

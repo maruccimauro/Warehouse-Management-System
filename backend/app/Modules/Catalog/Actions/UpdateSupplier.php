@@ -4,6 +4,7 @@ namespace App\Modules\Catalog\Actions;
 
 use App\Modules\Audit\Contracts\AuditLogger;
 use App\Modules\Catalog\Models\Supplier;
+use App\Shared\Exceptions\ValueAlreadyExists;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -28,6 +29,8 @@ final class UpdateSupplier
 
     /**
      * @param  array{tax_id?: string, name?: string, email?: string|null, phone?: string|null}  $attributes
+     *
+     * @throws ValueAlreadyExists respaldo de la restricción única ante dos peticiones simultáneas (ADR-010)
      */
     public function __invoke(Supplier $supplier, array $attributes, ?bool $isActive = null): Supplier
     {

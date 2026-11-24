@@ -25,11 +25,12 @@ class HealthController
             $database = 'unavailable';
         }
 
-        $healthy = $database === 'ok';
+        // Dos respuestas literales y no un estado calculado: así la
+        // documentación OpenAPI (ADR-012) muestra el 200 y el 503 con su cuerpo.
+        if ($database === 'ok') {
+            return response()->json(['status' => 'ok', 'checks' => ['database' => 'ok']]);
+        }
 
-        return response()->json([
-            'status' => $healthy ? 'ok' : 'degraded',
-            'checks' => ['database' => $database],
-        ], $healthy ? 200 : 503);
+        return response()->json(['status' => 'degraded', 'checks' => ['database' => 'unavailable']], 503);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Modules\Catalog\Actions;
 use App\Modules\Audit\Contracts\AuditLogger;
 use App\Modules\Catalog\Enums\ProductStatus;
 use App\Modules\Catalog\Models\Product;
+use App\Shared\Exceptions\ValueAlreadyExists;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -30,6 +31,8 @@ final class UpdateProduct
 
     /**
      * @param  array{barcode?: string|null, name?: string, description?: string|null, category_id?: int|null, weight_grams?: int|null, length_mm?: int|null, width_mm?: int|null, height_mm?: int|null}  $attributes
+     *
+     * @throws ValueAlreadyExists respaldo de la restricción única ante dos peticiones simultáneas (ADR-010)
      */
     public function __invoke(Product $product, array $attributes, ?ProductStatus $status = null): Product
     {

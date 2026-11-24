@@ -20,4 +20,6 @@ return [
         'title' => 'The state change is not allowed.',
         'detail' => 'The resource is in state :from and cannot move to :to.',
     ],
+    'idempotency_key_reused' => 'The idempotency key was already used with different content.',
+    'idempotency_request_in_progress' => 'Another request with the same idempotency key is still in progress.',
 ];

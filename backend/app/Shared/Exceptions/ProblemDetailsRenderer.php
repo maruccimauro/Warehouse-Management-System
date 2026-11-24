@@ -24,9 +24,10 @@ final readonly class ProblemDetailsRenderer
 {
     /**
      * Códigos de los errores HTTP genéricos. Los de dominio los define cada
-     * excepción (catálogo en business-rules.md).
+     * excepción (catálogo en business-rules.md). Pública porque la
+     * documentación OpenAPI (ADR-012) los toma de acá.
      */
-    private const HTTP_CODES = [
+    public const HTTP_CODES = [
         400 => 'BAD_REQUEST',
         401 => 'UNAUTHENTICATED',
         403 => 'FORBIDDEN',

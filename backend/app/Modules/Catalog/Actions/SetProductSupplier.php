@@ -5,6 +5,7 @@ namespace App\Modules\Catalog\Actions;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductSupplier;
 use App\Modules\Catalog\Models\Supplier;
+use App\Shared\Exceptions\ValueAlreadyExists;
 
 /**
  * Vincula un producto con un proveedor o reemplaza los datos del vínculo
@@ -19,6 +20,9 @@ use App\Modules\Catalog\Models\Supplier;
  */
 final class SetProductSupplier
 {
+    /**
+     * @throws ValueAlreadyExists respaldo de la restricción única ante dos peticiones simultáneas (ADR-010)
+     */
     public function __invoke(Supplier $supplier, Product $product, ?string $supplierSku, ?int $leadTimeDays): ProductSupplier
     {
         ProductSupplier::query()->upsert(

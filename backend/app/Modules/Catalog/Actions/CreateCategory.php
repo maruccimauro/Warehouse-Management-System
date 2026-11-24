@@ -4,6 +4,7 @@ namespace App\Modules\Catalog\Actions;
 
 use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Services\CategoryHierarchy;
+use App\Shared\Exceptions\ValueAlreadyExists;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -15,6 +16,9 @@ final class CreateCategory
 {
     public function __construct(private readonly CategoryHierarchy $hierarchy) {}
 
+    /**
+     * @throws ValueAlreadyExists respaldo de la restricción única ante dos peticiones simultáneas (ADR-010)
+     */
     public function __invoke(string $name, ?Category $parent = null): Category
     {
         return DB::transaction(function () use ($name, $parent): Category {

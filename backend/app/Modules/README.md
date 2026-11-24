@@ -33,6 +33,8 @@ app/Modules/{Nombre}/
 ├── Http/Requests/                autorizan con la Policy antes de validar (404 antes que 422)
 ├── Http/Resources/               forma pública de cada modelo en la API
 ├── Models/
+├── OpenApi/                      extensiones de Scramble propias del módulo (ADR-012), registradas
+│                                 en App\Providers\ApiDocumentationServiceProvider
 ├── Policies/                     declaradas en $policies del provider
 ├── Rules/                        reglas de validación propias del dominio (código de barras)
 ├── Services/                     implementaciones de los contratos, enlazadas en el provider, y
@@ -69,6 +71,21 @@ Reproducen el DDL de `docs/03-architecture/database-design.md`.
 | Valor único repetido | El Form Request lo valida con `unique`; la restricción de la base es el respaldo ante una carrera y se declara en `$uniqueConstraintFields` del provider (restricción => campo del formulario), que responde 422 `VALUE_ALREADY_EXISTS` con `context.field` | Dos peticiones simultáneas pueden pasar la validación; la base rechaza la segunda y el cliente marca el mismo campo que con la validación |
 
 `tests/Feature/Http/ListingConventionsTest.php` prueba el contrato de listados y `tests/Feature/Database/UniqueConstraintTranslationTest.php` provoca cada restricción única registrada contra el esquema real.
+
+## Documentación OpenAPI
+
+La especificación se genera desde el código con Scramble (ADR-012) y se versiona en `docs/03-architecture/openapi.json`. Al agregar o cambiar un endpoint:
+
+| Caso | Qué hacer |
+| - | - |
+| Cualquier cambio de contrato | `composer openapi` y commitear `openapi.json` con el cambio: el CI falla si la especificación versionada difiere de la generada |
+| Excepción de dominio lanzada en el controlador, una Action, un servicio o un closure que reciben | Nada: `CalledMethodExceptions` la propaga hasta la operación |
+| Error que el análisis no ve (un error de la base traducido por `DatabaseErrorTranslator`, una llamada sobre un valor sin tipo) | `@throws` en el método que lo origina. Toda Action que escribe una columna con restricción en `$uniqueConstraintFields` declara `@throws ValueAlreadyExists` |
+| Campo que no se acepta | Regla `prohibited` sola: `ProhibitedFieldRule` lo quita del cuerpo documentado |
+| Operación que modifica stock (E3 en adelante) | Middleware con el alias `Idempotency::MIDDLEWARE`: la cabecera `Idempotency-Key` y sus errores se documentan solos |
+| Error en un middleware propio | Extensión de operación en `OpenApi/` del módulo (ver `Identity\OpenApi\SpaSessionOperation`), antepuesta en el provider de la documentación |
+
+Todo código documentado tiene que estar en el catálogo de `business-rules.md` con el mismo estado; lo verifica `tests/Feature/OpenApi/OpenApiSpecificationTest.php`.
 
 ## Alcance por depósito
 
