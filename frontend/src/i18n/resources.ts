@@ -5,6 +5,7 @@ import esGrid from './locales/es/grid.json';
 import esHome from './locales/es/home.json';
 import esNotFound from './locales/es/notFound.json';
 import esSearchHelp from './locales/es/searchHelp.json';
+import esSelection from './locales/es/selection.json';
 import esShell from './locales/es/shell.json';
 import esSu3 from './locales/es/su3.json';
 import esTransactions from './locales/es/transactions.json';
@@ -21,6 +22,7 @@ export const resources = {
     home: esHome,
     notFound: esNotFound,
     searchHelp: esSearchHelp,
+    selection: esSelection,
     shell: esShell,
     su3: esSu3,
     transactions: esTransactions,

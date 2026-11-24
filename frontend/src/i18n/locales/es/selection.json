@@ -1,0 +1,32 @@
+{
+  "to": "hasta",
+  "multiple": "Selección múltiple: {{label}}",
+  "entries_one": "{{count}} entrada",
+  "entries_other": "{{count}} entradas",
+  "errors": {
+    "required": "Completar todos los campos obligatorios.",
+    "invalid": "{{label}}: el valor no existe.",
+    "integer": "{{label}}: ingresar un número entero.",
+    "lowMissing": "{{label}}: un rango necesita el valor desde.",
+    "lowGreater": "{{label}}: el límite inferior es mayor que el superior."
+  },
+  "dialog": {
+    "title": "Selección múltiple: {{label}}",
+    "tabs": "Tipo de entrada",
+    "single": "Valores individuales",
+    "ranges": "Rangos",
+    "excludeSingle": "Excluir valores individuales",
+    "excludeRanges": "Excluir rangos",
+    "excludeUnavailable": "Las exclusiones todavía no están disponibles",
+    "count": "({{count}})",
+    "rowHeader": "Fila",
+    "value": "Valor",
+    "low": "Desde",
+    "high": "Hasta",
+    "actions": "Acciones",
+    "deleteRow": "Borrar la fila {{row}}",
+    "deleteAll": "Borrar todo",
+    "accept": "Copiar (F8)",
+    "cancel": "Cancelar"
+  }
+}

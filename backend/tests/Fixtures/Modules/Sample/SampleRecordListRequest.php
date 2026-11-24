@@ -14,6 +14,8 @@ class SampleRecordListRequest extends ListRequest
             'name' => FilterMode::Partial,
             'status' => FilterMode::In,
             'is_active' => FilterMode::Exact,
+            'section' => FilterMode::Selection,
+            'rank' => FilterMode::Selection,
         ];
     }
 
@@ -29,6 +31,6 @@ class SampleRecordListRequest extends ListRequest
 
     protected function filterValueRules(): array
     {
-        return ['is_active' => ['boolean']];
+        return ['is_active' => ['boolean'], 'rank' => ['integer']];
     }
 }

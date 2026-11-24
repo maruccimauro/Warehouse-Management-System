@@ -1,7 +1,7 @@
 # ADR-016: Interfaz inspirada en SAP GUI
 
-- Estado: Propuesto
-- Fecha: 23/11/2026
+- Estado: Aceptado
+- Fecha: 23/11/2026 (aceptado el 24/11/2026, al cerrar E2.00, E2.17 y E2.18)
 - Relacionados: ADR-009, ADR-010, ADR-014
 
 ## Contexto
@@ -25,7 +25,7 @@ La interfaz necesita una dirección visual y de interacción común antes de que
 | Selección de depósito | Campo en la pantalla inicial de cada transacción, completado desde el parámetro, con F4 | Igual: no existe un depósito activo global. Cada pantalla muestra el depósito sobre el que opera y F4 ofrece solo los asignados al usuario (REG-005) |
 | F4 | Ayuda de búsqueda con criterios y lista de resultados | Componente genérico de campo con ayuda de búsqueda (E2.17): depósito, producto, ubicación, código de movimiento; ver "Ayuda de búsqueda (F4)" |
 | ALV | Grilla con orden, filtro, totales, subtotales, selección de columnas, layouts y exportación | Grilla sobre TanStack Table 9 (E2.00), con modo servidor y modo local; ver "Grilla ALV". Los layouts guardados quedan para después del MVP |
-| Pantalla de selección | Campos con desde/hasta, selección múltiple, exclusiones y variantes | Campos con rango y selección múltiple (E2.18). Exclusiones y variantes, después del MVP |
+| Pantalla de selección | Campos con desde/hasta, selección múltiple, exclusiones y variantes | Parámetros y criterios con rango y selección múltiple (E2.18); ver "Pantalla de selección". El modelo y la API ya admiten exclusiones; su edición en pantalla y las variantes, después del MVP |
 | F1 | Ayuda del campo | Enlace a la wiki con claves de ayuda (E2.16) |
 | Menú contextual | Clic secundario en el árbol (ejecutar, agregar a favoritos) y en la pantalla (funciones disponibles con su tecla) | Igual en el árbol (ejecutar, abrir en ventana nueva, favoritos, expandir y contraer, mostrar códigos) y en el área de trabajo (grabar, atrás, finalizar, ejecutar y favorito, con la disponibilidad de la barra). Se abre también con Mayús+F10 o la tecla de menú. Los campos editables, los enlaces del área de trabajo y el texto seleccionado conservan el menú del navegador. Toda acción del menú existe también en otro control, así que no hace falta un botón visible para pantallas táctiles. Desde E2.00 la grilla suma el suyo (ordenar, filtrar, columnas) |
 
@@ -81,6 +81,24 @@ Componente `SearchHelpField` en `frontend/src/shared/ui/searchHelp/` (E2.17). Ca
 - Por ahora solo modo local. Las ayudas sobre miles de filas (producto, ubicación) suman una fuente de servidor cuando llegue la primera pantalla que las use, traduciendo las restricciones a `filter[...]`.
 - `useDefaultWarehouse` devuelve el parámetro `LGN` si el depósito sigue entre los que el usuario opera; las pantallas operativas lo usan como valor inicial del campo Depósito.
 
+### Pantalla de selección
+
+Componentes en `frontend/src/shared/ui/selection/` (E2.18): `SelectionScreen` y el hook `useSelectionScreen`. La pantalla declara sus campos como `PARAMETERS` (un valor, opcionalmente obligatorio) o `SELECT-OPTIONS` (desde, hasta y selección múltiple); un campo con F4 se indica con `as` (`as: WarehouseField`).
+
+- Cada criterio es la tabla de rangos de SAP: entradas con signo (`I` incluye, `E` excluye), operador (EQ, NE, GT, GE, LT, LE, BT, NB) y límites. CP y NP no se admiten porque los comodines quedaron fuera también en el F4. El backend lo aplica con `FilterMode::Selection` de `ListRequest` (`filter[campo][i][sign|option|low|high]`): las entradas I se unen con O y las E se restan; una exclusión no descarta una fila con la columna nula. `selectionFilters` traduce los criterios a esos parámetros; los parámetros simples quedan a cargo de cada pantalla, porque suelen ser parte de la ruta.
+- Desde y hasta muestran la primera entrada que incluye un valor o un rango; las demás se ven en el diálogo de selección múltiple, con las cuatro pestañas de SAP. Las de exclusión están deshabilitadas hasta después del MVP. Una fila vacía al final agrega la entrada al escribir en ella, y F8 copia. El botón de selección múltiple se rellena y muestra la cantidad de entradas cuando hay más de las que se ven, como la flecha verde de SAP: no se indica solo con color.
+- Los límites ofrecen F4 sin tabla de verificación, como en SAP: un rango de A a M no exige que A exista. Los parámetros sí la usan.
+- Se ejecuta con F8 (`useTransactionActions({ execute })`): `validate` exige los obligatorios, rechaza valores inexistentes, enteros mal escritos, un rango sin desde y, en enteros, un desde mayor que el hasta; emite un mensaje E y lleva el foco al campo, o al botón de selección múltiple si el error está en una entrada que no se ve. Los límites de texto no se comparan en el navegador: su orden depende de la intercalación de la base.
+- El estado vive en el hook: la transacción muestra el resultado, registra Atrás y F3 vuelve a la selección con lo cargado, como en SAP. No va a la URL; compartir una selección es el caso de las variantes.
+- La pantalla no es un `<form>`, sino un `<search>`: Enter confirma el campo y no ejecuta, y un `<form>` envolvería los de los popups F4 que se abren adentro.
+
+### Lo aprendido al construir la grilla, el F4 y la selección
+
+- Un `<dialog>` modal abierto desde un campo no puede fijar su foco inicial con un efecto propio (corre antes del `showModal()` del padre): `GridDialog` recibe `initialFocus`.
+- Las teclas del armazón (F3, Mayús+F3, F8, Ctrl+S) se suspenden con un popup abierto; dentro de un popup, F8 la maneja él (copiar en la selección múltiple).
+- Los formularios no se anidan: un popup con `<form>` dentro de otro componente con `<form>` enviaría el de afuera con Enter. Las piezas que alojan F4 no usan `<form>`.
+- `focusgroup` se usa donde existe, con respaldo propio para los navegadores sin soporte, en lugar del polyfill.
+
 ### Códigos de transacción
 
 Se usa el código de SAP donde la transacción tiene equivalente y el rango `ZW` para las propias, con la misma regla que ADR-014 aplica a los movimientos (`Z` es el espacio de nombres de cliente en SAP). La tabla es indicativa: cada etapa confirma sus códigos al implementar la pantalla y la página de referencia de la wiki documenta en qué se aparta cada una de su par de SAP.
@@ -132,4 +150,4 @@ Se usa el código de SAP donde la transacción tiene equivalente y el rango `ZW`
 - El depósito es un campo de cada pantalla operativa; las consultas del frontend incluyen el depósito en su clave de caché.
 - Los parámetros de usuario, los favoritos, el idioma y mostrar códigos se guardan en el servidor desde E2.21 (DM-24). Lo guardado en el navegador en E1 se sube una sola vez: cada preferencia solo completa lo que el servidor tiene vacío.
 - Una contraseña inicial o reseteada reemplaza el armazón por la pantalla de cambio, sin ruta propia, como el diálogo de clave inicial de SAP (REG-021). Un 403 `PASSWORD_CHANGE_REQUIRED` a mitad de la sesión vuelve a esa pantalla.
-- Pasa a Aceptado al cerrar E2.00, E2.17 y E2.18, con lo aprendido al construir la grilla y las ayudas de búsqueda.
+- Aceptado al cerrar E2.00, E2.17 y E2.18; lo aprendido queda en la sección correspondiente.

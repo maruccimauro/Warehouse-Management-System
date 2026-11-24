@@ -132,6 +132,24 @@
     }
   }
 
+  /* Pestañas del diálogo de selección múltiple. La pestaña elegida se marca con una línea
+     (no solo con color, WCAG 1.4.1) dibujada con un borde, que el modo de alto contraste
+     conserva, y sin cambiar el tamaño de la pestaña. */
+  .selection-tab {
+    @apply relative min-h-7 flex-none px-3 whitespace-nowrap text-ink hover:bg-hover disabled:cursor-not-allowed disabled:text-ink-muted disabled:hover:bg-transparent pointer-coarse:min-h-11;
+  }
+
+  .selection-tab[aria-selected='true'] {
+    @apply text-accent;
+  }
+
+  .selection-tab[aria-selected='true']::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    border-block-end: 3px solid var(--color-accent);
+  }
+
   /* Confirmación modal (shared/ui/ConfirmDialog.tsx) sobre <dialog> nativo. overscroll-behavior
      en el diálogo y en ::backdrop (que necesita overflow para ser contenedor de scroll) evita
      que el desplazamiento llegue a la página de abajo, sin bloquear el scroll de html o body. */

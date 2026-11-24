@@ -106,6 +106,16 @@ abstract class ListRequest extends FormRequest
             if ($mode === FilterMode::In) {
                 $rules["filter.{$field}"] = ['sometimes', 'nullable', 'list', 'max:'.self::MAX_FILTER_VALUES];
                 $rules["filter.{$field}.*"] = ['required', ...$value];
+            } elseif ($mode === FilterMode::Selection) {
+                $entry = "filter.{$field}.*";
+                $withHigh = implode(',', [SelectionOption::Between->value, SelectionOption::NotBetween->value]);
+
+                $rules["filter.{$field}"] = ['sometimes', 'nullable', 'list', 'max:'.self::MAX_FILTER_VALUES];
+                $rules[$entry] = ['required', 'array:sign,option,low,high'];
+                $rules["{$entry}.sign"] = ['sometimes', Rule::enum(SelectionSign::class)];
+                $rules["{$entry}.option"] = ['required', Rule::enum(SelectionOption::class)];
+                $rules["{$entry}.low"] = ['required', ...$value];
+                $rules["{$entry}.high"] = ["required_if:{$entry}.option,{$withHigh}", "prohibited_unless:{$entry}.option,{$withHigh}", ...$value];
             } else {
                 $rules["filter.{$field}"] = ['sometimes', 'nullable', ...$value];
             }
@@ -199,9 +209,82 @@ abstract class ListRequest extends FormRequest
                 FilterMode::Exact => $query->where($column, $value),
                 FilterMode::Partial => $query->whereLike($column, '%'.self::escapeLike(self::asString($value)).'%'),
                 FilterMode::In => $query->whereIn($column, (array) $value),
+                FilterMode::Selection => self::applySelection($query, $column, (array) $value),
                 FilterMode::Custom => $this->applyCustomFilter($query, $field, $value),
             };
         }
+    }
+
+    /**
+     * Semántica de SELECT-OPTIONS de SAP: (I1 O I2 O ...) Y NO (E1 O E2 O ...).
+     * Una fila con la columna nula no la descarta una exclusión: en SQL,
+     * NOT (NULL = x) es desconocido y la fila se perdería sin cumplir la entrada.
+     *
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     * @param  array<mixed>  $entries  ya validadas por rules()
+     */
+    private static function applySelection(Builder $query, string $column, array $entries): void
+    {
+        $includes = [];
+        $excludes = [];
+
+        foreach ($entries as $entry) {
+            if (! is_array($entry)) {
+                continue;
+            }
+
+            $sign = SelectionSign::tryFrom(self::asString($entry['sign'] ?? SelectionSign::Include->value));
+
+            if ($sign === SelectionSign::Exclude) {
+                $excludes[] = $entry;
+            } else {
+                $includes[] = $entry;
+            }
+        }
+
+        if ($includes !== []) {
+            $query->where(function (Builder $any) use ($column, $includes): void {
+                foreach ($includes as $entry) {
+                    $any->orWhere(fn (Builder $one) => self::whereEntry($one, $column, $entry));
+                }
+            });
+        }
+
+        if ($excludes !== []) {
+            $query->where(function (Builder $kept) use ($column, $excludes): void {
+                $kept->whereNull($column)->orWhereNot(function (Builder $any) use ($column, $excludes): void {
+                    foreach ($excludes as $entry) {
+                        $any->orWhere(fn (Builder $one) => self::whereEntry($one, $column, $entry));
+                    }
+                });
+            });
+        }
+    }
+
+    /**
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     * @param  array<mixed>  $entry
+     */
+    private static function whereEntry(Builder $query, string $column, array $entry): void
+    {
+        $option = SelectionOption::from(self::asString($entry['option'] ?? ''));
+        $low = $entry['low'] ?? null;
+        $high = $entry['high'] ?? null;
+
+        match ($option) {
+            SelectionOption::Equal => $query->where($column, '=', $low),
+            SelectionOption::NotEqual => $query->where($column, '<>', $low),
+            SelectionOption::GreaterThan => $query->where($column, '>', $low),
+            SelectionOption::GreaterOrEqual => $query->where($column, '>=', $low),
+            SelectionOption::LessThan => $query->where($column, '<', $low),
+            SelectionOption::LessOrEqual => $query->where($column, '<=', $low),
+            SelectionOption::Between => $query->whereBetween($column, [$low, $high]),
+            SelectionOption::NotBetween => $query->whereNotBetween($column, [$low, $high]),
+        };
     }
 
     /**

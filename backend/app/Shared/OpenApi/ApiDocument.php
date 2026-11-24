@@ -45,7 +45,7 @@ final class ApiDocument implements DocumentTransformer
 
             **Errores (ADR-010).** Toda respuesta de error usa Problem Details (RFC 9457) con `application/problem+json` y el campo `code`, que es estable: el cliente decide por `code`, nunca por `title` ni por `detail`. Cada operación lista los códigos que puede devolver; el catálogo completo está en `docs/02-analysis/business-rules.md`.
 
-            **Listados (E2.10).** Paginación por página con total (`page`, `per_page`), filtros `filter[campo]` y orden `sort=campo` o `sort=-campo`, solo sobre los campos declarados: un parámetro no declarado responde 422 `VALIDATION_FAILED`.
+            **Listados (E2.10).** Paginación por página con total (`page`, `per_page`), filtros `filter[campo]` (criterios de pantalla de selección con `filter[campo][i][sign|option|low|high]`, operadores EQ, NE, GT, GE, LT, LE, BT y NB) y orden `sort=campo` o `sort=-campo`, solo sobre los campos declarados: un parámetro no declarado responde 422 `VALIDATION_FAILED`.
 
             **Idempotencia (ADR-007).** Las operaciones que modifican stock exigen la cabecera `{$header}`.
             MD;

@@ -29,11 +29,15 @@ const paths = {
   arrowUp: 'M8 13V3 M4 7l4-4 4 4',
   arrowDown: 'M8 3v10 M4 9l4 4 4-4',
   searchHelp: 'M7 2.5a4.5 4.5 0 1 0 0 9a4.5 4.5 0 1 0 0-9z M10.3 10.3l3.2 3.2',
+  // Selección múltiple: la flecha de SAP, rellena cuando el criterio tiene más entradas.
+  multipleSelection: 'M2.5 6h6V3l5 5-5 5v-3h-6z',
+  multipleSelectionActive: 'M2.5 6h6V3l5 5-5 5v-3h-6z',
+  deleteRow: 'M3 4.5h10 M6 4.5V3h4v1.5 M4.5 4.5l.7 9h5.6l.7-9',
 } as const;
 
 export type IconName = keyof typeof paths;
 
-const filled: ReadonlySet<IconName> = new Set(['execute']);
+const filled: ReadonlySet<IconName> = new Set(['execute', 'multipleSelectionActive']);
 
 export function Icon({ name, className = 'size-4' }: { name: IconName; className?: string }) {
   const isFilled = filled.has(name);

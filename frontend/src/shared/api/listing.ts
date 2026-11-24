@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
 // Convención de listados de la API (E2.10, ListRequest del backend): filter[campo]=valor,
-// filter[campo][]=valor para selección múltiple, sort=campo o sort=-campo, page y per_page.
+// filter[campo][]=valor para selección múltiple, filter[campo][i][sign|option|low|high] para
+// un criterio de pantalla de selección (E2.18), sort=campo o sort=-campo, page y per_page.
 // Los campos admitidos son lista blanca del backend: uno no declarado responde 422.
 
 export const maxPerPage = 200;
@@ -11,12 +12,32 @@ export interface ListSort {
   desc: boolean;
 }
 
+// Entrada de un criterio de pantalla de selección, como una fila de un SELECT-OPTIONS de SAP
+// (FilterMode::Selection del backend). I incluye y E excluye; BT y NB llevan high. Las entradas
+// I se combinan con O y las E se restan del resultado.
+export type SelectionSign = 'I' | 'E';
+export type SelectionOptionCode = 'EQ' | 'NE' | 'GT' | 'GE' | 'LT' | 'LE' | 'BT' | 'NB';
+
+export interface SelectOption {
+  sign: SelectionSign;
+  option: SelectionOptionCode;
+  low: string;
+  high?: string | undefined;
+}
+
+export function optionHasHigh(option: SelectionOptionCode): boolean {
+  return option === 'BT' || option === 'NB';
+}
+
+export type ListFilterValue = string | readonly string[] | readonly SelectOption[];
+
 export interface ListParams {
   page: number;
   perPage: number;
   sort?: ListSort | undefined;
-  // Un valor para los filtros simples; una lista para los de selección múltiple.
-  filters: Readonly<Record<string, string | readonly string[]>>;
+  // Un valor para los filtros simples, una lista para los de selección múltiple y entradas
+  // para los criterios de pantalla de selección.
+  filters: Readonly<Record<string, ListFilterValue>>;
 }
 
 export interface ListPage<T> {
@@ -34,9 +55,23 @@ export function listSearchParams(params: ListParams): URLSearchParams {
     if (typeof value === 'string') {
       search.append(`filter[${field}]`, value);
     } else {
-      for (const item of value) {
-        search.append(`filter[${field}][]`, item);
-      }
+      value.forEach((item: string | SelectOption, index) => {
+        if (typeof item === 'string') {
+          search.append(`filter[${field}][]`, item);
+
+          return;
+        }
+
+        const prefix = `filter[${field}][${String(index)}]`;
+
+        search.append(`${prefix}[sign]`, item.sign);
+        search.append(`${prefix}[option]`, item.option);
+        search.append(`${prefix}[low]`, item.low);
+
+        if (optionHasHigh(item.option) && item.high !== undefined) {
+          search.append(`${prefix}[high]`, item.high);
+        }
+      });
     }
   }
 

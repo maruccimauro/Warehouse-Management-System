@@ -23,6 +23,15 @@ enum FilterMode
     case In;
 
     /**
+     * Criterio de pantalla de selección, como un SELECT-OPTIONS de SAP (E2.18):
+     * una lista de entradas con signo, operador y límites,
+     * filter[code][0][sign]=I&filter[code][0][option]=BT&filter[code][0][low]=A&filter[code][0][high]=M.
+     * Las entradas I se combinan con O; las E se restan del resultado. Sin
+     * entradas I, el criterio parte de todas las filas.
+     */
+    case Selection;
+
+    /**
      * Criterio que no es una columna del modelo (una relación, por ejemplo
      * filter[role]=operator en usuarios). Lo aplica el listado en
      * ListRequest::applyCustomFilter(); el nombre sigue siendo de lista blanca.

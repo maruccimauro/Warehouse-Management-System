@@ -14,6 +14,8 @@ return new class extends Migration
             $table->string('name', 120)->default('');
             $table->string('status', 20)->default('active');
             $table->boolean('is_active')->default(true);
+            $table->string('section', 20)->nullable();
+            $table->integer('rank')->nullable();
         });
     }
 

@@ -19,8 +19,14 @@ export interface SearchHelpFieldProps<TData> {
   searchHelp: SearchHelp<TData>;
   onMessage: (message: GridMessage) => void;
   disabled?: boolean;
+  // false: sin tabla de verificación, como un límite de SELECT-OPTIONS (D4 de E2.18). Ofrece F4
+  // y la descripción, pero cualquier valor es válido: un rango de A a M no exige que A exista.
+  check?: boolean;
+  required?: boolean;
   className?: string;
   'aria-describedby'?: string;
+  // Nombre accesible cuando no hay un <label> propio (una celda de una tabla de entradas).
+  'aria-labelledby'?: string;
 }
 
 // Campo con ayuda de búsqueda (E2.17, ADR-016). Como en SAP: F4 o el botón abren el popup,
@@ -35,8 +41,11 @@ export function SearchHelpField<TData extends RowData>({
   searchHelp,
   onMessage,
   disabled = false,
+  check = true,
+  required = false,
   className = '',
   'aria-describedby': describedBy,
+  'aria-labelledby': labelledBy,
 }: SearchHelpFieldProps<TData>) {
   const { t } = useTranslation('searchHelp');
   const descriptionId = useId();
@@ -53,7 +62,8 @@ export function SearchHelpField<TData extends RowData>({
 
   const normalize = searchHelp.normalize ?? ((raw: string) => raw.trim());
   const rowOf = (candidate: string) => searchHelp.source.rows.find((row) => searchHelp.valueOf(row) === candidate);
-  const isValid = (candidate: string) => candidate === '' || rowOf(candidate) !== undefined;
+  const exists = (candidate: string) => candidate === '' || rowOf(candidate) !== undefined;
+  const isValid = (candidate: string) => !check || exists(candidate);
 
   // Un valor que llega desde afuera (restablecido por la pantalla) reemplaza lo escrito. El
   // que este campo acaba de informar no: el texto puede diferir solo por la normalización.
@@ -105,7 +115,7 @@ export function SearchHelpField<TData extends RowData>({
     // Lo escrito que no es un valor válido restringe el primer criterio (D2).
     const normalized = normalize(text);
 
-    setInitialCriterion(isValid(normalized) ? '' : text.trim());
+    setInitialCriterion(exists(normalized) ? '' : text.trim());
     setOpen(true);
   };
 
@@ -151,6 +161,8 @@ export function SearchHelpField<TData extends RowData>({
           className="w-40"
           autoComplete="off"
           disabled={disabled}
+          required={required}
+          aria-labelledby={labelledBy}
           aria-invalid={invalid || undefined}
           aria-describedby={describedByIds === '' ? undefined : describedByIds}
           aria-keyshortcuts="F4"

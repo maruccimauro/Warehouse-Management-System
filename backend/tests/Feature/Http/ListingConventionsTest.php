@@ -119,6 +119,102 @@ it('validates the value of a typed filter', function () {
         ->assertJsonValidationErrors(['filter.is_active'], 'errors');
 });
 
+/**
+ * Arma filter[campo][i][...] de un criterio de selección (E2.18).
+ *
+ * @param  list<array<string, string>>  $entries
+ */
+function selectionQuery(string $field, array $entries): string
+{
+    return http_build_query(['filter' => [$field => $entries]]);
+}
+
+it('filters a selection criterion with single values and ranges combined with OR, like SELECT-OPTIONS', function () {
+    sampleRecords(
+        ['code' => 'R1', 'section' => 'A01'],
+        ['code' => 'R2', 'section' => 'B05'],
+        ['code' => 'R3', 'section' => 'B20'],
+        ['code' => 'R4', 'section' => 'C01'],
+    );
+
+    expect(listedCodes(selectionQuery('section', [
+        ['sign' => 'I', 'option' => 'EQ', 'low' => 'A01'],
+        ['sign' => 'I', 'option' => 'BT', 'low' => 'B01', 'high' => 'B10'],
+    ])))->toBe(['R1', 'R2'])
+        // Sin signo, la entrada incluye.
+        ->and(listedCodes(selectionQuery('section', [['option' => 'GE', 'low' => 'B20']])))->toBe(['R3', 'R4']);
+});
+
+it('applies every selection option', function (string $option, string $low, ?string $high, array $expected) {
+    sampleRecords(['code' => 'N1', 'rank' => 1], ['code' => 'N2', 'rank' => 2], ['code' => 'N3', 'rank' => 3]);
+
+    $entry = ['sign' => 'I', 'option' => $option, 'low' => $low] + ($high === null ? [] : ['high' => $high]);
+
+    expect(listedCodes(selectionQuery('rank', [$entry])))->toBe($expected);
+})->with([
+    'EQ' => ['EQ', '2', null, ['N2']],
+    'NE' => ['NE', '2', null, ['N1', 'N3']],
+    'GT' => ['GT', '2', null, ['N3']],
+    'GE' => ['GE', '2', null, ['N2', 'N3']],
+    'LT' => ['LT', '2', null, ['N1']],
+    'LE' => ['LE', '2', null, ['N1', 'N2']],
+    'BT' => ['BT', '2', '3', ['N2', 'N3']],
+    'NB' => ['NB', '2', '3', ['N1']],
+]);
+
+it('subtracts the excluding entries, and without including entries starts from every row', function () {
+    sampleRecords(
+        ['code' => 'E1', 'section' => 'A01'],
+        ['code' => 'E2', 'section' => 'A02'],
+        ['code' => 'E3', 'section' => 'A03'],
+        ['code' => 'E4', 'section' => null],
+    );
+
+    expect(listedCodes(selectionQuery('section', [
+        ['sign' => 'I', 'option' => 'BT', 'low' => 'A01', 'high' => 'A03'],
+        ['sign' => 'E', 'option' => 'EQ', 'low' => 'A02'],
+    ])))->toBe(['E1', 'E3'])
+        // Una exclusión no descarta la fila con la columna vacía.
+        ->and(listedCodes(selectionQuery('section', [['sign' => 'E', 'option' => 'EQ', 'low' => 'A02']])))->toBe(['E1', 'E3', 'E4']);
+});
+
+it('combines a selection criterion with the other filters with AND', function () {
+    sampleRecords(
+        ['code' => 'C1', 'section' => 'A01', 'status' => 'active'],
+        ['code' => 'C2', 'section' => 'A02', 'status' => 'blocked'],
+    );
+
+    expect(listedCodes(selectionQuery('section', [['option' => 'BT', 'low' => 'A01', 'high' => 'A09']]).'&filter[status][]=active'))
+        ->toBe(['C1']);
+});
+
+it('rejects a malformed selection entry with VALIDATION_FAILED', function (array $entry, string $field) {
+    $this->getJson('/api/v1/sample/records?'.selectionQuery('rank', [$entry]))
+        ->assertStatus(422)
+        ->assertJsonPath('code', 'VALIDATION_FAILED')
+        ->assertJsonValidationErrors([$field], 'errors');
+})->with([
+    'operador inexistente' => [['option' => 'CP', 'low' => '1'], 'filter.rank.0.option'],
+    'signo inexistente' => [['sign' => 'X', 'option' => 'EQ', 'low' => '1'], 'filter.rank.0.sign'],
+    'sin límite inferior' => [['option' => 'EQ'], 'filter.rank.0.low'],
+    'rango sin límite superior' => [['option' => 'BT', 'low' => '1'], 'filter.rank.0.high'],
+    'límite superior sin rango' => [['option' => 'EQ', 'low' => '1', 'high' => '3'], 'filter.rank.0.high'],
+    'valor que no es entero' => [['option' => 'EQ', 'low' => 'uno'], 'filter.rank.0.low'],
+    'clave no declarada' => [['option' => 'EQ', 'low' => '1', 'column' => 'code'], 'filter.rank.0'],
+]);
+
+it('rejects a selection criterion that is not a list or has too many entries', function () {
+    $this->getJson('/api/v1/sample/records?filter[rank]=1')
+        ->assertStatus(422)
+        ->assertJsonValidationErrors(['filter.rank'], 'errors');
+
+    $entries = array_fill(0, ListRequest::MAX_FILTER_VALUES + 1, ['option' => 'EQ', 'low' => '1']);
+
+    $this->getJson('/api/v1/sample/records?'.selectionQuery('rank', $entries))
+        ->assertStatus(422)
+        ->assertJsonValidationErrors(['filter.rank'], 'errors');
+});
+
 it('rejects with VALIDATION_FAILED what the listing does not declare', function (string $query, string $field) {
     $this->getJson('/api/v1/sample/records?'.$query)
         ->assertStatus(422)
