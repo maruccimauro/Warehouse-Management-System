@@ -1,0 +1,8 @@
+{
+  "searchHelp": {
+    "title": "Depósitos",
+    "code": "Depósito",
+    "name": "Nombre",
+    "invalid": "El depósito {{code}} no existe o no está asignado al usuario."
+  }
+}

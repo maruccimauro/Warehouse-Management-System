@@ -102,6 +102,10 @@
     @apply m-auto w-[min(32rem,calc(100vw-2rem))] rounded-sm border border-border-strong bg-surface p-0 text-ink shadow-lg;
   }
 
+  .confirm-dialog-wide {
+    @apply w-[min(48rem,calc(100vw-2rem))];
+  }
+
   .confirm-dialog:modal {
     overscroll-behavior: contain;
   }

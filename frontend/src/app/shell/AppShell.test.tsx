@@ -220,10 +220,12 @@ describe('SU3: parámetros de usuario', () => {
     renderRoute('/t/SU3');
     const lgn = await screen.findByLabelText('LGN');
 
-    expect(lgn).toHaveDisplayValue('Sin valor');
+    expect(lgn).toHaveValue('');
     expect(statusBar().getByText('ninguno')).toBeInTheDocument();
 
-    await userEvent.selectOptions(lgn, 'NOR: Norte');
+    // Ctrl+S con el foco todavía en el campo graba lo escrito, normalizado a mayúsculas.
+    await userEvent.type(lgn, 'nor');
+    expect(lgn).toHaveAccessibleDescription(/Norte/);
     await userEvent.keyboard('{Control>}s{/Control}');
 
     expect(await statusBar().findByText('Los parámetros de usuario se grabaron.')).toBeInTheDocument();
@@ -237,7 +239,10 @@ describe('SU3: parámetros de usuario', () => {
     stubApi({ 'GET /api/v1/auth/me': () => userResponse(testUser({ warehouses })) }, { parameters: { LGN: 'NOR' } });
     renderRoute('/t/SU3');
 
-    expect(await screen.findByLabelText('LGN')).toHaveDisplayValue('NOR: Norte');
+    const lgn = await screen.findByLabelText('LGN');
+
+    expect(lgn).toHaveValue('NOR');
+    expect(lgn).toHaveAccessibleDescription(/^Depósito por defecto.* Norte$/);
   });
 
   it('descarta un depósito grabado que ya no está asignado', async () => {
@@ -247,8 +252,50 @@ describe('SU3: parámetros de usuario', () => {
     );
     renderRoute('/t/SU3');
 
-    expect(await screen.findByLabelText('LGN')).toHaveDisplayValue('Sin valor');
+    expect(await screen.findByLabelText('LGN')).toHaveValue('');
     expect(statusBar().getByText('ninguno')).toBeInTheDocument();
+  });
+
+  it('no graba un depósito escrito que no está asignado', async () => {
+    const api = stubApi({ 'GET /api/v1/auth/me': () => userResponse(testUser({ warehouses })) });
+    renderRoute('/t/SU3');
+    const lgn = await screen.findByLabelText('LGN');
+
+    await userEvent.type(lgn, 'sur{Enter}');
+
+    expect(lgn).toHaveAttribute('aria-invalid', 'true');
+    expect(await statusBar().findByRole('alert')).toHaveTextContent('El depósito SUR no existe o no está asignado al usuario.');
+
+    await userEvent.keyboard('{Control>}s{/Control}');
+
+    expect(await statusBar().findByText('Corrija el valor de LGN antes de grabar.')).toBeInTheDocument();
+    expect(api.requestsTo('PUT', '/api/v1/me/parameters')).toHaveLength(0);
+  });
+
+  it('F4 en LGN ofrece los depósitos asignados y toma el elegido', async () => {
+    stubApi({ 'GET /api/v1/auth/me': () => userResponse(testUser({ warehouses })) });
+    renderRoute('/t/SU3');
+    const lgn = await screen.findByLabelText('LGN');
+
+    lgn.focus();
+    await userEvent.keyboard('{F4}');
+
+    const dialog = await screen.findByRole('dialog', { name: 'Depósitos' });
+    const grid = within(dialog).getByRole('grid', { name: 'Resultados: Depósitos' });
+
+    expect(within(grid).getAllByRole('row')).toHaveLength(warehouses.length + 1);
+
+    // Con el popup abierto, F3 no sale de la transacción de abajo.
+    fireEvent.keyDown(window, { key: 'F3' });
+    expect(screen.getByRole('heading', { level: 1, name: 'Parámetros de usuario' })).toBeInTheDocument();
+
+    await userEvent.dblClick(within(grid).getByRole('gridcell', { name: 'Norte' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+    expect(lgn).toHaveValue('NOR');
+    expect(lgn).toHaveFocus();
   });
 
   it('informa en la barra de estado una grabación rechazada', async () => {
@@ -258,7 +305,7 @@ describe('SU3: parámetros de usuario', () => {
     });
     renderRoute('/t/SU3');
 
-    await userEvent.selectOptions(await screen.findByLabelText('LGN'), 'NOR: Norte');
+    await userEvent.type(await screen.findByLabelText('LGN'), 'NOR');
     await userEvent.keyboard('{Control>}s{/Control}');
 
     expect(await statusBar().findByRole('alert')).toHaveTextContent('Los datos ingresados no son válidos.');

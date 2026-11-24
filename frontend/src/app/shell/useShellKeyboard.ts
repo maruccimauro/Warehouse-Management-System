@@ -25,11 +25,15 @@ export function useShellKeyboard(options: ShellKeyboardOptions): void {
       }
 
       const { inTransaction, back, exit, run } = latest.current;
+      // Con un popup modal abierto (F4, filtro de la grilla, datos sin grabar) las teclas de
+      // la transacción no actúan sobre la pantalla de abajo; F3 y Ctrl+S igual se cancelan.
+      // La aplicación abre todo <dialog> con showModal(), así que [open] equivale a :modal.
+      const modalOpen = document.querySelector('dialog[open]') !== null;
 
       if (event.key === 'F3') {
         event.preventDefault();
 
-        if (!inTransaction) {
+        if (!inTransaction || modalOpen) {
           return;
         }
 
@@ -37,6 +41,14 @@ export function useShellKeyboard(options: ShellKeyboardOptions): void {
           exit();
         } else {
           back();
+        }
+
+        return;
+      }
+
+      if (modalOpen) {
+        if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 's') {
+          event.preventDefault();
         }
 
         return;

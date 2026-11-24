@@ -5,6 +5,7 @@ import { useLogout } from '@/features/auth/session';
 import { useAuthenticatedUser } from '@/features/auth/useAuthenticatedUser';
 import { useUserPreferences } from '@/features/preferences/userPreferences';
 import { UserPreferencesProvider } from '@/features/preferences/UserPreferencesProvider';
+import { useDefaultWarehouse } from '@/features/warehouses/useDefaultWarehouse';
 import { ContextMenu } from '@/shared/ui/ContextMenu';
 import { keepsNativeContextMenu, type ContextMenuItem } from '@/shared/ui/contextMenuItems';
 import { Icon } from '@/shared/ui/icons';
@@ -65,7 +66,6 @@ function UserMenu() {
 
 function ShellLayout() {
   const { t, i18n } = useTranslation(['shell', 'transactions', 'common']);
-  const user = useAuthenticatedUser();
   const navigate = useNavigate();
   const { available, run } = useShellActions();
   const { preferences } = useUserPreferences();
@@ -126,7 +126,7 @@ function ShellLayout() {
     (firstField ?? headingRef.current)?.focus();
   }, [code, readyCode]);
 
-  const defaultWarehouse = user.warehouses.find((warehouse) => warehouse.code === preferences.parameters.LGN)?.code;
+  const defaultWarehouse = useDefaultWarehouse();
   const isFavorite = code !== undefined && preferences.favorites.includes(code);
 
   // Clic secundario en el área de trabajo: las funciones estándar de la pantalla con sus

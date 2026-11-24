@@ -16,7 +16,7 @@ async function renderSu3WithChanges() {
   });
   renderRoute('/t/SU3');
 
-  await userEvent.selectOptions(await screen.findByLabelText('LGN'), 'NOR');
+  await userEvent.type(await screen.findByLabelText('LGN'), 'NOR');
 
   return api;
 }

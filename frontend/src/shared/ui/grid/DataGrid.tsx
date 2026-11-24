@@ -857,6 +857,7 @@ export function DataGrid<TData extends RowData>({
               return (
                 <tr
                   key={row.id}
+                  data-row-id={isData ? row.id : undefined}
                   aria-rowindex={server ? (page - 1) * pageSize + rowIndex + 1 : rowIndex + 1}
                   aria-selected={multiple && isData ? isSelected : undefined}
                   className={

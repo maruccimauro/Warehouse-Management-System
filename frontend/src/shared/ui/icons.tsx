@@ -28,6 +28,7 @@ const paths = {
   previous: 'M10 4L6 8l4 4',
   arrowUp: 'M8 13V3 M4 7l4-4 4 4',
   arrowDown: 'M8 3v10 M4 9l4 4 4-4',
+  searchHelp: 'M7 2.5a4.5 4.5 0 1 0 0 9a4.5 4.5 0 1 0 0-9z M10.3 10.3l3.2 3.2',
 } as const;
 
 export type IconName = keyof typeof paths;

@@ -6,6 +6,7 @@ import { useUnsavedChanges } from '@/app/shell/unsavedChanges';
 import { PasswordChangeDialog } from '@/features/auth/PasswordChangeDialog';
 import { useAuthenticatedUser } from '@/features/auth/useAuthenticatedUser';
 import { useUserPreferences } from '@/features/preferences/userPreferences';
+import { WarehouseField } from '@/features/warehouses/WarehouseField';
 import { fallbackLanguage, isSupportedLanguage, supportedLanguages } from '@/i18n/resources';
 import { Button } from '@/shared/ui/Button';
 
@@ -31,6 +32,8 @@ export function OwnDataTransaction() {
   const savedLgn = preferences.parameters.LGN;
   const savedLgnValue = savedLgn !== null && assignedCodes.has(savedLgn) ? savedLgn : '';
   const [lgn, setLgn] = useState(savedLgnValue);
+  // Un código escrito que no existe o no está asignado bloquea la grabación (D3 de E2.17).
+  const [lgnInvalid, setLgnInvalid] = useState(false);
 
   // Solo se ofrecen los idiomas que la interfaz tiene traducidos (D7). Un idioma guardado
   // que todavía no tiene traducción se muestra como el idioma por defecto.
@@ -45,6 +48,12 @@ export function OwnDataTransaction() {
   const save = async () => {
     // Ctrl+S repetido mientras se graba no duplica la petición.
     if (saving.current) {
+      return;
+    }
+
+    if (lgnInvalid) {
+      show({ type: 'E', text: t('invalidLgn') });
+
       return;
     }
 
@@ -147,29 +156,20 @@ export function OwnDataTransaction() {
                   <label htmlFor={lgnId}>LGN</label>
                 </th>
                 <td className={cellClass}>
-                  <select
-                    id={lgnId}
-                    className="field-input"
-                    disabled={!hasWarehouses}
-                    aria-describedby={`${lgnId}-description`}
-                    value={lgn}
-                    onChange={(event) => {
-                      setLgn(event.target.value);
-                    }}
-                  >
-                    {hasWarehouses ? (
-                      <>
-                        <option value="">{t('noValue')}</option>
-                        {user.warehouses.map((warehouse) => (
-                          <option key={warehouse.id} value={warehouse.code}>
-                            {t('warehouseOption', { code: warehouse.code, name: warehouse.name })}
-                          </option>
-                        ))}
-                      </>
-                    ) : (
-                      <option value="">{t('noWarehouses')}</option>
-                    )}
-                  </select>
+                  {hasWarehouses ? (
+                    <WarehouseField
+                      id={lgnId}
+                      aria-describedby={`${lgnId}-description`}
+                      value={lgn}
+                      onChange={(value, valid) => {
+                        setLgn(value);
+                        setLgnInvalid(!valid);
+                      }}
+                      onMessage={show}
+                    />
+                  ) : (
+                    <input id={lgnId} className="field-input w-40" disabled value={t('noWarehouses')} readOnly />
+                  )}
                 </td>
                 <td id={`${lgnId}-description`} className={`${cellClass} text-ink-muted`}>
                   {t('parameters.descriptions.LGN')}

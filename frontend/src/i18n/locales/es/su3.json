@@ -13,9 +13,8 @@
       "LGN": "Depósito por defecto. Completa el campo Depósito de las pantallas operativas."
     }
   },
-  "noValue": "Sin valor",
+  "invalidLgn": "Corrija el valor de LGN antes de grabar.",
   "noWarehouses": "Sin depósitos asignados",
-  "warehouseOption": "{{code}}: {{name}}",
   "saveHint": "Los cambios se aplican al grabar (Ctrl+S).",
   "saved": "Los parámetros de usuario se grabaron.",
   "settings": {

@@ -1,0 +1,8 @@
+{
+  "open": "Ayuda de búsqueda: {{title}} (F4)",
+  "criteria": "Restricciones",
+  "results": "Resultados: {{title}}",
+  "hits_one": "{{count}} resultado",
+  "hits_other": "{{count}} resultados",
+  "cancel": "Cancelar"
+}

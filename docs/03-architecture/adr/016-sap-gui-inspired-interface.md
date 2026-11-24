@@ -23,7 +23,7 @@ La interfaz necesita una dirección visual y de interacción común antes de que
 | Barra de estado | Mensajes tipo S (éxito), W (advertencia), E (error) e I (información), con clase y número de mensaje | Mismos tipos. El identificador del mensaje es el `code` del Problem Details (ADR-010). A la derecha muestra transacción, depósito por defecto, usuario e idioma |
 | Parámetros de usuario | SU3, con IDs de parámetro (`LGN` número de almacén, `WRK` centro) que completan los campos de las pantallas iniciales | Transacción `SU3` con el idioma (valores fijos), el parámetro `LGN` (depósito por defecto) y el cambio voluntario de contraseña. Desde E2.21 parámetros, favoritos, idioma y mostrar códigos se guardan en el servidor (DM-24); el historial del campo de comando queda en el navegador, como en SAP GUI. El selector ofrece solo los idiomas que la interfaz tiene traducidos |
 | Selección de depósito | Campo en la pantalla inicial de cada transacción, completado desde el parámetro, con F4 | Igual: no existe un depósito activo global. Cada pantalla muestra el depósito sobre el que opera y F4 ofrece solo los asignados al usuario (REG-005) |
-| F4 | Ayuda de búsqueda con criterios y lista de resultados | Componente genérico de campo con ayuda de búsqueda (E2.17): depósito, producto, ubicación, código de movimiento |
+| F4 | Ayuda de búsqueda con criterios y lista de resultados | Componente genérico de campo con ayuda de búsqueda (E2.17): depósito, producto, ubicación, código de movimiento; ver "Ayuda de búsqueda (F4)" |
 | ALV | Grilla con orden, filtro, totales, subtotales, selección de columnas, layouts y exportación | Grilla sobre TanStack Table 9 (E2.00), con modo servidor y modo local; ver "Grilla ALV". Los layouts guardados quedan para después del MVP |
 | Pantalla de selección | Campos con desde/hasta, selección múltiple, exclusiones y variantes | Campos con rango y selección múltiple (E2.18). Exclusiones y variantes, después del MVP |
 | F1 | Ayuda del campo | Enlace a la wiki con claves de ayuda (E2.16) |
@@ -40,6 +40,8 @@ La interfaz necesita una dirección visual y de interacción común antes de que
 | F4 | Ayuda de búsqueda del campo | Desde E2.17 |
 | F8 | Ejecutar | En pantallas de selección |
 | Ctrl+S | Grabar | Se intercepta el guardado de página del navegador |
+
+Con un popup modal abierto (F4, filtro de la grilla, datos sin grabar) F3, Mayús+F3, F8 y Ctrl+S no actúan sobre la pantalla de abajo; F3 y Ctrl+S igual se cancelan para el navegador.
 
 F5, F11 y F12 no se interceptan: recargar, pantalla completa y herramientas de desarrollo son del navegador y no se pueden capturar de forma confiable. Cancelar (F12 en SAP) queda como botón.
 
@@ -66,6 +68,18 @@ Componente `DataGrid` en `frontend/src/shared/ui/grid/` (E2.00), sobre `@tanstac
 - Teclado del patrón Grid de WAI-ARIA: una sola parada de Tab, flechas entre celdas, Inicio y Fin en la fila, Ctrl+Inicio y Ctrl+Fin en la grilla, RePág y AvPág; Enter y doble clic activan la fila (abrir la visualización, tomar el valor de un F4) y Espacio la selecciona cuando la pantalla habilita la selección múltiple. En un borde no se cancela la tecla y el navegador sigue desplazando la página.
 - Menú contextual con `ContextMenu` sobre la celda o la cabecera, también con Mayús+F10: ordenar, filtrar, quitar filtro, total y subtotal, ocultar columna y modificar disposición. Las funciones de la barra de la grilla actúan sobre la columna de la celda con foco, como la columna marcada en la ALV.
 - La disposición (columnas visibles y su orden) dura lo que la transacción abierta. Su forma (`GridLayout`, con ids de columna) ya admite persistirla; guardarla en el servidor es el layout de SAP y queda para después del MVP.
+
+### Ayuda de búsqueda (F4)
+
+Componente `SearchHelpField` en `frontend/src/shared/ui/searchHelp/` (E2.17). Cada ayuda se declara como `SearchHelp`: columnas de la lista, restricciones, valor que devuelve, texto descriptivo, normalización y mensaje de valor inexistente. `WarehouseField` (`features/warehouses/`) es la primera, sobre `me.warehouses`.
+
+- F4 sin modificadores, o el botón al lado del campo, abre el popup: restricciones arriba que filtran en vivo y la grilla ALV en modo local abajo. Enter o doble clic en una fila toman el valor; Enter en una restricción con un único resultado también; Esc cancela. Al cerrar, el foco vuelve al campo. F4 lo maneja el campo y no el armazón: es la ayuda del campo con foco.
+- Como en SAP, lo escrito que no es un valor válido restringe el primer criterio al abrir, y un valor válido abre la lista con el foco en su fila.
+- El campo es también la tabla de verificación: normaliza lo escrito (mayúsculas en los códigos), informa valor y validez a la pantalla en cada cambio y, al confirmar con Enter o al salir del campo, marca un valor inexistente y emite un mensaje E. Informar en cada cambio hace que Ctrl+S con el foco en el campo vea lo escrito, como el PAI de SAP; la pantalla no graba con un valor inválido.
+- A la derecha del valor se muestra su texto (`CEN  Depósito central`), asociado al campo con `aria-describedby`.
+- El botón de la ayuda queda fuera del orden de Tab, como en SAP: con teclado se usa F4 (anunciada con `aria-keyshortcuts`) y Tab pasa al campo siguiente.
+- Por ahora solo modo local. Las ayudas sobre miles de filas (producto, ubicación) suman una fuente de servidor cuando llegue la primera pantalla que las use, traduciendo las restricciones a `filter[...]`.
+- `useDefaultWarehouse` devuelve el parámetro `LGN` si el depósito sigue entre los que el usuario opera; las pantallas operativas lo usan como valor inicial del campo Depósito.
 
 ### Códigos de transacción
 

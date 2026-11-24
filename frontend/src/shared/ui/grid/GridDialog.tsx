@@ -4,19 +4,25 @@ interface GridDialogProps {
   open: boolean;
   title: string;
   onCancel: () => void;
+  // wide: para diálogos con una lista (la ayuda de búsqueda F4).
+  size?: 'default' | 'wide';
+  // Elemento que recibe el foco al abrir; sin él, el primer campo o botón del diálogo.
+  initialFocus?: (dialog: HTMLDialogElement) => HTMLElement | null | undefined;
   children: ReactNode;
 }
 
 // Ventana modal de la grilla (filtro y disposición), como los popups de la ALV. Mismo enfoque
 // que ConfirmDialog: <dialog> nativo con showModal(), que aporta la página inerte, la contención
 // del foco, Esc y la devolución del foco al control que la abrió.
-export function GridDialog({ open, title, onCancel, children }: GridDialogProps) {
+export function GridDialog({ open, title, onCancel, size = 'default', initialFocus, children }: GridDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const latestCancel = useRef(onCancel);
+  const latestInitialFocus = useRef(initialFocus);
 
   useLayoutEffect(() => {
     latestCancel.current = onCancel;
+    latestInitialFocus.current = initialFocus;
   });
 
   useEffect(() => {
@@ -28,7 +34,7 @@ export function GridDialog({ open, title, onCancel, children }: GridDialogProps)
 
     if (open && !dialog.open) {
       dialog.showModal();
-      dialog.querySelector<HTMLElement>('input, select, button')?.focus();
+      (latestInitialFocus.current?.(dialog) ?? dialog.querySelector<HTMLElement>('input, select, button'))?.focus();
     } else if (!open && dialog.open) {
       dialog.close();
     }
@@ -37,7 +43,7 @@ export function GridDialog({ open, title, onCancel, children }: GridDialogProps)
   return (
     <dialog
       ref={dialogRef}
-      className="confirm-dialog"
+      className={size === 'wide' ? 'confirm-dialog confirm-dialog-wide' : 'confirm-dialog'}
       aria-labelledby={titleId}
       onClose={() => {
         // Esc o el gesto de volver cuentan como cancelar. Cerrar desde el padre también pasa
