@@ -95,6 +95,43 @@
     }
   }
 
+  /* Campo con botón adosado (ayuda de búsqueda F4): el borde, el anillo de foco y el estado
+     de error son del grupo, así el contorno rodea campo y botón en lugar de pisar el botón. */
+  .field-group {
+    @apply inline-flex min-h-7 items-stretch rounded-sm border border-border-strong bg-surface;
+  }
+
+  .field-group:has(input:focus-visible) {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .field-group:has(input[aria-invalid='true']) {
+    @apply border-error bg-error-soft;
+  }
+
+  .field-group:has(input:disabled) {
+    @apply cursor-not-allowed bg-surface-alt text-ink-muted;
+  }
+
+  .field-group > input {
+    @apply min-w-0 rounded-s-sm border-0 bg-transparent px-2 text-ink outline-none disabled:cursor-not-allowed;
+  }
+
+  .field-group > button {
+    @apply inline-flex min-w-7 items-center justify-center rounded-e-sm border-s border-border-strong hover:bg-hover disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  @media (pointer: coarse) {
+    .field-group {
+      @apply min-h-11;
+    }
+
+    .field-group > button {
+      @apply min-w-11;
+    }
+  }
+
   /* Confirmación modal (shared/ui/ConfirmDialog.tsx) sobre <dialog> nativo. overscroll-behavior
      en el diálogo y en ::backdrop (que necesita overflow para ser contenedor de scroll) evita
      que el desplazamiento llegue a la página de abajo, sin bloquear el scroll de html o body. */

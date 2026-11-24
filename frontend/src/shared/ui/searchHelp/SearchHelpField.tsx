@@ -144,11 +144,11 @@ export function SearchHelpField<TData extends RowData>({
 
   return (
     <div ref={wrapperRef} className={`flex min-w-0 items-center gap-2 ${className}`}>
-      <div className="flex shrink-0 items-center">
+      <div className="field-group shrink-0">
         <input
           ref={inputRef}
           id={id}
-          className="field-input w-40 rounded-e-none"
+          className="w-40"
           autoComplete="off"
           disabled={disabled}
           aria-invalid={invalid || undefined}
@@ -169,7 +169,6 @@ export function SearchHelpField<TData extends RowData>({
         />
         <button
           type="button"
-          className="inline-flex min-h-7 min-w-7 items-center justify-center rounded-e-sm border border-s-0 border-border-strong bg-surface hover:bg-hover disabled:cursor-not-allowed disabled:opacity-60 pointer-coarse:min-h-11 pointer-coarse:min-w-11"
           aria-label={openLabel}
           aria-haspopup="dialog"
           aria-keyshortcuts="F4"
