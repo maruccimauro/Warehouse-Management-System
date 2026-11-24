@@ -4,6 +4,7 @@ import { problemMessage } from '@/shared/errors/problemMessage';
 import { ApiError } from '@/shared/api/ApiError';
 import { Button } from '@/shared/ui/Button';
 import { AuthenticatedUserContext } from './authenticatedUserContext';
+import { PasswordChangeScreen } from './PasswordChangeScreen';
 import { loginRedirectState, redirectTargetFrom } from './redirectTarget';
 import { useSession } from './session';
 
@@ -57,9 +58,11 @@ export function RequireAuth() {
     return <Navigate to="/login" replace state={loginRedirectState(location)} />;
   }
 
+  // Con una contraseña inicial o reseteada solo se puede cambiarla (REG-021): en lugar de
+  // la ruta pedida se muestra el cambio, que no tiene ruta propia y no se puede saltear.
   return (
     <AuthenticatedUserContext value={session.data}>
-      <Outlet />
+      {session.data.password_change_required ? <PasswordChangeScreen /> : <Outlet />}
     </AuthenticatedUserContext>
   );
 }

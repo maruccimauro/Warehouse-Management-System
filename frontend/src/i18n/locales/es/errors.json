@@ -12,6 +12,8 @@
     "SESSION_REQUIRED": "La autenticación requiere una sesión del navegador.",
     "NETWORK_ERROR": "No fue posible conectar con el servidor. Verifique la conexión e intente nuevamente.",
     "INVALID_RESPONSE": "La respuesta del servidor no tiene el formato esperado. Si el problema continúa, contacte al administrador.",
-    "UNKNOWN": "No fue posible completar la operación."
+    "UNKNOWN": "No fue posible completar la operación.",
+    "USER_INACTIVE": "La cuenta está desactivada. Para volver a ingresar, contacte al administrador.",
+    "PASSWORD_CHANGE_REQUIRED": "Antes de continuar es necesario cambiar la contraseña."
   }
 }

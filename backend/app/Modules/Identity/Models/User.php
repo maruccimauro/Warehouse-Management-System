@@ -23,6 +23,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property bool $is_active
  * @property bool $password_change_required
  * @property string $locale
+ * @property bool $show_technical_names
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -46,6 +47,7 @@ class User extends Authenticatable
         'is_active' => true,
         'password_change_required' => false,
         'locale' => 'es',
+        'show_technical_names' => false,
     ];
 
     /**
@@ -59,6 +61,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'password_change_required' => 'boolean',
+            'show_technical_names' => 'boolean',
         ];
     }
 

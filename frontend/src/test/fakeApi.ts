@@ -36,6 +36,9 @@ export function testUser(overrides: Partial<AuthenticatedUser> = {}): Authentica
     id: 1,
     name: 'Operador de Prueba',
     email: 'operador@wms.test',
+    locale: 'es',
+    show_technical_names: false,
+    password_change_required: false,
     roles: [],
     permissions: [],
     warehouses: [],
@@ -51,10 +54,18 @@ function parseBody(init: RequestInit | undefined): unknown {
   return typeof init?.body === 'string' ? (JSON.parse(init.body) as unknown) : undefined;
 }
 
+export interface ServerPreferences {
+  parameters: { LGN: string | null };
+  favorites: string[];
+}
+
 // Doble de la API sobre fetch, por método y ruta ("POST /api/v1/auth/login"). Sin handler
 // propio, la cookie CSRF se entrega como lo hace Sanctum y /auth/me responde sin sesión.
-export function stubApi(handlers: Record<string, Handler> = {}) {
+// Parámetros y favoritos se guardan en memoria durante la prueba, como en el servidor, y
+// PATCH /me devuelve el usuario de /auth/me con los cambios aplicados.
+export function stubApi(handlers: Record<string, Handler> = {}, initial: Partial<ServerPreferences> = {}) {
   const requests: RecordedRequest[] = [];
+  const preferences: ServerPreferences = { parameters: { LGN: null }, favorites: [], ...initial };
   const defaults: Record<string, Handler> = {
     'GET /sanctum/csrf-cookie': () => {
       document.cookie = `XSRF-TOKEN=${testXsrfToken}; path=/`;
@@ -62,6 +73,29 @@ export function stubApi(handlers: Record<string, Handler> = {}) {
       return new Response(null, { status: 204 });
     },
     'GET /api/v1/auth/me': () => problemResponse(401, 'UNAUTHENTICATED'),
+    'GET /api/v1/me/parameters': () => jsonResponse(200, { data: preferences.parameters }),
+    'PUT /api/v1/me/parameters': (request) => {
+      preferences.parameters = request.body as ServerPreferences['parameters'];
+
+      return jsonResponse(200, { data: preferences.parameters });
+    },
+    'GET /api/v1/me/favorites': () => jsonResponse(200, { data: preferences.favorites }),
+    'PUT /api/v1/me/favorites': (request) => {
+      preferences.favorites = (request.body as { favorites: string[] }).favorites;
+
+      return jsonResponse(200, { data: preferences.favorites });
+    },
+    'PATCH /api/v1/me': async (request) => {
+      const me = handlers['GET /api/v1/auth/me'];
+
+      if (me === undefined) {
+        return problemResponse(401, 'UNAUTHENTICATED');
+      }
+
+      const current = (await (await me(request)).json()) as { data: AuthenticatedUser };
+
+      return userResponse({ ...current.data, ...(request.body as Partial<AuthenticatedUser>) });
+    },
   };
 
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
@@ -89,6 +123,7 @@ export function stubApi(handlers: Record<string, Handler> = {}) {
 
   return {
     requests,
+    preferences,
     requestsTo: (method: string, path: string) => requests.filter((r) => r.method === method && r.path === path),
   };
 }

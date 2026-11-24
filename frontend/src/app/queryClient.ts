@@ -1,5 +1,5 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
-import { endSession, isUnauthenticated } from '@/features/auth/session';
+import { endSession, isPasswordChangeRequired, isUnauthenticated, requirePasswordChange } from '@/features/auth/session';
 import { ApiError } from '@/shared/api/ApiError';
 
 const maxQueryRetries = 2;
@@ -15,9 +15,12 @@ export function createQueryClient(): QueryClient {
   // Un 401 en cualquier consulta o mutación significa que la sesión expiró: se descarta la
   // caché y la sesión pasa a null, con lo que RequireAuth lleva al login desde cualquier
   // pantalla. La consulta de sesión no entra acá porque convierte el 401 en null.
+  // Un 403 PASSWORD_CHANGE_REQUIRED (REG-021) vuelve al cambio de contraseña obligatorio.
   const onError = (error: unknown) => {
     if (isUnauthenticated(error)) {
       endSession(queryClient);
+    } else if (isPasswordChangeRequired(error)) {
+      requirePasswordChange(queryClient);
     }
   };
 

@@ -95,14 +95,15 @@ Todo recurso que pertenece a un depósito respeta REG-005 con `App\Modules\Ident
 - La Policy devuelve `authorizeView()` para consultar y `authorizeOperation()` con el permiso de la acción para operar. El orden es 404 fuera del alcance de consulta, 403 sin operación en el depósito y 403 sin el permiso.
 - Toda Action que opera sobre un depósito (movimientos, documentos, bloqueo de ubicaciones) llama primero, dentro de su transacción, a `App\Modules\Warehouse\Actions\LockActiveWarehouse`: toma la fila del depósito con `FOR SHARE` (nivel 0 de ADR-003) y responde 422 `WAREHOUSE_INACTIVE` si está inactivo (REG-015). El mantenimiento de zonas y ubicaciones no es una operación y no la llama.
 
-## Estado de la cuenta
+## Estado de la cuenta e idioma
 
-`IdentityServiceProvider` agrega al grupo `api` dos middlewares que valen para toda ruta autenticada de cualquier módulo, sin declararlos en cada archivo de rutas:
+`IdentityServiceProvider` agrega al grupo `api` tres middlewares que valen para toda ruta autenticada de cualquier módulo, sin declararlos en cada archivo de rutas:
 
+- `ApplyPreferredLocale`: el idioma del usuario (`users.locale`) tiene prioridad sobre el que resolvió `SetLocale` con `Accept-Language` (E2.21). `SetLocale` es global y corre antes de que exista la sesión, por eso la preferencia se aplica acá, antes de validar la petición.
 - `EnsureUserIsActive`: la sesión de un usuario desactivado se cierra con 401 (REG-020).
 - `RequirePasswordChange`: con una contraseña inicial o reseteada, solo `auth.me`, `auth.logout` y `me.password.update` responden; el resto, 403 `PASSWORD_CHANGE_REQUIRED` (REG-021). Una ruta nueva que deba admitirse en ese estado se agrega a `RequirePasswordChange::ALLOWED_ROUTES`.
 
-El modelo `User` repite en `$attributes` los valores por defecto de la base (`is_active`, `password_change_required`, `locale`): sin ellos, un usuario recién creado no los tiene en memoria y el middleware lo tomaría como inactivo.
+El modelo `User` repite en `$attributes` los valores por defecto de la base (`is_active`, `password_change_required`, `locale`, `show_technical_names`): sin ellos, un usuario recién creado no los tiene en memoria y el middleware lo tomaría como inactivo.
 
 ## Auditoría
 

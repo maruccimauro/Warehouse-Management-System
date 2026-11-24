@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { AuthenticatedUser } from '@/features/auth/authApi';
-import { stubApi, testUser, userResponse } from '@/test/fakeApi';
+import { problemResponse, stubApi, testUser, userResponse } from '@/test/fakeApi';
 import { renderRoute } from '@/test/renderRoute';
 
 const warehouses = [
@@ -42,7 +42,7 @@ describe('armazón: campo de comando', () => {
     expect(heading()).toHaveTextContent('Parámetros de usuario');
     // La transacción se carga en diferido: el foco llega cuando su contenido está en el DOM.
     await waitFor(() => {
-      expect(screen.getByLabelText('LGN')).toHaveFocus();
+      expect(screen.getByLabelText('Idioma')).toHaveFocus();
     });
     expect(statusBar().getByText('SU3')).toBeInTheDocument();
     expect(document.title).toBe('SU3 Parámetros de usuario · WMS');
@@ -215,9 +215,10 @@ describe('armazón: árbol de transacciones', () => {
 });
 
 describe('SU3: parámetros de usuario', () => {
-  it('graba el depósito por defecto con Ctrl+S y lo recuerda', async () => {
-    const { unmount } = await renderShell('/t/SU3', testUser({ warehouses }));
-    const lgn = screen.getByLabelText('LGN');
+  it('graba el depósito por defecto en el servidor con Ctrl+S', async () => {
+    const api = stubApi({ 'GET /api/v1/auth/me': () => userResponse(testUser({ warehouses })) });
+    renderRoute('/t/SU3');
+    const lgn = await screen.findByLabelText('LGN');
 
     expect(lgn).toHaveDisplayValue('Sin valor');
     expect(statusBar().getByText('ninguno')).toBeInTheDocument();
@@ -225,35 +226,59 @@ describe('SU3: parámetros de usuario', () => {
     await userEvent.selectOptions(lgn, 'NOR: Norte');
     await userEvent.keyboard('{Control>}s{/Control}');
 
-    expect(statusBar().getByRole('status')).toHaveTextContent('Los parámetros de usuario se grabaron.');
+    expect(await statusBar().findByText('Los parámetros de usuario se grabaron.')).toBeInTheDocument();
     expect(statusBar().getByText('NOR')).toBeInTheDocument();
-
-    unmount();
-    await renderShell('/t/SU3', testUser({ warehouses }));
-
-    expect(screen.getByLabelText('LGN')).toHaveDisplayValue('NOR: Norte');
+    expect(api.requestsTo('PUT', '/api/v1/me/parameters')[0]?.body).toEqual({ LGN: 'NOR' });
+    // El idioma no cambió: no se envía.
+    expect(api.requestsTo('PATCH', '/api/v1/me')).toHaveLength(0);
   });
 
-  it('descarta un depósito guardado que ya no está asignado', async () => {
-    const { unmount } = await renderShell('/t/SU3', testUser({ warehouses }));
+  it('muestra el valor grabado en el servidor', async () => {
+    stubApi({ 'GET /api/v1/auth/me': () => userResponse(testUser({ warehouses })) }, { parameters: { LGN: 'NOR' } });
+    renderRoute('/t/SU3');
 
-    await userEvent.selectOptions(screen.getByLabelText('LGN'), 'NOR: Norte');
-    await userEvent.click(screen.getByRole('button', { name: 'Grabar' }));
-    unmount();
+    expect(await screen.findByLabelText('LGN')).toHaveDisplayValue('NOR: Norte');
+  });
 
-    await renderShell('/t/SU3', testUser({ warehouses: warehouses.slice(0, 1) }));
+  it('descarta un depósito grabado que ya no está asignado', async () => {
+    stubApi(
+      { 'GET /api/v1/auth/me': () => userResponse(testUser({ warehouses: warehouses.slice(0, 1) })) },
+      { parameters: { LGN: 'NOR' } },
+    );
+    renderRoute('/t/SU3');
 
-    expect(screen.getByLabelText('LGN')).toHaveDisplayValue('Sin valor');
+    expect(await screen.findByLabelText('LGN')).toHaveDisplayValue('Sin valor');
     expect(statusBar().getByText('ninguno')).toBeInTheDocument();
   });
 
-  it('sin depósitos asignados el parámetro queda deshabilitado y el foco va al título', async () => {
+  it('informa en la barra de estado una grabación rechazada', async () => {
+    stubApi({
+      'GET /api/v1/auth/me': () => userResponse(testUser({ warehouses })),
+      'PUT /api/v1/me/parameters': () => problemResponse(422, 'VALIDATION_FAILED', { errors: { LGN: ['El valor no es válido.'] } }),
+    });
+    renderRoute('/t/SU3');
+
+    await userEvent.selectOptions(await screen.findByLabelText('LGN'), 'NOR: Norte');
+    await userEvent.keyboard('{Control>}s{/Control}');
+
+    expect(await statusBar().findByRole('alert')).toHaveTextContent('Los datos ingresados no son válidos.');
+  });
+
+  it('sin depósitos asignados el parámetro queda deshabilitado', async () => {
     await renderShell();
     await runCommand('SU3');
 
-    expect(screen.getByLabelText('LGN')).toBeDisabled();
+    expect(await screen.findByLabelText('LGN')).toBeDisabled();
     expect(screen.getByLabelText('LGN')).toHaveDisplayValue('Sin depósitos asignados');
-    expect(heading()).toHaveFocus();
+  });
+
+  it('ofrece solo los idiomas que la interfaz tiene traducidos', async () => {
+    await renderShell('/t/SU3', testUser({ locale: 'en' }));
+
+    const language = await screen.findByLabelText('Idioma');
+
+    expect(within(language).getAllByRole('option').map((option) => option.textContent)).toEqual(['Español']);
+    expect(language).toHaveValue('es');
   });
 });
 

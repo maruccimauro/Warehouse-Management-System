@@ -3,6 +3,7 @@
 namespace App\Modules\Identity;
 
 use App\Modules\Identity\Console\SyncAuthorizationCommand;
+use App\Modules\Identity\Http\Middleware\ApplyPreferredLocale;
 use App\Modules\Identity\Http\Middleware\EnsureUserIsActive;
 use App\Modules\Identity\Http\Middleware\RequirePasswordChange;
 use App\Modules\Identity\Models\User;
@@ -113,7 +114,8 @@ class IdentityServiceProvider extends ModuleServiceProvider
     }
 
     /**
-     * Estado de la cuenta en cada petición de la API (REG-020, REG-021): una
+     * Idioma preferido del usuario (ApplyPreferredLocale, E2.21) y estado de la
+     * cuenta en cada petición de la API (REG-020, REG-021): una
      * sesión de un usuario desactivado se cierra con 401, y una con contraseña
      * inicial o reseteada solo admite cambiarla. Van en el grupo api, después
      * del middleware de Sanctum que inicia la sesión, para no depender de que
@@ -122,6 +124,7 @@ class IdentityServiceProvider extends ModuleServiceProvider
     private function registerAccountStateMiddleware(): void
     {
         $router = $this->app->make(Router::class);
+        $router->pushMiddlewareToGroup('api', ApplyPreferredLocale::class);
         $router->pushMiddlewareToGroup('api', EnsureUserIsActive::class);
         $router->pushMiddlewareToGroup('api', RequirePasswordChange::class);
     }

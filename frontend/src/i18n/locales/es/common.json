@@ -8,6 +8,7 @@
     "retry": "Reintentar"
   },
   "status": {
-    "loadingSession": "Verificando la sesión…"
+    "loadingSession": "Verificando la sesión…",
+    "loadingPreferences": "Cargando las preferencias del usuario…"
   }
 }

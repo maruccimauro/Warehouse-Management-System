@@ -32,7 +32,7 @@ class AuthenticatedUserResource extends JsonResource
     }
 
     /**
-     * @return array{id: int, name: string, email: string, password_change_required: bool, roles: list<string>, permissions: list<string>, warehouses: list<array{id: int, code: string, name: string}>}
+     * @return array{id: int, name: string, email: string, locale: string, show_technical_names: bool, password_change_required: bool, roles: list<string>, permissions: list<string>, warehouses: list<array{id: int, code: string, name: string}>}
      */
     public function toArray(Request $request): array
     {
@@ -40,6 +40,10 @@ class AuthenticatedUserResource extends JsonResource
             'id' => $this->resource->id,
             'name' => $this->resource->name,
             'email' => $this->resource->email,
+            // Preferencias que viven en users (E2.21): la SPA aplica el idioma y
+            // la opción de mostrar códigos al cargar la sesión.
+            'locale' => $this->resource->locale,
+            'show_technical_names' => $this->resource->show_technical_names,
             // Con true, la SPA muestra el cambio de contraseña: el resto de la
             // API responde 403 PASSWORD_CHANGE_REQUIRED (REG-021).
             'password_change_required' => $this->resource->password_change_required,

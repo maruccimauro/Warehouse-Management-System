@@ -104,6 +104,19 @@ describe('formulario de login', () => {
     expect(password).toHaveFocus();
   });
 
+  it('informa una cuenta desactivada con su mensaje propio (REG-020)', async () => {
+    stubApi({ 'POST /api/v1/auth/login': () => problemResponse(403, 'USER_INACTIVE') });
+    const { email, password, submit } = renderForm();
+
+    await userEvent.type(email, 'operador@wms.test');
+    await userEvent.type(password, 'clave-correcta');
+    await userEvent.click(submit);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'La cuenta está desactivada. Para volver a ingresar, contacte al administrador.',
+    );
+  });
+
   it('muestra en cada campo los errores de validación del servidor', async () => {
     stubApi({
       'POST /api/v1/auth/login': () =>

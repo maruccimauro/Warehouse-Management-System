@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Identity\Http\Controllers\AuthController;
+use App\Modules\Identity\Http\Controllers\OwnPreferencesController;
 use App\Modules\Identity\Http\Controllers\PasswordController;
 use App\Modules\Identity\Http\Controllers\RoleController;
 use App\Modules\Identity\Http\Controllers\UserController;
@@ -25,6 +26,14 @@ Route::middleware('auth:sanctum')->group(function () use ($id) {
     Route::put('/me/password', [PasswordController::class, 'update'])
         ->middleware('throttle:password-change')
         ->name('me.password.update');
+
+    // Preferencias propias (E2.21): parámetros de SU3, favoritos, idioma y
+    // mostrar códigos. Reemplazo completo en parámetros y favoritos.
+    Route::patch('/me', [OwnPreferencesController::class, 'update'])->name('me.update');
+    Route::get('/me/parameters', [OwnPreferencesController::class, 'parameters'])->name('me.parameters.show');
+    Route::put('/me/parameters', [OwnPreferencesController::class, 'updateParameters'])->name('me.parameters.update');
+    Route::get('/me/favorites', [OwnPreferencesController::class, 'favorites'])->name('me.favorites.show');
+    Route::put('/me/favorites', [OwnPreferencesController::class, 'updateFavorites'])->name('me.favorites.update');
 
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');

@@ -270,18 +270,20 @@ function ShellLayout() {
 
 // Armazón inspirado en SAP GUI (ADR-016): campo de comando y barra de herramientas
 // estándar, árbol de transacciones, título de la pantalla y barra de estado.
+// La barra de estado envuelve a las preferencias: una grabación de favoritos o de mostrar
+// códigos que el servidor rechaza se informa ahí.
 export function AppShell() {
   const user = useAuthenticatedUser();
 
   return (
-    <UserPreferencesProvider key={user.id} userId={user.id}>
-      <StatusBarProvider>
+    <StatusBarProvider>
+      <UserPreferencesProvider key={user.id}>
         <ShellActionsProvider>
           <UnsavedChangesProvider>
             <ShellLayout />
           </UnsavedChangesProvider>
         </ShellActionsProvider>
-      </StatusBarProvider>
-    </UserPreferencesProvider>
+      </UserPreferencesProvider>
+    </StatusBarProvider>
   );
 }

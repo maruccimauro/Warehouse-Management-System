@@ -2,16 +2,18 @@
 
 namespace App\Shared\Http\Middleware;
 
+use App\Shared\Localization\SupportedLocales;
 use Closure;
-use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Resuelve el idioma de la petición: preferencia del usuario (columna
- * users.locale, en E2), luego Accept-Language y, si no coincide ninguno, el
- * primero de app.supported_locales.
+ * Resuelve el idioma de la petición: Accept-Language y, si no coincide
+ * ninguno, el primero de app.supported_locales. La preferencia del usuario
+ * (users.locale) tiene prioridad: la aplica ApplyPreferredLocale del módulo
+ * Identity en el grupo api, porque este middleware es global y corre antes de
+ * que exista la sesión.
  *
  * Es middleware global para que también salgan traducidos los errores que se
  * producen antes de llegar a la ruta: 404 de ruta inexistente, 419 de CSRF y
@@ -21,45 +23,22 @@ final readonly class SetLocale
 {
     public function __construct(
         private Application $app,
-        private Config $config,
+        private SupportedLocales $locales,
     ) {}
 
     public function handle(Request $request, Closure $next): Response
     {
-        $locale = $this->resolve($request);
-        $this->app->setLocale($locale);
+        $supported = $this->locales->all();
+        $this->app->setLocale($request->getPreferredLanguage($supported) ?? $supported[0]);
 
         /** @var Response $response */
         $response = $next($request);
 
-        $response->headers->set('Content-Language', $locale);
+        // El idioma vigente al terminar: puede ser el preferido del usuario.
+        $response->headers->set('Content-Language', $this->app->getLocale());
         // Las cachés intermedias deben distinguir la respuesta según el idioma pedido.
         $response->setVary('Accept-Language', false);
 
         return $response;
-    }
-
-    private function resolve(Request $request): string
-    {
-        $supported = $this->supportedLocales();
-
-        return $request->getPreferredLanguage($supported) ?? $supported[0];
-    }
-
-    /**
-     * @return non-empty-list<string>
-     */
-    private function supportedLocales(): array
-    {
-        $configured = $this->config->get('app.supported_locales');
-        $locales = is_array($configured) ? array_values(array_filter($configured, is_string(...))) : [];
-
-        if ($locales === []) {
-            $fallback = $this->config->get('app.locale');
-
-            return [is_string($fallback) ? $fallback : 'es'];
-        }
-
-        return $locales;
     }
 }

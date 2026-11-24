@@ -17,5 +17,20 @@
   "noWarehouses": "Sin depósitos asignados",
   "warehouseOption": "{{code}}: {{name}}",
   "saveHint": "Los cambios se aplican al grabar (Ctrl+S).",
-  "saved": "Los parámetros de usuario se grabaron."
+  "saved": "Los parámetros de usuario se grabaron.",
+  "settings": {
+    "title": "Valores fijos",
+    "language": "Idioma",
+    "languageDescription": "Idioma de la interfaz y de los mensajes del sistema."
+  },
+  "languages": {
+    "es": "Español"
+  },
+  "password": {
+    "title": "Contraseña",
+    "description": "Cambie la contraseña de su cuenta. Se pide la contraseña actual.",
+    "change": "Cambiar contraseña",
+    "changed": "La contraseña se cambió. Las demás sesiones abiertas se cerraron."
+  },
+  "saveFailed": "No fue posible grabar los parámetros de usuario."
 }

@@ -21,7 +21,7 @@ La interfaz necesita una dirección visual y de interacción común antes de que
 | Rutas | No aplica | Cada transacción es una ruta (`/t/MIGO`): el botón atrás del navegador, los enlaces y las pestañas funcionan |
 | Barra de herramientas estándar | Confirmar, grabar, atrás, finalizar, cancelar | Confirmar, grabar, atrás, finalizar y agregar a favoritos. Cada transacción habilita las acciones que admite |
 | Barra de estado | Mensajes tipo S (éxito), W (advertencia), E (error) e I (información), con clase y número de mensaje | Mismos tipos. El identificador del mensaje es el `code` del Problem Details (ADR-010). A la derecha muestra transacción, depósito por defecto, usuario e idioma |
-| Parámetros de usuario | SU3, con IDs de parámetro (`LGN` número de almacén, `WRK` centro) que completan los campos de las pantallas iniciales | Transacción `SU3` con el parámetro `LGN` (depósito por defecto). En E1 se guarda en el navegador; en E2 pasa al servidor |
+| Parámetros de usuario | SU3, con IDs de parámetro (`LGN` número de almacén, `WRK` centro) que completan los campos de las pantallas iniciales | Transacción `SU3` con el idioma (valores fijos), el parámetro `LGN` (depósito por defecto) y el cambio voluntario de contraseña. Desde E2.21 parámetros, favoritos, idioma y mostrar códigos se guardan en el servidor (DM-24); el historial del campo de comando queda en el navegador, como en SAP GUI. El selector ofrece solo los idiomas que la interfaz tiene traducidos |
 | Selección de depósito | Campo en la pantalla inicial de cada transacción, completado desde el parámetro, con F4 | Igual: no existe un depósito activo global. Cada pantalla muestra el depósito sobre el que opera y F4 ofrece solo los asignados al usuario (REG-005) |
 | F4 | Ayuda de búsqueda con criterios y lista de resultados | Componente genérico de campo con ayuda de búsqueda (E2.17): depósito, producto, ubicación, código de movimiento |
 | ALV | Grilla con orden, filtro, totales, subtotales, selección de columnas, layouts y exportación | Grilla sobre TanStack Table (E2.00). Los layouts guardados quedan para después del MVP |
@@ -104,5 +104,6 @@ Se usa el código de SAP donde la transacción tiene equivalente y el rango `ZW`
 - Toda pantalla nueva es una transacción registrada con código, título, carpeta del árbol, clave de ayuda y, desde E2, permiso requerido.
 - Las pantallas de E2 en adelante usan los componentes de E2.00, E2.17 y E2.18 (grilla, campo con F4, pantalla de selección) y no tablas ni selectores propios.
 - El depósito es un campo de cada pantalla operativa; las consultas del frontend incluyen el depósito en su clave de caché.
-- Los parámetros de usuario y los favoritos pasan al servidor en E2, junto con `users.locale`.
+- Los parámetros de usuario, los favoritos, el idioma y mostrar códigos se guardan en el servidor desde E2.21 (DM-24). Lo guardado en el navegador en E1 se sube una sola vez: cada preferencia solo completa lo que el servidor tiene vacío.
+- Una contraseña inicial o reseteada reemplaza el armazón por la pantalla de cambio, sin ruta propia, como el diálogo de clave inicial de SAP (REG-021). Un 403 `PASSWORD_CHANGE_REQUIRED` a mitad de la sesión vuelve a esa pantalla.
 - Pasa a Aceptado al cerrar E2.00, E2.17 y E2.18, con lo aprendido al construir la grilla y las ayudas de búsqueda.

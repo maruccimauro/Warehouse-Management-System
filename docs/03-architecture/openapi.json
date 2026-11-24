@@ -1848,6 +1848,387 @@
                 ]
             }
         },
+        "/me": {
+            "patch": {
+                "operationId": "me.update",
+                "tags": [
+                    "OwnPreferences"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateOwnSettingsRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`AuthenticatedUserResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/AuthenticatedUserResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "`UNAUTHENTICATED`: Unauthorized",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsUnauthenticated"
+                                }
+                            }
+                        }
+                    },
+                    "419": {
+                        "description": "`CSRF_TOKEN_MISMATCH`: Page Expired",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsCsrfTokenMismatch"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "`PASSWORD_CHANGE_REQUIRED`: Debe cambiar la contrase\u00f1a antes de continuar.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsPasswordChangeRequired"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "`VALIDATION_FAILED`: Los datos enviados no son v\u00e1lidos.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsValidationFailed"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sessionCookie": [],
+                        "xsrfToken": []
+                    }
+                ]
+            }
+        },
+        "/me/parameters": {
+            "get": {
+                "operationId": "me.parameters.show",
+                "tags": [
+                    "OwnPreferences"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "LGN": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "LGN"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "`UNAUTHENTICATED`: Unauthorized",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsUnauthenticated"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "`PASSWORD_CHANGE_REQUIRED`: Debe cambiar la contrase\u00f1a antes de continuar.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsPasswordChangeRequired"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sessionCookie": []
+                    }
+                ]
+            },
+            "put": {
+                "operationId": "me.parameters.update",
+                "tags": [
+                    "OwnPreferences"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateOwnParametersRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "LGN": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "LGN"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "`UNAUTHENTICATED`: Unauthorized",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsUnauthenticated"
+                                }
+                            }
+                        }
+                    },
+                    "419": {
+                        "description": "`CSRF_TOKEN_MISMATCH`: Page Expired",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsCsrfTokenMismatch"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "`PASSWORD_CHANGE_REQUIRED`: Debe cambiar la contrase\u00f1a antes de continuar.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsPasswordChangeRequired"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "`VALIDATION_FAILED`: Los datos enviados no son v\u00e1lidos.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsValidationFailed"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sessionCookie": [],
+                        "xsrfToken": []
+                    }
+                ]
+            }
+        },
+        "/me/favorites": {
+            "get": {
+                "operationId": "me.favorites.show",
+                "tags": [
+                    "OwnPreferences"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "`UNAUTHENTICATED`: Unauthorized",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsUnauthenticated"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "`PASSWORD_CHANGE_REQUIRED`: Debe cambiar la contrase\u00f1a antes de continuar.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsPasswordChangeRequired"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sessionCookie": []
+                    }
+                ]
+            },
+            "put": {
+                "operationId": "me.favorites.update",
+                "tags": [
+                    "OwnPreferences"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateOwnFavoritesRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "`UNAUTHENTICATED`: Unauthorized",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsUnauthenticated"
+                                }
+                            }
+                        }
+                    },
+                    "419": {
+                        "description": "`CSRF_TOKEN_MISMATCH`: Page Expired",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsCsrfTokenMismatch"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "`PASSWORD_CHANGE_REQUIRED`: Debe cambiar la contrase\u00f1a antes de continuar.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsPasswordChangeRequired"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "`VALIDATION_FAILED`: Los datos enviados no son v\u00e1lidos.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsValidationFailed"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sessionCookie": [],
+                        "xsrfToken": []
+                    }
+                ]
+            }
+        },
         "/me/password": {
             "put": {
                 "operationId": "me.password.update",
@@ -6104,6 +6485,13 @@
                     "email": {
                         "type": "string"
                     },
+                    "locale": {
+                        "type": "string",
+                        "description": "Preferencias que viven en users (E2.21): la SPA aplica el idioma y\nla opci\u00f3n de mostrar c\u00f3digos al cargar la sesi\u00f3n."
+                    },
+                    "show_technical_names": {
+                        "type": "boolean"
+                    },
                     "password_change_required": {
                         "type": "boolean",
                         "description": "Con true, la SPA muestra el cambio de contrase\u00f1a: el resto de la\nAPI responde 403 PASSWORD_CHANGE_REQUIRED (REG-021)."
@@ -6129,6 +6517,8 @@
                     "id",
                     "name",
                     "email",
+                    "locale",
+                    "show_technical_names",
                     "password_change_required",
                     "roles",
                     "permissions",
@@ -7683,6 +8073,62 @@
                     }
                 },
                 "title": "UpdateLocationRequest"
+            },
+            "UpdateOwnFavoritesRequest": {
+                "type": "object",
+                "description": "Favoritos del \u00e1rbol de transacciones (PUT /me/favorites, E2.21). Lista\nordenada completa de c\u00f3digos distintos. Solo se valida el formato: el\nregistro de transacciones vive en el frontend, que ignora los c\u00f3digos que\nya no existen o que el usuario no puede abrir.",
+                "properties": {
+                    "favorites": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "pattern": "^[A-Z][A-Z0-9_]{1,19}$"
+                        },
+                        "maxItems": 50,
+                        "uniqueItems": true
+                    }
+                },
+                "required": [
+                    "favorites"
+                ],
+                "title": "UpdateOwnFavoritesRequest"
+            },
+            "UpdateOwnParametersRequest": {
+                "type": "object",
+                "description": "Par\u00e1metros de usuario de SU3 (PUT /me/parameters, E2.21). Reemplazo\ncompleto: cada ID admitido es obligatorio en el cuerpo y null lo borra.\nLGN debe ser el c\u00f3digo de un dep\u00f3sito activo donde el usuario opera\n(REG-005), los mismos que ofrece SU3.",
+                "properties": {
+                    "LGN": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "",
+                            null
+                        ]
+                    }
+                },
+                "required": [
+                    "LGN"
+                ],
+                "title": "UpdateOwnParametersRequest"
+            },
+            "UpdateOwnSettingsRequest": {
+                "type": "object",
+                "description": "Preferencias propias en users (PATCH /me, E2.21): idioma y mostrar los\nc\u00f3digos de transacci\u00f3n. Cada clave ausente queda como est\u00e1.",
+                "properties": {
+                    "locale": {
+                        "type": "string",
+                        "enum": [
+                            "es",
+                            "en"
+                        ]
+                    },
+                    "show_technical_names": {
+                        "type": "boolean"
+                    }
+                },
+                "title": "UpdateOwnSettingsRequest"
             },
             "UpdateProductRequest": {
                 "type": "object",

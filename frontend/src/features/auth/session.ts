@@ -8,6 +8,18 @@ export function isUnauthenticated(error: unknown): boolean {
   return error instanceof ApiError && error.code === 'UNAUTHENTICATED';
 }
 
+export function isPasswordChangeRequired(error: unknown): boolean {
+  return error instanceof ApiError && error.code === 'PASSWORD_CHANGE_REQUIRED';
+}
+
+// El administrador reseteó la contraseña con la sesión abierta: la sesión pasa a exigir el
+// cambio y RequireAuth vuelve a mostrarlo, sin esperar a la próxima consulta de /auth/me.
+export function requirePasswordChange(queryClient: QueryClient): void {
+  queryClient.setQueryData<AuthenticatedUser | null>(sessionQueryKey, (user) =>
+    user === null || user === undefined ? user : { ...user, password_change_required: true },
+  );
+}
+
 // La sesión es el resultado de GET /auth/me: un 401 UNAUTHENTICATED no es un error sino
 // "no hay sesión" (null). Cualquier otra falla (red, 500) queda como error de la consulta.
 export const sessionQueryOptions = queryOptions({

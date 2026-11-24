@@ -71,6 +71,7 @@ describe('armazón: aviso de datos sin grabar', () => {
     await renderSu3WithChanges();
 
     fireEvent.keyDown(window, { key: 's', ctrlKey: true });
+    await screen.findByText('Los parámetros de usuario se grabaron.');
     fireEvent.keyDown(window, { key: 'F3' });
 
     await waitFor(() => {
