@@ -1,23 +1,29 @@
-import { useId, useRef, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTransactionActions } from '@/app/shell/shellActions';
-import { errorMessage, useStatusBar } from '@/app/shell/statusMessages';
-import { useUnsavedChanges } from '@/app/shell/unsavedChanges';
+import { z } from 'zod';
+import { useStatusBar } from '@/app/shell/statusMessages';
+import { useTransactionForm } from '@/app/shell/useTransactionForm';
 import { PasswordChangeDialog } from '@/features/auth/PasswordChangeDialog';
 import { useAuthenticatedUser } from '@/features/auth/useAuthenticatedUser';
 import { useUserPreferences } from '@/features/preferences/userPreferences';
 import { WarehouseField } from '@/features/warehouses/WarehouseField';
 import { fallbackLanguage, isSupportedLanguage, supportedLanguages } from '@/i18n/resources';
 import { Button } from '@/shared/ui/Button';
+import { FormSection } from '@/shared/ui/form/FormSection';
 
-const sectionClass = 'rounded-sm border border-border bg-surface';
-const sectionTitleClass = 'border-b border-border bg-surface-alt px-3 py-1.5 text-sm font-semibold';
 const cellClass = 'border-b border-border px-3 py-1.5 text-start align-middle';
-const rowClass = 'grid grid-cols-[minmax(8rem,12rem)_1fr] items-center gap-x-4 gap-y-1.5 px-3 py-2';
+
+const su3Schema = z.object({
+  locale: z.string(),
+  // Código de depósito o vacío; que exista entre los asignados lo controla el campo F4 como
+  // tabla de verificación.
+  lgn: z.string(),
+});
 
 // SU3: datos propios del usuario, valores fijos y parámetros. LGN es el depósito por
 // defecto que completa el campo Depósito de las pantallas operativas (ADR-016). Como en
-// SAP, los cambios se aplican al grabar; desde E2.21 se graban en el servidor.
+// SAP, los cambios se aplican al grabar (Ctrl+S); desde E2.21 se graban en el servidor y
+// desde E2.22 la pantalla usa los bloques de formulario de transacción.
 export function OwnDataTransaction() {
   const { t } = useTranslation('su3');
   const user = useAuthenticatedUser();
@@ -25,166 +31,99 @@ export function OwnDataTransaction() {
   const { show } = useStatusBar();
   const id = useId();
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
-  const saving = useRef(false);
 
   // Un depósito guardado que ya no está asignado no se ofrece como valor.
-  const assignedCodes = new Set(user.warehouses.map((warehouse) => warehouse.code));
   const savedLgn = preferences.parameters.LGN;
-  const savedLgnValue = savedLgn !== null && assignedCodes.has(savedLgn) ? savedLgn : '';
-  const [lgn, setLgn] = useState(savedLgnValue);
-  // Un código escrito que no existe o no está asignado bloquea la grabación (D3 de E2.17).
-  const [lgnInvalid, setLgnInvalid] = useState(false);
-
-  // Solo se ofrecen los idiomas que la interfaz tiene traducidos (D7). Un idioma guardado
-  // que todavía no tiene traducción se muestra como el idioma por defecto.
+  const savedLgnValue = savedLgn !== null && user.warehouses.some((warehouse) => warehouse.code === savedLgn) ? savedLgn : '';
+  // Solo se ofrecen los idiomas que la interfaz tiene traducidos (D7 de E2.21). Un idioma
+  // guardado que todavía no tiene traducción se muestra como el idioma por defecto.
   const savedLocale = isSupportedLanguage(user.locale) ? user.locale : fallbackLanguage;
-  const [locale, setLocale] = useState<string>(savedLocale);
+  const defaultValues = useMemo(() => ({ locale: savedLocale, lgn: savedLgnValue }), [savedLocale, savedLgnValue]);
 
-  const lgnChanged = lgn !== savedLgnValue;
-  const localeChanged = locale !== savedLocale;
-
-  useUnsavedChanges(lgnChanged || localeChanged);
-
-  const save = async () => {
-    // Ctrl+S repetido mientras se graba no duplica la petición.
-    if (saving.current) {
-      return;
-    }
-
-    if (lgnInvalid) {
-      show({ type: 'E', text: t('invalidLgn') });
-
-      return;
-    }
-
-    saving.current = true;
-
-    try {
-      if (lgnChanged) {
+  const { Form, Section, Field } = useTransactionForm({
+    schema: su3Schema,
+    defaultValues,
+    namespace: 'su3',
+    serverFields: { LGN: 'lgn', locale: 'locale' },
+    savedMessage: t('saved'),
+    saveFailedMessage: t('saveFailed'),
+    onSave: async ({ locale, lgn }) => {
+      if (lgn !== defaultValues.lgn) {
         await saveParameters({ ...preferences.parameters, LGN: lgn === '' ? null : lgn });
       }
 
-      if (localeChanged) {
+      if (locale !== defaultValues.locale) {
         await saveSettings({ locale });
       }
-
-      show({ type: 'S', text: t('saved') });
-    } catch (error) {
-      show(errorMessage(error, t('saveFailed')));
-    } finally {
-      saving.current = false;
-    }
-  };
-
-  useTransactionActions({
-    save: () => {
-      void save();
     },
   });
 
-  const hasWarehouses = user.warehouses.length > 0;
-  const lgnId = `${id}-lgn`;
-  const localeId = `${id}-locale`;
+  const languageOptions = supportedLanguages.map((language) => ({ value: language, label: t(`languages.${language}`) }));
+  const lgnLabelId = `${id}-lgn-label`;
+  const lgnDescriptionId = `${id}-lgn-description`;
 
   return (
     <div className="grid max-w-4xl gap-4">
-      <section className={sectionClass} aria-labelledby={`${id}-user`}>
-        <h2 id={`${id}-user`} className={sectionTitleClass}>
-          {t('user.title')}
-        </h2>
-        <dl className="grid grid-cols-[minmax(8rem,12rem)_1fr] gap-x-4 gap-y-1.5 px-3 py-2">
+      <FormSection title={t('user.title')}>
+        <dl className="grid grid-cols-[minmax(8rem,12rem)_1fr] gap-x-4 gap-y-1.5">
           <dt className="text-ink-muted">{t('user.name')}</dt>
           <dd>{user.name}</dd>
           <dt className="text-ink-muted">{t('user.email')}</dt>
           <dd>{user.email}</dd>
         </dl>
-      </section>
+      </FormSection>
 
-      <section className={sectionClass} aria-labelledby={`${id}-settings`}>
-        <h2 id={`${id}-settings`} className={sectionTitleClass}>
-          {t('settings.title')}
-        </h2>
-        <div className={rowClass}>
-          <label htmlFor={localeId} className="text-ink-muted">
-            {t('settings.language')}
-          </label>
-          <div className="grid gap-1">
-            <select
-              id={localeId}
-              className="field-input max-w-72"
-              aria-describedby={`${localeId}-description`}
-              value={locale}
-              onChange={(event) => {
-                setLocale(event.target.value);
-              }}
-            >
-              {supportedLanguages.map((language) => (
-                <option key={language} value={language}>
-                  {t(`languages.${language}`)}
-                </option>
-              ))}
-            </select>
-            <p id={`${localeId}-description`} className="text-xs text-ink-muted">
-              {t('settings.languageDescription')}
-            </p>
+      <Form>
+        <Section name="settings">
+          <Field name="locale" options={languageOptions} description={t('settings.languageDescription')} />
+        </Section>
+
+        <Section name="parameters" plain>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead className="bg-toolbar text-xs text-ink-muted">
+                <tr>
+                  <th scope="col" className={`${cellClass} w-36`}>
+                    {t('parameters.id')}
+                  </th>
+                  <th scope="col" className={`${cellClass} w-72`}>
+                    {t('parameters.value')}
+                  </th>
+                  <th scope="col" className={cellClass}>
+                    {t('parameters.description')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row" id={lgnLabelId} className={`${cellClass} font-mono font-medium`}>
+                    {t('fields.lgn')}
+                  </th>
+                  <td className={cellClass}>
+                    {user.warehouses.length > 0 ? (
+                      <Field name="lgn" as={WarehouseField} labelledBy={lgnLabelId} describedBy={lgnDescriptionId} />
+                    ) : (
+                      <input
+                        className="field-input w-40"
+                        aria-labelledby={lgnLabelId}
+                        disabled
+                        value={t('noWarehouses')}
+                        readOnly
+                      />
+                    )}
+                  </td>
+                  <td id={lgnDescriptionId} className={`${cellClass} text-ink-muted`}>
+                    {t('parameters.descriptions.LGN')}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </div>
-      </section>
+        </Section>
+      </Form>
 
-      <section className={sectionClass} aria-labelledby={`${id}-parameters`}>
-        <h2 id={`${id}-parameters`} className={sectionTitleClass}>
-          {t('parameters.title')}
-        </h2>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead className="bg-toolbar text-xs text-ink-muted">
-              <tr>
-                <th scope="col" className={`${cellClass} w-36`}>
-                  {t('parameters.id')}
-                </th>
-                <th scope="col" className={`${cellClass} w-72`}>
-                  {t('parameters.value')}
-                </th>
-                <th scope="col" className={cellClass}>
-                  {t('parameters.description')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th scope="row" className={`${cellClass} font-mono font-medium`}>
-                  <label htmlFor={lgnId}>LGN</label>
-                </th>
-                <td className={cellClass}>
-                  {hasWarehouses ? (
-                    <WarehouseField
-                      id={lgnId}
-                      aria-describedby={`${lgnId}-description`}
-                      value={lgn}
-                      onChange={(value, valid) => {
-                        setLgn(value);
-                        setLgnInvalid(!valid);
-                      }}
-                      onMessage={show}
-                    />
-                  ) : (
-                    <input id={lgnId} className="field-input w-40" disabled value={t('noWarehouses')} readOnly />
-                  )}
-                </td>
-                <td id={`${lgnId}-description`} className={`${cellClass} text-ink-muted`}>
-                  {t('parameters.descriptions.LGN')}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section className={sectionClass} aria-labelledby={`${id}-password`}>
-        <h2 id={`${id}-password`} className={sectionTitleClass}>
-          {t('password.title')}
-        </h2>
-        <div className="flex flex-wrap items-center gap-3 px-3 py-2">
+      <FormSection title={t('password.title')}>
+        <div className="flex flex-wrap items-center gap-3">
           <p className="text-ink-muted">{t('password.description')}</p>
           <Button
             onClick={() => {
@@ -194,7 +133,7 @@ export function OwnDataTransaction() {
             {t('password.change')}
           </Button>
         </div>
-      </section>
+      </FormSection>
 
       <p className="text-xs text-ink-muted">{t('saveHint')}</p>
 

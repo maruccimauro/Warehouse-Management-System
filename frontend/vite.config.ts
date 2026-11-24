@@ -27,9 +27,15 @@ export default defineConfig({
             { name: 'vendor-router', test: /node_modules[\\/]react-router[\\/]/ },
             { name: 'vendor-query', test: /node_modules[\\/]@tanstack[\\/](react-query|query-core)[\\/]/ },
             // La grilla (E2.00) solo la cargan las transacciones con listas: chunk propio.
-            { name: 'vendor-table', test: /node_modules[\\/]@tanstack[\\/](react-table|table-core|react-store|store)[\\/]/ },
+            { name: 'vendor-table', test: /node_modules[\\/]@tanstack[\\/](react-table|table-core)[\\/]/ },
+            // Estado reactivo que comparten la grilla y los formularios.
+            { name: 'vendor-store', test: /node_modules[\\/](@tanstack[\\/](react-store|store)|use-sync-external-store)[\\/]/ },
             { name: 'vendor-i18n', test: /node_modules[\\/](i18next|react-i18next)[\\/]/ },
-            { name: 'vendor-forms', test: /node_modules[\\/](zod|react-hook-form|@hookform)[\\/]/ },
+            // Formularios (E2.22): TanStack Form y Zod.
+            {
+              name: 'vendor-forms',
+              test: /node_modules[\\/](zod|@tanstack[\\/](react-form|form-core|pacer-lite|devtools-event-client))[\\/]/,
+            },
           ],
         },
       },

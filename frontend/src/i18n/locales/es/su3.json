@@ -5,7 +5,6 @@
     "email": "Correo electrónico"
   },
   "parameters": {
-    "title": "Parámetros",
     "id": "ID de parámetro",
     "value": "Valor",
     "description": "Descripción",
@@ -13,12 +12,10 @@
       "LGN": "Depósito por defecto. Completa el campo Depósito de las pantallas operativas."
     }
   },
-  "invalidLgn": "Corrija el valor de LGN antes de grabar.",
   "noWarehouses": "Sin depósitos asignados",
   "saveHint": "Los cambios se aplican al grabar (Ctrl+S).",
   "saved": "Los parámetros de usuario se grabaron.",
   "settings": {
-    "title": "Valores fijos",
     "language": "Idioma",
     "languageDescription": "Idioma de la interfaz y de los mensajes del sistema."
   },
@@ -31,5 +28,13 @@
     "change": "Cambiar contraseña",
     "changed": "La contraseña se cambió. Las demás sesiones abiertas se cerraron."
   },
-  "saveFailed": "No fue posible grabar los parámetros de usuario."
+  "saveFailed": "No fue posible grabar los parámetros de usuario.",
+  "fields": {
+    "locale": "Idioma",
+    "lgn": "LGN"
+  },
+  "sections": {
+    "settings": "Valores fijos",
+    "parameters": "Parámetros"
+  }
 }

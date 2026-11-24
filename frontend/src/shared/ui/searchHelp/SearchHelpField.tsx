@@ -18,15 +18,19 @@ export interface SearchHelpFieldProps<TData> {
   onChange: (value: string, valid: boolean) => void;
   searchHelp: SearchHelp<TData>;
   onMessage: (message: GridMessage) => void;
-  disabled?: boolean;
+  // Al salir del campo, después de validarlo (el formulario marca el campo como visitado).
+  onBlur?: (() => void) | undefined;
+  disabled?: boolean | undefined;
   // false: sin tabla de verificación, como un límite de SELECT-OPTIONS (D4 de E2.18). Ofrece F4
   // y la descripción, pero cualquier valor es válido: un rango de A a M no exige que A exista.
-  check?: boolean;
-  required?: boolean;
+  check?: boolean | undefined;
+  required?: boolean | undefined;
   className?: string;
-  'aria-describedby'?: string;
+  'aria-describedby'?: string | undefined;
   // Nombre accesible cuando no hay un <label> propio (una celda de una tabla de entradas).
-  'aria-labelledby'?: string;
+  'aria-labelledby'?: string | undefined;
+  // Error que informa el formulario (esquema o servidor), además del de la tabla de verificación.
+  'aria-invalid'?: boolean | undefined;
 }
 
 // Campo con ayuda de búsqueda (E2.17, ADR-016). Como en SAP: F4 o el botón abren el popup,
@@ -40,12 +44,14 @@ export function SearchHelpField<TData extends RowData>({
   onChange,
   searchHelp,
   onMessage,
+  onBlur: onBlurProp,
   disabled = false,
   check = true,
   required = false,
   className = '',
   'aria-describedby': describedBy,
   'aria-labelledby': labelledBy,
+  'aria-invalid': formInvalid = false,
 }: SearchHelpFieldProps<TData>) {
   const { t } = useTranslation('searchHelp');
   const descriptionId = useId();
@@ -135,6 +141,7 @@ export function SearchHelpField<TData extends RowData>({
     }
 
     commit();
+    onBlurProp?.();
   };
 
   const select = (row: TData) => {
@@ -163,7 +170,7 @@ export function SearchHelpField<TData extends RowData>({
           disabled={disabled}
           required={required}
           aria-labelledby={labelledBy}
-          aria-invalid={invalid || undefined}
+          aria-invalid={invalid || formInvalid || undefined}
           aria-describedby={describedByIds === '' ? undefined : describedByIds}
           aria-keyshortcuts="F4"
           value={text}

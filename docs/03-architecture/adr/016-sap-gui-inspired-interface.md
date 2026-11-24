@@ -92,6 +92,28 @@ Componentes en `frontend/src/shared/ui/selection/` (E2.18): `SelectionScreen` y 
 - El estado vive en el hook: la transacción muestra el resultado, registra Atrás y F3 vuelve a la selección con lo cargado, como en SAP. No va a la URL; compartir una selección es el caso de las variantes.
 - La pantalla no es un `<form>`, sino un `<search>`: Enter confirma el campo y no ejecuta, y un `<form>` envolvería los de los popups F4 que se abren adentro.
 
+### Bloques de formulario
+
+Las transacciones se diseñan una por una en JSX, como en el Screen Painter de SAP, y lo común sale de piezas compartidas, como el diccionario de datos que da a cada campo su etiqueta, su F4 y su tabla de verificación (E2.22). `useTransactionForm` (`frontend/src/app/shell/`), sobre TanStack Form y el esquema Zod de la pantalla, devuelve `Form`, `Section` y `Field`:
+
+```tsx
+const { Form, Section, Field } = useTransactionForm({ schema, defaultValues, namespace: 'su3', onSave, savedMessage, saveFailedMessage });
+
+<Form>
+  <Section name="settings">
+    <Field name="locale" options={languageOptions} />
+    <Field name="lgn" as={WarehouseField} />
+  </Section>
+</Form>
+```
+
+- `name` está tipado contra el esquema: un nombre inexistente no compila. La etiqueta sale de `fields.<nombre>` y el título del bloque de `sections.<nombre>` en el namespace de la pantalla. Un control especial se pasa con `as`; un control con F4 informa además si el valor existe en la tabla de verificación, y un valor inexistente bloquea la grabación.
+- Los componentes se crean una sola vez por formulario: si se recrearan en cada render, React volvería a montar los campos y el foco se perdería al escribir. Cambiar `readOnly` (visualizar) los vuelve a crear, como cambiar de pantalla.
+- El error de un campo se ve al salir de él después de editarlo y desde ahí en cada cambio, o al grabar. Se muestra debajo del campo (con `aria-describedby` y `aria-invalid`) y el primero va como mensaje E a la barra de estado, con la etiqueta y el foco en el campo, como el PAI de SAP.
+- Ctrl+S graba con los valores ya transformados por el esquema; al grabar bien informa S y lo grabado pasa a ser el valor sin cambios, lo que apaga el aviso de datos sin grabar. Un 422 de Problem Details carga cada mensaje en su campo (`serverFields` traduce el nombre del backend cuando difiere) y se quita al corregir el valor.
+- Enter confirma el campo y no graba. El `<form>` cancela su envío, también el de los formularios de los popups F4 que se abren adentro.
+- Los formularios que no son transacciones (login, cambio de contraseña) usan TanStack Form directo con las mismas piezas visuales (`FormFieldLayout`, `FormActions`) y utilidades de errores (`shared/ui/form/`).
+
 ### Lo aprendido al construir la grilla, el F4 y la selección
 
 - Un `<dialog>` modal abierto desde un campo no puede fijar su foco inicial con un efecto propio (corre antes del `showModal()` del padre): `GridDialog` recibe `initialFocus`.
@@ -146,7 +168,7 @@ Se usa el código de SAP donde la transacción tiene equivalente y el rango `ZW`
 ## Consecuencias
 
 - Toda pantalla nueva es una transacción registrada con código, título, carpeta del árbol, clave de ayuda y, desde E2, permiso requerido.
-- Las pantallas de E2 en adelante usan los componentes de E2.00, E2.17 y E2.18 (grilla, campo con F4, pantalla de selección) y no tablas ni selectores propios.
+- Las pantallas de E2 en adelante usan los componentes de E2.00, E2.17, E2.18 y E2.22 (grilla, campo con F4, pantalla de selección y bloques de formulario) y no tablas, selectores ni formularios propios.
 - El depósito es un campo de cada pantalla operativa; las consultas del frontend incluyen el depósito en su clave de caché.
 - Los parámetros de usuario, los favoritos, el idioma y mostrar códigos se guardan en el servidor desde E2.21 (DM-24). Lo guardado en el navegador en E1 se sube una sola vez: cada preferencia solo completa lo que el servidor tiene vacío.
 - Una contraseña inicial o reseteada reemplaza el armazón por la pantalla de cambio, sin ruta propia, como el diálogo de clave inicial de SAP (REG-021). Un 403 `PASSWORD_CHANGE_REQUIRED` a mitad de la sesión vuelve a esa pantalla.

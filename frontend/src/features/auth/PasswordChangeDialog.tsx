@@ -25,6 +25,9 @@ export function PasswordChangeDialog({ open, onChanged, onClose }: PasswordChang
 
     if (open && !dialog.open) {
       dialog.showModal();
+      // El efecto del formulario corre antes que este: el foco inicial se fija después de
+      // abrir el diálogo, en la contraseña actual.
+      dialog.querySelector<HTMLElement>('input')?.focus();
     } else if (!open && dialog.open) {
       dialog.close();
     }

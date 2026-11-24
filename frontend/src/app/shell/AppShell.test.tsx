@@ -268,7 +268,10 @@ describe('SU3: parámetros de usuario', () => {
 
     await userEvent.keyboard('{Control>}s{/Control}');
 
-    expect(await statusBar().findByText('Corrija el valor de LGN antes de grabar.')).toBeInTheDocument();
+    // Como el PAI de SAP: mensaje E con el campo y el foco vuelve a él (E2.22).
+    expect(await statusBar().findByText('LGN: El valor no existe.')).toBeInTheDocument();
+    expect(lgn).toHaveFocus();
+    expect(lgn).toHaveAccessibleDescription(/El valor no existe\.$/);
     expect(api.requestsTo('PUT', '/api/v1/me/parameters')).toHaveLength(0);
   });
 
@@ -305,10 +308,21 @@ describe('SU3: parámetros de usuario', () => {
     });
     renderRoute('/t/SU3');
 
-    await userEvent.type(await screen.findByLabelText('LGN'), 'NOR');
+    const lgn = await screen.findByLabelText('LGN');
+
+    await userEvent.type(lgn, 'NOR');
     await userEvent.keyboard('{Control>}s{/Control}');
 
-    expect(await statusBar().findByRole('alert')).toHaveTextContent('Los datos ingresados no son válidos.');
+    // El 422 se muestra en el campo y en la barra de estado, con el foco en el campo (E2.22).
+    expect(await statusBar().findByRole('alert')).toHaveTextContent('LGN: El valor no es válido.');
+    expect(lgn).toHaveAttribute('aria-invalid', 'true');
+    expect(lgn).toHaveAccessibleDescription(/El valor no es válido\./);
+    expect(lgn).toHaveFocus();
+
+    // Corregir el valor quita el error del servidor.
+    await userEvent.clear(lgn);
+    await userEvent.type(lgn, 'CEN');
+    expect(lgn).not.toHaveAttribute('aria-invalid');
   });
 
   it('sin depósitos asignados el parámetro queda deshabilitado', async () => {
