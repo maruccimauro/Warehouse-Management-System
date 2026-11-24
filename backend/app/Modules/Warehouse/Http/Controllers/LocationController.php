@@ -2,10 +2,13 @@
 
 namespace App\Modules\Warehouse\Http\Controllers;
 
+use App\Modules\Warehouse\Actions\BlockLocation;
 use App\Modules\Warehouse\Actions\CreateLocation;
 use App\Modules\Warehouse\Actions\GenerateLocations;
+use App\Modules\Warehouse\Actions\UnblockLocation;
 use App\Modules\Warehouse\Actions\UpdateLocation;
 use App\Modules\Warehouse\Enums\LocationStatus;
+use App\Modules\Warehouse\Http\Requests\BlockLocationRequest;
 use App\Modules\Warehouse\Http\Requests\GenerateLocationsRequest;
 use App\Modules\Warehouse\Http\Requests\LocationListRequest;
 use App\Modules\Warehouse\Http\Requests\StoreLocationRequest;
@@ -17,9 +20,9 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Ubicaciones de un depósito (E2.03): alta, modificación con activación y
- * desactivación, y generación masiva por plantilla. El bloqueo es una
- * operación propia (E2.04).
+ * Ubicaciones de un depósito: alta, modificación con activación y
+ * desactivación, y generación masiva por plantilla (E2.03); bloqueo y
+ * desbloqueo como operaciones propias (E2.04).
  */
 final class LocationController
 {
@@ -69,5 +72,17 @@ final class LocationController
             $request->zone(),
             $request->enum('status', LocationStatus::class),
         ));
+    }
+
+    public function block(BlockLocationRequest $request, BlockLocation $blockLocation): LocationResource
+    {
+        return new LocationResource($blockLocation($request->location(), $request->string('reason')->toString()));
+    }
+
+    public function unblock(Location $location, UnblockLocation $unblockLocation): LocationResource
+    {
+        Gate::authorize('unblock', $location);
+
+        return new LocationResource($unblockLocation($location));
     }
 }

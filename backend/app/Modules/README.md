@@ -23,6 +23,7 @@ Cada directorio se crea cuando el módulo lo necesita.
 app/Modules/{Nombre}/
 ├── {Nombre}ServiceProvider.php   extiende App\Shared\Providers\ModuleServiceProvider
 ├── Actions/                      casos de uso: una clase por operación de negocio
+├── Contracts/                    interfaces que otros módulos usan por inyección (AuditLogger)
 ├── Data/                         objetos de valor que reciben las Actions (plantillas, criterios)
 ├── Database/Factories/           factories de los modelos del módulo
 ├── Database/Migrations/          migraciones del módulo, cargadas por el provider
@@ -33,6 +34,7 @@ app/Modules/{Nombre}/
 ├── Http/Resources/               forma pública de cada modelo en la API
 ├── Models/
 ├── Policies/                     declaradas en $policies del provider
+├── Services/                     implementaciones de los contratos, enlazadas en el provider
 └── Routes/api.php                registrado bajo /api/v1 con el grupo de middleware api
 ```
 
@@ -72,6 +74,14 @@ Todo recurso que pertenece a un depósito respeta REG-005 con `App\Modules\Ident
 
 - El modelo usa el trait `App\Modules\Warehouse\Models\Concerns\ScopedByWarehouse`, que da los scopes `visibleTo($user)` para listados y `operableBy($user)` para elegir dónde operar. Si la columna no es `warehouse_id`, el modelo redefine `warehouseScopeColumn()`.
 - La Policy devuelve `authorizeView()` para consultar y `authorizeOperation()` con el permiso de la acción para operar. El orden es 404 fuera del alcance de consulta, 403 sin operación en el depósito y 403 sin el permiso.
+
+## Auditoría
+
+Las operaciones críticas (INV-012) se auditan con el contrato `App\Modules\Audit\Contracts\AuditLogger` (ADR-008):
+
+- La Action lo recibe por inyección y llama a `record()` dentro de su `DB::transaction`, después de aplicar el cambio, con la acción en la forma `entidad.verbo` (`location.blocked`) y los valores afectados antes y después como valores planos.
+- El modelo auditado necesita un alias en el morph map, que el provider de su módulo registra con `Relation::morphMap()`: Identity activa `enforceMorphMap`.
+- Hasta E3 el binding es `NullAuditLogger`; E3 crea `audit_logs` con su trigger de inmutabilidad y reemplaza el binding sin tocar las Actions. Las pruebas reemplazan el contrato por un registro en memoria para verificar que se audita dentro de la transacción.
 
 ## Reglas
 

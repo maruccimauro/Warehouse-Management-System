@@ -18,8 +18,9 @@ use Illuminate\Support\Facades\Route;
 | asignación). Fuera del alcance de consulta, 404; visible pero sin operación
 | o sin permiso de la acción, 403.
 |
-| Las rutas de prueba ejercitan las Policies por HTTP hasta que existan los
-| endpoints de depósitos y ubicaciones (E2.03, E2.04).
+| La ruta de prueba de consulta de depósito ejercita la Policy por HTTP hasta
+| que exista el ABM de depósitos; las operaciones usan el bloqueo real de
+| ubicaciones (E2.04).
 */
 
 beforeEach(function () {
@@ -33,11 +34,6 @@ beforeEach(function () {
             Gate::authorize('view', $warehouse);
 
             return ['code' => $warehouse->code];
-        });
-        Route::post('/locations/{location}/block', function (Location $location) {
-            Gate::authorize('block', $location);
-
-            return response()->noContent();
         });
     });
 });
@@ -95,7 +91,7 @@ it('answers 404 for a warehouse outside the viewing scope', function () {
 
 it('answers 404 to an operation outside the viewing scope', function () {
     $this->actingAs(userWithAccess(null, [$this->central]))
-        ->postJson('/api/v1/__tests/locations/'.receivingLocationOf($this->norte)->id.'/block')
+        ->postJson('/api/v1/locations/'.receivingLocationOf($this->norte)->id.'/block', ['reason' => 'Muelle fuera de servicio'])
         ->assertNotFound()
         ->assertJsonPath('code', 'NOT_FOUND');
 });
@@ -109,7 +105,7 @@ it('shows a warehouse that is visible but not assigned', function () {
 
 it('answers 403 to an operation in a visible warehouse that is not assigned', function () {
     $this->actingAs(userWithAccess(Role::Supervisor, [$this->central]))
-        ->postJson('/api/v1/__tests/locations/'.receivingLocationOf($this->norte)->id.'/block')
+        ->postJson('/api/v1/locations/'.receivingLocationOf($this->norte)->id.'/block', ['reason' => 'Muelle fuera de servicio'])
         ->assertForbidden()
         ->assertJsonPath('code', 'FORBIDDEN')
         ->assertJsonPath('detail', __('identity.warehouse_not_assigned'));
@@ -117,7 +113,7 @@ it('answers 403 to an operation in a visible warehouse that is not assigned', fu
 
 it('answers 403 to an operation in an assigned warehouse without the permission of the action', function () {
     $this->actingAs(userWithAccess(Role::Operator, [$this->central]))
-        ->postJson('/api/v1/__tests/locations/'.receivingLocationOf($this->central)->id.'/block')
+        ->postJson('/api/v1/locations/'.receivingLocationOf($this->central)->id.'/block', ['reason' => 'Muelle fuera de servicio'])
         ->assertForbidden()
         ->assertJsonPath('code', 'FORBIDDEN')
         ->assertJsonPath('detail', __('identity.permission_denied'));
@@ -125,14 +121,16 @@ it('answers 403 to an operation in an assigned warehouse without the permission 
 
 it('allows an operation in an assigned warehouse with the permission of the action', function () {
     $this->actingAs(userWithAccess(Role::Supervisor, [$this->central]))
-        ->postJson('/api/v1/__tests/locations/'.receivingLocationOf($this->central)->id.'/block')
-        ->assertNoContent();
+        ->postJson('/api/v1/locations/'.receivingLocationOf($this->central)->id.'/block', ['reason' => 'Muelle fuera de servicio'])
+        ->assertOk()
+        ->assertJsonPath('data.status', 'blocked');
 });
 
 it('allows the administrator to operate in any warehouse', function () {
     $this->actingAs(userWithAccess(Role::Administrator))
-        ->postJson('/api/v1/__tests/locations/'.receivingLocationOf($this->norte)->id.'/block')
-        ->assertNoContent();
+        ->postJson('/api/v1/locations/'.receivingLocationOf($this->norte)->id.'/block', ['reason' => 'Muelle fuera de servicio'])
+        ->assertOk()
+        ->assertJsonPath('data.status', 'blocked');
 });
 
 it('requires warehouses.manage to create or edit a warehouse', function () {

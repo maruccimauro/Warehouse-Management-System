@@ -21,4 +21,6 @@ Route::middleware('auth:sanctum')->group(function () use ($id) {
     Route::patch('/zones/{zone}', [ZoneController::class, 'update'])->where('zone', $id)->name('zones.update');
     Route::get('/locations/{location}', [LocationController::class, 'show'])->where('location', $id)->name('locations.show');
     Route::patch('/locations/{location}', [LocationController::class, 'update'])->where('location', $id)->name('locations.update');
+    Route::post('/locations/{location}/block', [LocationController::class, 'block'])->where('location', $id)->name('locations.block');
+    Route::post('/locations/{location}/unblock', [LocationController::class, 'unblock'])->where('location', $id)->name('locations.unblock');
 });

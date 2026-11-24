@@ -9,6 +9,7 @@ use App\Modules\Warehouse\Policies\LocationPolicy;
 use App\Modules\Warehouse\Policies\WarehousePolicy;
 use App\Modules\Warehouse\Policies\ZonePolicy;
 use App\Shared\Providers\ModuleServiceProvider;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -38,5 +39,13 @@ class WarehouseServiceProvider extends ModuleServiceProvider
         Route::model('warehouse', Warehouse::class);
         Route::model('zone', Zone::class);
         Route::model('location', Location::class);
+
+        // Alias estables para las columnas polimórficas (audit_logs.auditable_type).
+        // Identity activa enforceMorphMap: un modelo sin alias no se puede auditar.
+        Relation::morphMap([
+            'warehouse' => Warehouse::class,
+            'zone' => Zone::class,
+            'location' => Location::class,
+        ]);
     }
 }
