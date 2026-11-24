@@ -4,6 +4,7 @@ namespace App\Modules\Catalog\Http\Requests\Concerns;
 
 use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\Supplier;
 use App\Modules\Catalog\Models\UnitOfMeasure;
 use App\Modules\Warehouse\Models\Warehouse;
 use App\Shared\Http\Requests\Concerns\ResolvesRouteModel;
@@ -32,6 +33,11 @@ trait ResolvesCatalogRouteModels
     public function product(): Product
     {
         return $this->routeModel('product', Product::class);
+    }
+
+    public function supplier(): Supplier
+    {
+        return $this->routeModel('supplier', Supplier::class);
     }
 
     public function warehouse(): Warehouse

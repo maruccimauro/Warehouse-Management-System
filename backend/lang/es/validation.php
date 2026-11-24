@@ -166,8 +166,12 @@ return [
         'barcode' => 'código de barras',
         'code' => 'código',
         'email' => 'correo electrónico',
+        'lead_time_days' => 'plazo de entrega en días',
         'name' => 'nombre',
         'password' => 'contraseña',
+        'phone' => 'teléfono',
         'sku' => 'SKU',
+        'supplier_sku' => 'código del proveedor',
+        'tax_id' => 'identificador fiscal',
     ],
 ];

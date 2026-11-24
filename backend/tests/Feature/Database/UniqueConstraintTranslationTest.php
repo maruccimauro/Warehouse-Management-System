@@ -2,6 +2,8 @@
 
 use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductSupplier;
+use App\Modules\Catalog\Models\Supplier;
 use App\Modules\Catalog\Models\UnitOfMeasure;
 use App\Modules\Identity\Models\User;
 use App\Modules\Warehouse\Actions\CreateWarehouse;
@@ -77,6 +79,17 @@ it('translates the unique constraints of E2 to VALUE_ALREADY_EXISTS with the for
         Product::factory()->create(['barcode' => '7790000000010']);
         Product::factory()->create(['barcode' => '7790000000010']);
     }, 'barcode'],
+    'identificador fiscal de proveedor' => [function (): void {
+        Supplier::query()->create(['tax_id' => '30-71234567-1', 'name' => 'Uno']);
+        Supplier::query()->create(['tax_id' => '30712345671', 'name' => 'Otro']);
+    }, 'tax_id'],
+    'código del proveedor por proveedor' => [function (): void {
+        $supplier = Supplier::query()->create(['tax_id' => 'DEV0001', 'name' => 'ACME']);
+        ProductSupplier::query()->insert([
+            ['product_id' => Product::factory()->create()->id, 'supplier_id' => $supplier->id, 'supplier_sku' => 'A-100'],
+            ['product_id' => Product::factory()->create()->id, 'supplier_id' => $supplier->id, 'supplier_sku' => 'A-100'],
+        ]);
+    }, 'supplier_sku'],
 ]);
 
 it('allows the same zone and location code in different warehouses', function () {

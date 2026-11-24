@@ -7,8 +7,12 @@ return [
         'barcode' => 'barcode',
         'code' => 'code',
         'email' => 'email',
+        'lead_time_days' => 'lead time in days',
         'name' => 'name',
         'password' => 'password',
+        'phone' => 'phone',
         'sku' => 'SKU',
+        'supplier_sku' => 'supplier code',
+        'tax_id' => 'tax ID',
     ],
 ];

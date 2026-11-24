@@ -24,7 +24,8 @@ Términos del dominio, su nombre en el código y su definición. El código usa 
 | Unidad base | `base_uom` | Unidad mínima en la que se expresan todas las cantidades del producto (unidad, gramo, mililitro) |
 | Categoría | `Category` | Clasificación jerárquica de productos |
 | Stock mínimo | `min_stock` | Cantidad disponible por debajo de la cual se genera una alerta de stock crítico. Se define por producto y depósito (`product_warehouse_settings`); sin valor, es 0 |
-| Proveedor | `Supplier` | Empresa que provee productos mediante órdenes de compra |
+| Proveedor | `Supplier` | Empresa que provee productos mediante órdenes de compra. Inactivo, no admite órdenes nuevas |
+| Vínculo producto proveedor | `ProductSupplier` | Producto que un proveedor vende, con su código del proveedor y su plazo de entrega. Una orden de compra solo admite productos vinculados a su proveedor. Equivale al registro info de compras de SAP |
 | Cliente | `Customer` | Destinatario de los pedidos |
 
 ## Inventario

@@ -90,4 +90,12 @@ class Product extends Model
     {
         return $this->hasMany(ProductWarehouseSetting::class);
     }
+
+    /**
+     * @return HasMany<ProductSupplier, $this>
+     */
+    public function supplierLinks(): HasMany
+    {
+        return $this->hasMany(ProductSupplier::class);
+    }
 }

@@ -2,7 +2,9 @@
 
 use App\Modules\Catalog\Http\Controllers\CategoryController;
 use App\Modules\Catalog\Http\Controllers\ProductController;
+use App\Modules\Catalog\Http\Controllers\ProductSupplierController;
 use App\Modules\Catalog\Http\Controllers\ProductWarehouseSettingController;
+use App\Modules\Catalog\Http\Controllers\SupplierController;
 use App\Modules\Catalog\Http\Controllers\UnitOfMeasureController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,4 +32,18 @@ Route::middleware('auth:sanctum')->group(function () use ($id) {
         ->where('product', $id)->name('products.warehouse-settings.index');
     Route::put('/products/{product}/warehouse-settings/{warehouse}', [ProductWarehouseSettingController::class, 'update'])
         ->where(['product' => $id, 'warehouse' => $id])->name('products.warehouse-settings.update');
+
+    Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
+    Route::post('/suppliers', [SupplierController::class, 'store'])->name('suppliers.store');
+    Route::get('/suppliers/{supplier}', [SupplierController::class, 'show'])->where('supplier', $id)->name('suppliers.show');
+    Route::patch('/suppliers/{supplier}', [SupplierController::class, 'update'])->where('supplier', $id)->name('suppliers.update');
+
+    Route::get('/suppliers/{supplier}/products', [ProductSupplierController::class, 'supplierProducts'])
+        ->where('supplier', $id)->name('suppliers.products.index');
+    Route::put('/suppliers/{supplier}/products/{product}', [ProductSupplierController::class, 'update'])
+        ->where(['supplier' => $id, 'product' => $id])->name('suppliers.products.update');
+    Route::delete('/suppliers/{supplier}/products/{product}', [ProductSupplierController::class, 'destroy'])
+        ->where(['supplier' => $id, 'product' => $id])->name('suppliers.products.destroy');
+    Route::get('/products/{product}/suppliers', [ProductSupplierController::class, 'productSuppliers'])
+        ->where('product', $id)->name('products.suppliers.index');
 });

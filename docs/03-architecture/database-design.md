@@ -40,6 +40,7 @@ El DDL de este documento es la referencia que reproducen las migraciones de Lara
 | Orden global de bloqueo | 0) fila del depósito (`FOR SHARE` para operar, `FOR NO KEY UPDATE` para desactivarlo, REG-015); 1) cabecera del documento raíz (`FOR UPDATE`); 2) documentos dependientes y líneas, por `id` ascendente; 3) ubicaciones (`FOR SHARE` para mover, `FOR UPDATE` para cambiar su estado), por `id`; 4) filas de `stocks` (`FOR UPDATE`), por `id` en una sola consulta |
 | Cola de picking | `GET /picking-tasks/next` toma la tarea con `FOR UPDATE SKIP LOCKED` para que dos operadores no compitan por la misma |
 | Estado del producto | Las operaciones de E3 a E6 leen el producto con `FOR SHARE` para validar su estado (REG-017); `UpdateProduct` lo cambia con `FOR NO KEY UPDATE`, igual que el nivel 0 del depósito. No necesita nivel en el orden global: `FOR SHARE` no se excluye consigo mismo, y `UpdateProduct` no tiene otro bloqueo tomado, así que no puede cerrar un ciclo de espera. `FOR NO KEY UPDATE` tampoco frena el `FOR KEY SHARE` de las claves foráneas hacia `products` |
+| Proveedor y vínculo con productos | E4.01 lee el proveedor con `FOR SHARE` al crear una orden (REG-018) y el vínculo `product_supplier` con `FOR SHARE` al agregar una línea y al enviar la orden a aprobación (REG-019). `UpdateSupplier` cambia el proveedor con `FOR NO KEY UPDATE`; el `PUT` del vínculo es un `INSERT ... ON CONFLICT DO UPDATE` y la baja un `DELETE`, que toman la fila del vínculo en modo excluyente y esperan a la orden en curso. Igual que el estado del producto, no ocupa nivel en el orden global: quien toma el bloqueo excluyente no tiene otro bloqueo tomado |
 | Árbol de categorías | Todo cambio de estructura (alta con padre, cambio de padre) toma `pg_advisory_xact_lock(205001)` antes de recorrer el árbol (REG-016). Sin él, mover A bajo B y B bajo A en paralelo crearía un ciclo que ninguna de las dos transacciones ve. No participa del orden global: ninguna operación de inventario lo toma |
 
 El orden 3 antes de 4 es el de [ADR-003](adr/003-pessimistic-concurrency-control.md), corregido en E0.08. Con el orden inverso, la aprobación de un inventario físico (que bloquea ubicaciones y luego existencias) y un movimiento concurrente sobre esas ubicaciones (que bloquea existencias y luego ubicaciones) forman un ciclo que PostgreSQL resuelve abortando una de las dos transacciones. Con un único orden jerárquico, ubicación antes que existencia, el ciclo no puede formarse.
@@ -193,18 +194,23 @@ CREATE TABLE suppliers (
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  CONSTRAINT suppliers_tax_id_unique UNIQUE (tax_id)
+  CONSTRAINT suppliers_tax_id_unique UNIQUE (tax_id),
+  CONSTRAINT suppliers_tax_id_format_check CHECK (tax_id ~ '^[A-Z0-9]{5,20}$'),
+  CONSTRAINT suppliers_email_lowercase_check CHECK (email = lower(email))
 );
+CREATE INDEX suppliers_name_trgm_index ON suppliers USING gin (name gin_trgm_ops);
 
 CREATE TABLE product_supplier (
   product_id BIGINT NOT NULL REFERENCES products (id),
   supplier_id BIGINT NOT NULL REFERENCES suppliers (id),
   supplier_sku VARCHAR(60),
   lead_time_days SMALLINT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (product_id, supplier_id),
+  CONSTRAINT product_supplier_supplier_id_supplier_sku_unique UNIQUE (supplier_id, supplier_sku),
   CONSTRAINT product_supplier_lead_time_days_check CHECK (lead_time_days >= 0)
 );
-CREATE INDEX product_supplier_supplier_id_index ON product_supplier (supplier_id);
 ```
 
 Más las tablas de `spatie/laravel-permission` (`roles`, `permissions`, `model_has_roles`, `model_has_permissions`, `role_has_permissions`), con la estructura de su migración publicada sin equipos y los tipos adaptados a las convenciones (`IDENTITY`, `TIMESTAMPTZ`); sus pivotes conservan `ON DELETE CASCADE` porque son configuración de acceso, no historia, y `model_type` guarda el alias del morph map (`user`). Las tablas de infraestructura de Laravel (`sessions`, `cache`, `jobs`, `password_reset_tokens`) quedan sin cambios respecto de sus migraciones publicadas.
@@ -219,6 +225,8 @@ Notas:
 - `UNIQUE NULLS NOT DISTINCT (parent_id, name)` impide dos categorías raíz con el mismo nombre; un `UNIQUE` común lo permitiría. Los ciclos de más de un nivel y la profundidad máxima de 5 niveles los valida la Action con el árbol bloqueado (REG-016).
 - `products.barcode` admite `NULL` en varias filas: la API guarda un código vacío como nulo. No se normaliza a mayúsculas porque Code 128 las distingue; un código numérico con largo de GTIN exige dígito verificador válido.
 - `product_warehouse_settings` guarda lo que un producto tiene de propio en cada depósito, como los datos de centro (`MARC`) de SAP (DM-21). Sin fila, el producto usa los valores por defecto en ese depósito: `min_stock` 0, sin alerta de stock crítico. Reemplaza a la columna `products.min_stock` del diseño de E0.
+- `suppliers.tax_id` se guarda sin espacios, puntos, guiones ni barras y en mayúsculas, para que `30-71234567-1` y `30712345671` choquen en la unicidad. No se valida el dígito verificador de ningún país: el mismo campo sirve para CUIT, RUT, NIF o VAT. El email se guarda en minúsculas, como en `users`.
+- `product_supplier` es el registro info de compras (DM-22). `UNIQUE (supplier_id, supplier_sku)` impide que un código del proveedor apunte a dos productos; varios vínculos sin código (`NULL`) no chocan. Como el índice empieza por `supplier_id`, también resuelve los productos de un proveedor y reemplaza al índice `product_supplier_supplier_id_index` del diseño de E0. Se agregan `created_at` y `updated_at`, como en `product_warehouse_settings`, porque el vínculo se edita.
 
 | Índice | Consulta o pantalla que lo justifica |
 | - | - |
@@ -237,7 +245,10 @@ Notas:
 | `products_category_id_index` | Existencias y reportes por categoría (E3.12, E7.02) |
 | `product_warehouse_settings` (PK) | Datos de un producto en cada depósito (E2.13) y stock mínimo por producto y depósito (E7.04) |
 | `product_warehouse_settings_warehouse_id_index` | Productos con stock mínimo de un depósito (E7.04) |
-| `product_supplier_supplier_id_index` | Productos de un proveedor al cargar una orden de compra (E4.01) |
+| `suppliers_tax_id_unique` | Búsqueda de proveedor por identificador fiscal (E2.13) |
+| `suppliers_name_trgm_index` | Búsqueda de proveedor por fragmento de nombre (E2.13, ayuda F4 en E4.08) |
+| `product_supplier` (PK) | Proveedores de un producto (E2.13) |
+| `product_supplier_supplier_id_supplier_sku_unique` | Productos de un proveedor al cargar una orden de compra (E4.01) y búsqueda por el código del proveedor al recibir (E4.09) |
 
 ## E3. Núcleo transaccional de inventario
 

@@ -49,7 +49,8 @@ Organización según [ADR-001](adr/001-modular-monolith.md). Solo `Inventory` es
 | | `UnitOfMeasure` | `units_of_measure` | Unidad base ([ADR-005](adr/005-integer-quantities.md)) |
 | | `Product` | `products` | Artículo maestro, global a todos los depósitos, con estado propio (ver máquina de estados) |
 | | `ProductWarehouseSetting` | `product_warehouse_settings` | Datos del producto propios de un depósito, como el stock mínimo (DM-21) |
-| | `Supplier` | `suppliers`, `product_supplier` | Proveedor y su código de producto |
+| | `Supplier` | `suppliers` | Proveedor, activo o inactivo (REG-018) |
+| | `ProductSupplier` | `product_supplier` | Vínculo de un producto con un proveedor: código del proveedor y plazo de entrega (DM-22) |
 | | `Customer` | `customers` | Destinatario de pedidos |
 | Inventory | `Stock` | `stocks` | Proyección por producto, ubicación y lote |
 | | `InventoryOperation` | `inventory_operations` | Hecho de negocio confirmado, inmutable |
@@ -129,7 +130,7 @@ Estado de recepción, calculado a partir de las líneas y no guardado como estad
 
 | Desde | Hacia | Disparador | Permiso | Condiciones y reglas | Efectos |
 | - | - | - | - | - | - |
-| `draft` | `pending_approval` | `POST /purchase-orders/{id}/submit` | `procurement.create` | Al menos una línea | |
+| `draft` | `pending_approval` | `POST /purchase-orders/{id}/submit` | `procurement.create` | Al menos una línea. Cada producto sigue vinculado al proveedor (REG-019, 422 `PRODUCT_NOT_LINKED_TO_SUPPLIER`). Un proveedor inactivo no lo impide: la orden ya existía (REG-018) | |
 | `pending_approval` | `approved` | `POST /purchase-orders/{id}/approve` | `procurement.approve` | El aprobador no es el creador (REG-001, 403 `SELF_APPROVAL_NOT_ALLOWED`) | Registra `approved_by`, `approved_at`. No modifica stock (REG-003) |
 | `pending_approval` | `draft` | `POST /purchase-orders/{id}/reject` | `procurement.approve` | Motivo obligatorio | Vuelve a ser editable |
 | `approved` | `closed` | `POST /purchase-orders/{id}/close` | `procurement.close` | Motivo obligatorio. Alguna línea con neto recibido mayor que cero; sin nada recibido la orden se cancela | Cancela las recepciones en `draft` de la orden. Ya no admite recepciones nuevas |
@@ -337,6 +338,16 @@ Qué admite cada estado (REG-017, 422 `PRODUCT_NOT_OPERABLE` desde E3):
 
 Las transferencias siguen la columna de lo abierto. Las reversiones no se validan contra el estado: corrigen lo que ya ocurrió (REG-012). Un producto nunca se borra.
 
+### Supplier
+
+| Desde | Hacia | Disparador | Permiso | Condiciones y reglas |
+| - | - | - | - | - |
+| (nuevo) | activo | `POST /suppliers` | `suppliers.manage` | Identificador fiscal normalizado (sin espacios, puntos, guiones ni barras, en mayúsculas) y único |
+| activo | inactivo | `PATCH /suppliers/{id}` con `is_active: false` | `suppliers.manage` | Sin condiciones: las órdenes abiertas terminan. Auditado (`supplier.deactivated`) |
+| inactivo | activo | `PATCH /suppliers/{id}` con `is_active: true` | `suppliers.manage` | Sin condiciones. Auditado (`supplier.activated`) |
+
+Un proveedor inactivo no admite órdenes de compra nuevas (REG-018, 422 `SUPPLIER_INACTIVE` desde E4) y deja enviar, aprobar y recibir las existentes. El identificador fiscal se puede corregir, como `STCD1` en SAP, porque las órdenes referencian el id. Un proveedor nunca se borra; sus vínculos con productos sí (DM-22).
+
 ### StockReservation, StockBlock y PutawayTask
 
 | Entidad | Desde | Hacia | Disparador |
@@ -391,7 +402,7 @@ Permisos que exigen las transiciones de este documento y la administración de d
 | `locations.manage` | Alta, edición y desactivación de zonas y ubicaciones |
 | `locations.block` | Bloqueo y desbloqueo de ubicaciones |
 | `catalog.manage` | Alta y edición de categorías, unidades de medida y productos. Los datos de un producto en un depósito (DM-21) exigen además operar en ese depósito, como los datos de centro con el campo `WERKS` |
-| `suppliers.manage` | Alta y edición de proveedores y de su relación con los productos |
+| `suppliers.manage` | Alta, edición y activación de proveedores, y alta, edición y baja de su vínculo con los productos (DM-22). `catalog.manage` no lo reemplaza: el vínculo pertenece a compras, como el registro info de SAP |
 | `inventory.transfer` | Transferencias manuales |
 | `inventory.adjust` | Ajustes con motivo |
 | `inventory.adjust.approve` | Ajustes negativos por encima del umbral (INV-008) |
@@ -463,3 +474,4 @@ Los roles son datos del sistema con identificador estable; la interfaz traduce s
 | DM-19 | El código de un depósito, el de una zona y el de una ubicación no cambian después del alta; se corrigen creando el nuevo y desactivando el anterior. Las zonas de sistema no cambian de tipo y no admiten ubicaciones dadas de alta a mano; las ubicaciones de sistema no cambian de zona ni se desactivan. La generación masiva crea las ubicaciones de una plantilla (pasillos por letra, estanterías, niveles y posiciones por número, con código `A-01-01` o `A-01-01-01`) en una sola transacción, todas o ninguna | El código es la clave que llevan las etiquetas y los documentos, y se escanea en la operación (REG-008), como las coordenadas de la ubicación en SAP WM; el del depósito, como el centro (`WERKS`) de SAP, que no se renombra. Las ubicaciones de las zonas de sistema las crea el depósito, como las del área intermedia de SAP (902, 916), que no se dan de alta a mano; así REG-014 se apoya en una sola ubicación de sistema por rol. La plantilla equivale a la generación de ubicaciones con estructura de coordenadas de LS10; un lote parcial obligaría a buscar a mano qué faltó |
 | DM-20 | El SKU de un producto y el código de una unidad de medida no cambian después del alta. La unidad base del producto tampoco cambia por ahora; E3 puede habilitar el cambio mientras el producto no tenga movimientos. El código de barras, el nombre, la categoría y las dimensiones sí se editan. `is_lot_tracked` queda en `false` y la API no lo escribe mientras los lotes estén fuera del alcance | El SKU va en etiquetas y documentos, como el número de material (`MATNR`) de SAP, que no se renombra. Todas las cantidades del libro están en la unidad base (ADR-005): cambiarla convertiría 10 unidades en 10 gramos, y SAP bloquea el cambio cuando existe stock. El código de barras se edita como el `EAN11` de SAP, porque el fabricante puede cambiarlo |
 | DM-21 | El producto es global; lo que tiene de propio en cada depósito va en `product_warehouse_settings`, empezando por el stock mínimo. Sin fila, el producto usa los valores por defecto en ese depósito (stock mínimo 0). Se edita con `PUT /products/{id}/warehouse-settings/{warehouseId}` (`catalog.manage` y alcance de operación sobre el depósito) y es mantenimiento de datos maestros: admite depósitos inactivos | Equivale a la separación de SAP entre los datos generales del material (`MARA`) y los datos de centro (`MARC`), donde está el punto de pedido (`MINBE`). El stock crítico se calcula por producto y depósito (E7.04): un mínimo global obligaría a usar el mismo valor en un depósito central y en uno chico |
+| DM-22 | El vínculo de un producto con un proveedor (`product_supplier`) guarda el código con que el proveedor identifica el producto y su plazo de entrega en días. Se escribe bajo el proveedor con `PUT` y `DELETE /suppliers/{id}/products/{productId}` (`suppliers.manage`) y se lee en los dos sentidos: `GET /suppliers/{id}/products`, paginado, y `GET /products/{id}/suppliers`. El `PUT` reemplaza el vínculo completo y el borrado es físico, porque ningún documento lo referencia. El código del proveedor es único dentro de cada proveedor y se guarda tal como lo usa el proveedor. Es mantenimiento de datos maestros: admite proveedores inactivos y productos discontinuados o bloqueados. Una orden de compra solo admite productos vinculados a su proveedor (REG-019) | Equivale al registro info de compras de SAP (`EINA` y `EINE`, transacciones `ME11` a `ME13`), con clave material y proveedor, usado con lista de fuentes obligatoria. La unicidad del código evita que el código de un remito apunte a dos productos al recibir (E4.09). Hacer obligatorio el vínculo deja la orden de compra limitada a lo que el proveedor efectivamente vende, a cambio de mantener el vínculo antes de comprar |

@@ -4,8 +4,10 @@ namespace App\Modules\Catalog;
 
 use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\Supplier;
 use App\Modules\Catalog\Models\UnitOfMeasure;
 use App\Modules\Catalog\Policies\CatalogPolicy;
+use App\Modules\Catalog\Policies\SupplierPolicy;
 use App\Shared\Providers\ModuleServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +21,7 @@ class CatalogServiceProvider extends ModuleServiceProvider
         Category::class => CatalogPolicy::class,
         UnitOfMeasure::class => CatalogPolicy::class,
         Product::class => CatalogPolicy::class,
+        Supplier::class => SupplierPolicy::class,
     ];
 
     protected array $uniqueConstraintFields = [
@@ -26,6 +29,8 @@ class CatalogServiceProvider extends ModuleServiceProvider
         'units_of_measure_code_unique' => 'code',
         'products_sku_unique' => 'sku',
         'products_barcode_unique' => 'barcode',
+        'suppliers_tax_id_unique' => 'tax_id',
+        'product_supplier_supplier_id_supplier_sku_unique' => 'supplier_sku',
     ];
 
     public function boot(): void
@@ -37,10 +42,13 @@ class CatalogServiceProvider extends ModuleServiceProvider
         Route::model('category', Category::class);
         Route::model('unit', UnitOfMeasure::class);
         Route::model('product', Product::class);
+        Route::model('supplier', Supplier::class);
 
-        // Alias para audit_logs.auditable_type: product.status_changed.
+        // Alias para audit_logs.auditable_type: product.status_changed,
+        // supplier.activated y supplier.deactivated.
         Relation::morphMap([
             'product' => Product::class,
+            'supplier' => Supplier::class,
         ]);
     }
 }

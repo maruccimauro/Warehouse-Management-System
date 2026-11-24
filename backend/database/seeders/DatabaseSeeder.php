@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Modules\Catalog\Database\Seeders\CatalogSeeder;
+use App\Modules\Catalog\Database\Seeders\SupplierSeeder;
 use App\Modules\Identity\Database\Seeders\IdentitySeeder;
 use App\Modules\Identity\Database\Seeders\WarehouseAssignmentSeeder;
 use App\Modules\Warehouse\Database\Seeders\WarehouseSeeder;
@@ -36,6 +37,7 @@ class DatabaseSeeder extends Seeder
             WarehouseSeeder::class,
             WarehouseAssignmentSeeder::class,
             CatalogSeeder::class,
+            SupplierSeeder::class,
         ]);
     }
 }
