@@ -162,10 +162,16 @@ Se usa el código de SAP donde la transacción tiene equivalente y el rango `ZW`
 | E2 | `MM60` | Lista del catálogo | MM60 (lista de materiales) |
 | E2 | `XK01`, `XK02`, `XK03` | Crear, modificar y visualizar proveedor | XK01 a XK03 (BP en S/4HANA). `XK01` sin pantalla inicial: el proveedor no tiene un código propio que verificar antes, como la numeración interna (D1 de E2.13) |
 | E2 | `ZW06`; `ZW61`, `ZW62`, `ZW63` | Gestionar catálogo del proveedor; crear, modificar y visualizar artículo del proveedor | Registro info (ME11 a ME13) con lista de fuentes obligatoria; transacción propia para no mezclar grabaciones por fila con la ficha del proveedor (D5 de E2.13) |
-| E3 | `MMBE` | Resumen de stock | MMBE |
-| E3 | `MB51` | Lista de documentos de material | MB51 |
-| E3 | `LT10` | Transferencia entre ubicaciones | LT10 |
-| E3 | `ZW03` | Ajuste de stock | Sin transacción directa (diferencias por MI07) |
+| E3 | `MMBE` | Lista de stock | MMBE |
+| E3 | `MB51` | Lista de movimientos | MB51 |
+| E3 | `MB03` | Visualizar operación | MB03 |
+| E3 | `LT10` | Transferir stock | LT10 |
+| E3 | `MB1C` | Cargar stock inicial | MB1C con movimiento 561 |
+| E3 | `MBST` | Revertir operación | MBST |
+| E3 | `ZW31` | Ajustar stock | Sin transacción directa (diferencias de almacén 711 y 712) |
+| E3 | `ZW32` | Bloquear o desbloquear stock | Sin equivalente directo: SAP pasa el stock a bloqueado con 344 |
+| E3 | `ZW33` | Lista de auditoría | SCU3 (registro de cambios) |
+| E3 | `ZW34` | Lista de solicitudes de ajuste | Sin equivalente directo: aprobación del ajuste por encima del umbral del artículo |
 | E4 | `ME21N`, `ME22N`, `ME23N` | Crear, modificar y visualizar orden de compra | ME21N a ME23N |
 | E4 | `MIGO` | Entrada de mercadería | MIGO |
 | E4 | `LT06` | Ubicación de lo recibido | LT06 |
@@ -201,3 +207,4 @@ Se usa el código de SAP donde la transacción tiene equivalente y el rango `ZW`
 - Los parámetros de usuario, los favoritos, el idioma y mostrar códigos se guardan en el servidor desde E2.21 (DM-24). Lo guardado en el navegador en E1 se sube una sola vez: cada preferencia solo completa lo que el servidor tiene vacío.
 - Una contraseña inicial o reseteada reemplaza el armazón por la pantalla de cambio, sin ruta propia, como el diálogo de clave inicial de SAP (REG-021). Un 403 `PASSWORD_CHANGE_REQUIRED` a mitad de la sesión vuelve a esa pantalla.
 - Aceptado al cerrar E2.00, E2.17 y E2.18; lo aprendido queda en la sección correspondiente.
+- Enmendado el 25/11/2026 al planificar E3: las transacciones de inventario sin gestión propia se agrupan en `ZW31` a `ZW34`. `ZW03`, asignado antes al ajuste, rompía el esquema `ZW0N` para gestión y `ZWN1` a `ZWN3` para sus acciones. Se suman `MB03`, `MB1C`, `MBST`, la lista de auditoría y la lista de solicitudes de ajuste, con títulos Verbo + objeto.

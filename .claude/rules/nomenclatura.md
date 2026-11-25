@@ -11,6 +11,9 @@ Un mismo objeto y una misma acción se nombran igual en toda la aplicación: tí
   - **Visualizar**: consulta de un registro sin editar.
   - **Gestionar <objetos>**: transacción de gestión que reúne crear, modificar y visualizar. Para tablas de configuración y vínculos (depósitos, zonas, categorías, unidades, catálogo del proveedor) lleva lista y ficha; para un maestro con trío (usuarios) lleva pantalla inicial con el registro y **Crear**, **Modificar** y **Visualizar** en la barra de aplicación. No reemplaza a las individuales: cada acción tiene además su transacción **Crear**, **Modificar** y **Visualizar** (ADR-016).
   - **Bloquear**, **Desbloquear**, **Activar**, **Desactivar**: cambio de estado. Las bajas son lógicas: no se usa "Eliminar" para datos maestros con historia.
+  - **Transferir**, **Ajustar**, **Cargar** (stock inicial) y **Revertir**: operaciones de inventario. Una reversión es siempre **Revertir**, nunca "Anular" ni "Cancelar" (**Cancelar** es el botón de los diálogos).
+  - **Aprobar** y **Rechazar**: decisión sobre una solicitud pendiente.
+- El objeto de inventario es **stock** (**Transferir stock**, **Lista de stock**) y cada registro del libro es una **operación** con sus **movimientos**.
 - Única excepción: los listados se titulan **Lista de <objetos>** (**Lista de productos**).
 - El objeto se nombra igual que su carpeta del menú y su sección de la wiki.
 
