@@ -64,7 +64,7 @@ Uno o más datos no son válidos. Cada campo con error muestra el motivo debajo 
 
 ### `VALUE_ALREADY_EXISTS` {#value-already-exists}
 
-El valor ya está registrado y debe ser único: el código de un depósito, de una zona o de una ubicación dentro del depósito, el correo de un usuario, el SKU o el código de barras de un producto, o el identificador fiscal de un proveedor.
+El valor ya está registrado y debe ser único: el código de un depósito, de una zona o de una ubicación dentro del depósito, el correo de un usuario, el SKU o el código de barras de un producto, el identificador fiscal de un proveedor o el código del proveedor entre sus productos. También se informa al vincular a un proveedor un producto que ya tiene vinculado.
 
 **Qué hacer:** use otro valor o busque el registro existente.
 
@@ -161,6 +161,24 @@ La ubicación indicada no existe en el depósito. La ficha no se abre.
 La plantilla de [Generar ubicaciones](/administracion/generar-ubicaciones#limite) crea más ubicaciones que el máximo por lote (2.000). El mensaje indica la cantidad calculada y el máximo; no se crea ninguna ubicación.
 
 **Qué hacer:** divida la estructura en varios lotes, por ejemplo uno por grupo de pasillos.
+
+### `PRODUCT_NOT_FOUND` {#product-not-found}
+
+No existe un producto con el SKU indicado. La ficha no se abre o, al vincular un producto a un proveedor, el vínculo no se graba.
+
+**Qué hacer:** verifique el SKU o busque el producto con <kbd>F4</kbd>, por nombre o por código de barras.
+
+### `SUPPLIER_NOT_FOUND` {#supplier-not-found}
+
+No existe un proveedor con el identificador fiscal indicado. La ficha no se abre.
+
+**Qué hacer:** verifique el identificador fiscal o busque el proveedor por nombre con <kbd>F4</kbd>.
+
+### `WAREHOUSE_SETTING_NOT_SAVED` {#warehouse-setting-not-saved}
+
+Mensaje W. Al grabar un producto con un depósito en la pantalla inicial, los datos generales se grabaron, pero el stock mínimo del depósito no. El mensaje indica el motivo, por ejemplo que el usuario no opera en ese depósito.
+
+**Qué hacer:** corrija la causa y cargue el stock mínimo en [Modificar producto](/administracion/modificar-producto) con el mismo depósito.
 
 ## Errores técnicos {#errores-tecnicos}
 

@@ -41,6 +41,7 @@ export default defineConfig({
     nav: [
       { text: 'Primeros pasos', link: '/primeros-pasos/ingreso' },
       { text: 'Supervisor', link: '/supervisor/bloqueo-de-ubicaciones' },
+      { text: 'Compras', link: '/compras/crear-proveedor' },
       { text: 'Administración', link: '/administracion/depositos' },
       { text: 'Referencia', link: '/referencia/transacciones' },
     ],
@@ -62,6 +63,15 @@ export default defineConfig({
         items: [{ text: 'Bloqueo de ubicaciones (ZW05)', link: '/supervisor/bloqueo-de-ubicaciones' }],
       },
       {
+        text: 'Compras',
+        items: [
+          { text: 'Crear proveedor (XK01)', link: '/compras/crear-proveedor' },
+          { text: 'Modificar proveedor (XK02)', link: '/compras/modificar-proveedor' },
+          { text: 'Visualizar proveedor (XK03)', link: '/compras/visualizar-proveedor' },
+          { text: 'Productos del proveedor (ZW06)', link: '/compras/productos-del-proveedor' },
+        ],
+      },
+      {
         text: 'Administración',
         items: [
           { text: 'Depósitos (ZW01)', link: '/administracion/depositos' },
@@ -71,6 +81,10 @@ export default defineConfig({
           { text: 'Visualizar ubicación (LS03N)', link: '/administracion/visualizar-ubicacion' },
           { text: 'Generar ubicaciones (LS10)', link: '/administracion/generar-ubicaciones' },
           { text: 'Lista de ubicaciones (LX03)', link: '/administracion/lista-de-ubicaciones' },
+          { text: 'Crear producto (MM01)', link: '/administracion/crear-producto' },
+          { text: 'Modificar producto (MM02)', link: '/administracion/modificar-producto' },
+          { text: 'Visualizar producto (MM03)', link: '/administracion/visualizar-producto' },
+          { text: 'Lista de productos (MM60)', link: '/administracion/lista-de-productos' },
         ],
       },
       {

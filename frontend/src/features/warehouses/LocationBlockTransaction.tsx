@@ -7,7 +7,7 @@ import { useTransactionForm } from '@/app/shell/useTransactionForm';
 import { HelpLink } from '@/shared/help/HelpLink';
 import { ApplicationToolbar, type ApplicationAction } from '@/shared/ui/ApplicationToolbar';
 import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
-import { required } from './fieldRules';
+import { required } from '@/shared/ui/form/fieldRules';
 import { LocationInitialScreen, type LocationTarget } from './LocationInitialScreen';
 import { blockLocation, blockReasonMaxLength, locationsQueryKey, unblockLocation, type Location } from './warehousesApi';
 

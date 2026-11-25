@@ -146,8 +146,10 @@ Se usa el código de SAP donde la transacción tiene equivalente y el rango `ZW`
 | E2 | `LS10` | Generar ubicaciones | LS10 |
 | E2 | `LX03` | Lista de ubicaciones | LX03 (informe de estado de ubicaciones) |
 | E2 | `ZW05` | Bloquear o desbloquear ubicación | Indicadores de bloqueo de LS02N; transacción propia por permiso (D2 de E2.12) |
-| E2 | `MM01`, `MM02`, `MM03` | Crear, modificar y visualizar producto | MM01, MM02, MM03 |
-| E2 | `XK01`, `XK02`, `XK03` | Crear, modificar y visualizar proveedor | XK01 a XK03 (BP en S/4HANA) |
+| E2 | `MM01`, `MM02`, `MM03` | Crear, modificar y visualizar producto | MM01, MM02, MM03. El depósito opcional de la pantalla inicial suma el stock mínimo, como el nivel de organización centro (D4 de E2.13) |
+| E2 | `MM60` | Lista de productos | MM60 (lista de materiales) |
+| E2 | `XK01`, `XK02`, `XK03` | Crear, modificar y visualizar proveedor | XK01 a XK03 (BP en S/4HANA). `XK01` sin pantalla inicial: el proveedor no tiene un código propio que verificar antes, como la numeración interna (D1 de E2.13) |
+| E2 | `ZW06` | Productos del proveedor | Registro info (ME11 a ME13) con lista de fuentes obligatoria; transacción propia para no mezclar grabaciones por fila con la ficha del proveedor (D5 de E2.13) |
 | E3 | `MMBE` | Resumen de stock | MMBE |
 | E3 | `MB51` | Lista de documentos de material | MB51 |
 | E3 | `LT10` | Transferencia entre ubicaciones | LT10 |

@@ -6,7 +6,7 @@ import { errorMessage, useStatusBar } from '@/app/shell/statusMessages';
 import { useTransactionForm } from '@/app/shell/useTransactionForm';
 import { sessionQueryKey } from '@/features/auth/session';
 import { HelpLink } from '@/shared/help/HelpLink';
-import { codeRule, required, textRule } from './fieldRules';
+import { codeRule, required, textRule } from '@/shared/ui/form/fieldRules';
 import { ApplicationToolbar, type ApplicationAction } from '@/shared/ui/ApplicationToolbar';
 import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
 import { DataGrid } from '@/shared/ui/grid/DataGrid';

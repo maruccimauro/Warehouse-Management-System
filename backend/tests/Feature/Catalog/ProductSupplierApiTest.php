@@ -10,6 +10,7 @@ use App\Modules\Catalog\Models\Supplier;
 use App\Modules\Identity\Actions\SyncRolesAndPermissions;
 use App\Modules\Identity\Authorization\Permission;
 use App\Modules\Identity\Authorization\Role;
+use Illuminate\Support\Facades\DB;
 
 /*
 | Vínculo producto proveedor (E2.06, DM-22), como el registro info de compras
@@ -154,6 +155,8 @@ describe('querying', function () {
             ->getJson("/api/v1/suppliers/{$this->acme->id}/products")
             ->assertOk()
             ->assertJsonPath('data.*.product_id', [$this->screw->id, $this->nut->id])
+            ->assertJsonPath('data.0.product', ['sku' => $this->screw->sku, 'name' => $this->screw->name, 'status' => 'active'])
+            ->assertJsonMissingPath('data.0.supplier')
             ->assertJsonPath('meta.total', 2);
 
         $this->actingAs(userWithAccess(Role::Operator))
@@ -168,7 +171,18 @@ describe('querying', function () {
             ->getJson("/api/v1/products/{$this->screw->id}/suppliers")
             ->assertOk()
             ->assertJsonPath('data.*.supplier_id', [$this->acme->id, $this->other->id])
-            ->assertJsonPath('data.*.lead_time_days', [5, 10]);
+            ->assertJsonPath('data.*.lead_time_days', [5, 10])
+            ->assertJsonPath('data.0.supplier', ['tax_id' => $this->acme->tax_id, 'name' => $this->acme->name, 'is_active' => true])
+            ->assertJsonMissingPath('data.0.product');
+    });
+
+    it('reads the summaries of a page in a fixed number of queries', function () {
+        DB::enableQueryLog();
+
+        $this->actingAs($this->purchasing)->getJson("/api/v1/suppliers/{$this->acme->id}/products")->assertOk();
+
+        $linkQueries = collect(DB::getQueryLog())->pluck('query')->filter(fn (string $sql): bool => str_contains($sql, 'from "products"'));
+        expect($linkQueries)->toHaveCount(1);
     });
 
     it('rejects filters on the products of a supplier', function () {

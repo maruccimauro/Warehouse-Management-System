@@ -35,7 +35,7 @@ final class ProductSupplierController
         Gate::authorize('view', $product);
 
         return ProductSupplierResource::collection(
-            $product->supplierLinks()->getQuery()->orderBy('supplier_id')->get(),
+            $product->supplierLinks()->getQuery()->with('supplier')->orderBy('supplier_id')->get(),
         );
     }
 

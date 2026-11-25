@@ -14,7 +14,7 @@ import {
 } from '@/shared/ui/form/formErrors';
 import type { GridMessage } from '@/shared/ui/grid/gridTypes';
 import { useTransactionActions } from './shellActions';
-import { errorMessage, useStatusBar } from './statusMessages';
+import { errorMessage, useStatusBar, type StatusMessage } from './statusMessages';
 import { useUnsavedChanges } from './unsavedChanges';
 
 // Bloques de formulario de transacción (E2.22, ADR-016), sobre TanStack Form. Cada pantalla
@@ -54,6 +54,8 @@ export interface TransactionFieldProps<TName extends string> {
   as?: ComponentType<TransactionFieldControlProps>;
   options?: readonly TransactionFieldOption[];
   type?: 'text' | 'email' | 'password';
+  // Texto de varias líneas (<textarea>) con esa cantidad de filas visibles.
+  rows?: number;
   inputMode?: 'text' | 'numeric' | 'decimal';
   autoComplete?: string;
   required?: boolean;
@@ -77,7 +79,8 @@ export interface TransactionFormOptions<TSchema extends FormSchema> {
   namespace: Namespace;
   // Recibe los valores ya transformados por el esquema y los valores editados, que pasan a
   // ser los nuevos valores por defecto al grabar bien. Si devuelve un texto, es el mensaje S
-  // (por ejemplo, con la cantidad que creó); si no, savedMessage.
+  // (por ejemplo, con la cantidad que creó); un StatusMessage se muestra tal cual (un W cuando
+  // se grabó la ficha y falló una parte secundaria); si no, savedMessage.
   onSave: (values: z.output<TSchema>) => Promise<unknown>;
   savedMessage: string;
   saveFailedMessage: string;
@@ -113,6 +116,18 @@ function toText(value: unknown): string {
   }
 
   return typeof value === 'number' || typeof value === 'boolean' ? String(value) : '';
+}
+
+function savedStatus(saved: unknown, fallback: string): StatusMessage {
+  if (typeof saved === 'string') {
+    return { type: 'S', text: saved };
+  }
+
+  if (typeof saved === 'object' && saved !== null && 'type' in saved && 'text' in saved) {
+    return saved as StatusMessage;
+  }
+
+  return { type: 'S', text: fallback };
 }
 
 export function useTransactionForm<TSchema extends FormSchema>(
@@ -151,7 +166,7 @@ export function useTransactionForm<TSchema extends FormSchema>(
         const saved = await onSave(parsed.data);
         // Lo grabado pasa a ser el valor por defecto: sin cambios pendientes.
         formApi.reset(value);
-        show({ type: 'S', text: typeof saved === 'string' ? saved : savedMessage });
+        show(savedStatus(saved, savedMessage));
       } catch (error) {
         if (error instanceof ApiError && error.code === 'VALIDATION_FAILED') {
           const fieldMap: Readonly<Record<string, string>> = serverFields ?? {};
@@ -253,6 +268,7 @@ export function useTransactionForm<TSchema extends FormSchema>(
       type = 'text',
       inputMode,
       autoComplete = 'off',
+      rows,
       required = false,
       description,
       labelledBy,
@@ -329,6 +345,20 @@ export function useTransactionForm<TSchema extends FormSchema>(
                     </option>
                   ))}
                 </select>
+              );
+            } else if (rows !== undefined) {
+              control = (
+                <textarea
+                  {...common}
+                  className={`field-input h-auto py-1 ${className}`}
+                  rows={rows}
+                  readOnly={locked}
+                  value={value}
+                  onChange={(event) => {
+                    change(event.target.value);
+                  }}
+                  onBlur={field.handleBlur}
+                />
               );
             } else {
               control = (

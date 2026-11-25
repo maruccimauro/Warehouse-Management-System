@@ -50,6 +50,7 @@ class SupplierProductListRequest extends ListRequest
         $descending = $this->validated('sort') === '-product_id';
 
         return $this->supplier()->productLinks()->getQuery()
+            ->with('product')
             ->orderBy('product_id', $descending ? 'desc' : 'asc')
             ->paginate(is_numeric($perPage) ? (int) $perPage : self::DEFAULT_PER_PAGE)
             ->withQueryString();

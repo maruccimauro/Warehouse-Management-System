@@ -1,0 +1,77 @@
+{
+  "fields": {
+    "sku": "SKU",
+    "warehouse": "Depósito",
+    "name": "Nombre",
+    "description": "Descripción",
+    "barcode": "Código de barras",
+    "category": "Categoría",
+    "baseUom": "Unidad base",
+    "status": "Estado",
+    "weightGrams": "Peso (g)",
+    "lengthMm": "Largo (mm)",
+    "widthMm": "Ancho (mm)",
+    "heightMm": "Alto (mm)",
+    "minStock": "Stock mínimo"
+  },
+  "sections": {
+    "general": "Datos generales",
+    "dimensions": "Peso y medidas",
+    "warehouse": "Datos del depósito"
+  },
+  "statuses": {
+    "active": "Activo",
+    "discontinued": "Discontinuado",
+    "blocked": "Bloqueado"
+  },
+  "productHelp": {
+    "title": "Productos"
+  },
+  "categoryHelp": {
+    "title": "Categorías",
+    "path": "Categoría",
+    "invalid": "La categoría {{path}} no existe."
+  },
+  "unitHelp": {
+    "title": "Unidades de medida",
+    "code": "Unidad",
+    "name": "Nombre",
+    "invalid": "La unidad {{code}} no existe."
+  },
+  "initial": {
+    "create": "Crear producto",
+    "change": "Modificar producto",
+    "display": "Visualizar producto",
+    "hint": "Ingrese el SKU y continúe con F8. El depósito es opcional: con él, la ficha muestra también el stock mínimo de ese depósito."
+  },
+  "detail": {
+    "loading": "Leyendo los datos del producto...",
+    "lotTracked": "Seguimiento por lote: {{value}}",
+    "yes": "sí",
+    "no": "no",
+    "fixedAfterCreate": "No cambia después del alta.",
+    "minStockHint": "Cantidad en la unidad base para el depósito {{code}}. 0 indica sin stock mínimo.",
+    "saveHint": "Grabe con Ctrl+S. F3 vuelve a la pantalla inicial.",
+    "suppliers": "Proveedores del producto",
+    "noSuppliers": "El producto no tiene proveedores vinculados.",
+    "supplierTaxId": "Identificador fiscal",
+    "supplierName": "Proveedor",
+    "supplierSku": "Código del proveedor",
+    "leadTimeDays": "Plazo de entrega (días)",
+    "supplierActive": "Activo"
+  },
+  "messages": {
+    "created": "Producto {{sku}} creado.",
+    "saved": "Producto {{sku}} grabado.",
+    "saveFailed": "No se pudo grabar el producto.",
+    "alreadyExists": "El producto {{sku}} ya existe.",
+    "notFound": "El producto {{sku}} no existe.",
+    "loadFailed": "No se pudo leer el producto.",
+    "settingNotSaved": "Producto {{sku}} grabado, pero el stock mínimo del depósito {{warehouse}} no se grabó: {{reason}} Corríjalo en Modificar producto."
+  },
+  "list": {
+    "selection": "Lista de productos",
+    "hint": "Acote por SKU (un valor, un rango o un patrón con *, como TOR*), nombre, código de barras o categoría, o ejecute con F8 sin criterios para ver todo el catálogo. El estado se filtra en la lista.",
+    "title": "Productos"
+  }
+}

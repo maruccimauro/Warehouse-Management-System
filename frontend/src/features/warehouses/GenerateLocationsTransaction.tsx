@@ -9,7 +9,7 @@ import { useAuthenticatedUser } from '@/features/auth/useAuthenticatedUser';
 import { HelpLink } from '@/shared/help/HelpLink';
 import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
 import { formatNumber } from '@/shared/format/format';
-import { aisleRule, gridNumberRule, optionalPositiveInteger, required } from './fieldRules';
+import { aisleRule, gridNumberRule, optionalPositiveInteger, required } from '@/shared/ui/form/fieldRules';
 import { WarehouseScopeProvider, ZoneField } from './LocationFields';
 import { useZones } from './warehouseQueries';
 import { useDefaultWarehouse } from './useDefaultWarehouse';

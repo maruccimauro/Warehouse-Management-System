@@ -22,10 +22,37 @@ const ls03nPage = 'administracion/visualizar-ubicacion';
 const ls10Page = 'administracion/generar-ubicaciones';
 const lx03Page = 'administracion/lista-de-ubicaciones';
 const zw05Page = 'supervisor/bloqueo-de-ubicaciones';
+const mm01Page = 'administracion/crear-producto';
+const mm02Page = 'administracion/modificar-producto';
+const mm03Page = 'administracion/visualizar-producto';
+const mm60Page = 'administracion/lista-de-productos';
+const xk01Page = 'compras/crear-proveedor';
+const xk02Page = 'compras/modificar-proveedor';
+const xk03Page = 'compras/visualizar-proveedor';
+const zw06Page = 'compras/productos-del-proveedor';
 
 // Campos de la ficha de ubicación: la misma ayuda en crear, modificar y visualizar (la wiki la
 // incluye desde un solo archivo en las tres páginas, D6 de E2.12).
 const locationFields = ['warehouse', 'code', 'zone', 'status', 'aisle', 'rack', 'level', 'position', 'maxUnits'] as const;
+
+// Campos de la ficha de producto y de proveedor (E2.13), incluidos desde un fragmento en las
+// páginas de su trío, como los de ubicación.
+const productFields = [
+  'sku',
+  'warehouse',
+  'name',
+  'description',
+  'status',
+  'barcode',
+  'category',
+  'baseUom',
+  'weightGrams',
+  'lengthMm',
+  'widthMm',
+  'heightMm',
+  'minStock',
+] as const;
+const supplierFields = ['taxId', 'name', 'status', 'email', 'phone'] as const;
 
 function fieldLinks<const Code extends string, const Field extends string>(code: Code, page: string, fields: readonly Field[]) {
   return Object.fromEntries(fields.map((field) => [`field.${code}.${field}`, `${page}#${anchor(field)}`])) as Record<
@@ -76,6 +103,9 @@ const documentedMessageCodes = [
   'GRID_EXPORT_TRUNCATED',
   'LOCATION_NOT_FOUND',
   'LOCATION_BATCH_TOO_LARGE',
+  'PRODUCT_NOT_FOUND',
+  'SUPPLIER_NOT_FOUND',
+  'WAREHOUSE_SETTING_NOT_SAVED',
 ] as const;
 
 const documentedStates = {
@@ -126,6 +156,14 @@ const fixedLinks = {
   'transaction.LS10': ls10Page,
   'transaction.LX03': lx03Page,
   'transaction.ZW05': zw05Page,
+  'transaction.MM01': mm01Page,
+  'transaction.MM02': mm02Page,
+  'transaction.MM03': mm03Page,
+  'transaction.MM60': mm60Page,
+  'transaction.XK01': xk01Page,
+  'transaction.XK02': xk02Page,
+  'transaction.XK03': xk03Page,
+  'transaction.ZW06': zw06Page,
   ...fieldLinks('ZW01', zw01Page, ['code', 'name', 'address']),
   ...fieldLinks('ZW02', zw02Page, ['warehouse', 'code', 'name', 'type']),
   ...fieldLinks('LS01N', ls01nPage, locationFields),
@@ -146,6 +184,14 @@ const fixedLinks = {
   ]),
   ...fieldLinks('LX03', lx03Page, ['warehouse', 'code']),
   ...fieldLinks('ZW05', zw05Page, ['warehouse', 'code', 'reason']),
+  ...fieldLinks('MM01', mm01Page, productFields),
+  ...fieldLinks('MM02', mm02Page, productFields),
+  ...fieldLinks('MM03', mm03Page, productFields),
+  ...fieldLinks('MM60', mm60Page, ['sku', 'name', 'barcode', 'category']),
+  ...fieldLinks('XK01', xk01Page, supplierFields),
+  ...fieldLinks('XK02', xk02Page, ['supplier', ...supplierFields]),
+  ...fieldLinks('XK03', xk03Page, ['supplier', ...supplierFields]),
+  ...fieldLinks('ZW06', zw06Page, ['supplier', 'product', 'supplierSku', 'leadTimeDays']),
 } as const;
 
 export type HelpKey =

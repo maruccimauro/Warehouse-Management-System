@@ -2371,17 +2371,6 @@
                         }
                     },
                     {
-                        "name": "filter[sku]",
-                        "in": "query",
-                        "schema": {
-                            "type": [
-                                "string",
-                                "null"
-                            ],
-                            "maxLength": 100
-                        }
-                    },
-                    {
                         "name": "filter[name]",
                         "in": "query",
                         "schema": {
@@ -2415,18 +2404,52 @@
                         }
                     },
                     {
-                        "name": "filter[status]",
+                        "name": "filter[status][]",
                         "in": "query",
+                        "required": true,
                         "schema": {
-                            "anyOf": [
-                                {
-                                    "$ref": "#/components/schemas/ProductStatus"
-                                },
-                                {
-                                    "type": "null"
-                                }
-                            ]
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/ProductStatus"
+                            }
                         }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "sku": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "sign": {
+                                                "$ref": "#/components/schemas/SelectionSign"
+                                            },
+                                            "option": {
+                                                "$ref": "#/components/schemas/SelectionOption"
+                                            },
+                                            "low": {
+                                                "type": "string",
+                                                "maxLength": 100
+                                            },
+                                            "high": {
+                                                "type": "string",
+                                                "maxLength": 100
+                                            }
+                                        },
+                                        "required": [
+                                            "option",
+                                            "low"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "x-deepObject-style": "qs"
                     }
                 ],
                 "responses": {
@@ -7572,6 +7595,49 @@
                     "supplier_id": {
                         "type": "integer"
                     },
+                    "product": {
+                        "type": "object",
+                        "properties": {
+                            "sku": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "active",
+                                    "discontinued",
+                                    "blocked"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "sku",
+                            "name",
+                            "status"
+                        ]
+                    },
+                    "supplier": {
+                        "type": "object",
+                        "properties": {
+                            "tax_id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "is_active": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "tax_id",
+                            "name",
+                            "is_active"
+                        ]
+                    },
                     "supplier_sku": {
                         "type": [
                             "string",
@@ -7600,6 +7666,8 @@
                 "required": [
                     "product_id",
                     "supplier_id",
+                    "product",
+                    "supplier",
                     "supplier_sku",
                     "lead_time_days",
                     "created_at",

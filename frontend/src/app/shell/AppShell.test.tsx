@@ -182,6 +182,12 @@ describe('armazón: árbol de transacciones', () => {
     // Plegada, la carpeta siguiente queda debajo.
     await userEvent.keyboard('{ArrowLeft}{ArrowDown}');
 
+    const purchasing = within(tree).getByRole('treeitem', { name: /^Compras/ });
+
+    expect(purchasing).toHaveFocus();
+
+    await userEvent.keyboard('{ArrowLeft}{ArrowDown}');
+
     const system = within(tree).getByRole('treeitem', { name: /^Sistema/ });
 
     expect(system).toHaveFocus();

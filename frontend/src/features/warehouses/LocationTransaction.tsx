@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { useTransactionForm } from '@/app/shell/useTransactionForm';
 import { HelpLink } from '@/shared/help/HelpLink';
-import { optionalPositiveInteger, required, textRule } from './fieldRules';
+import { optionalPositiveInteger, required, textRule } from '@/shared/ui/form/fieldRules';
 import { WarehouseScopeProvider, ZoneField } from './LocationFields';
 import { useZones } from './warehouseQueries';
 import { LocationInitialScreen, type LocationTarget } from './LocationInitialScreen';

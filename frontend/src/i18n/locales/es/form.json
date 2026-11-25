@@ -1,3 +1,16 @@
 {
-  "invalidValue": "El valor no existe."
+  "invalidValue": "El valor no existe.",
+  "rules": {
+    "required": "Complete este campo.",
+    "maxLength": "Hasta {{max}} caracteres.",
+    "code": "Use letras y números; puede separarlos con un guion o un guion bajo, como A-01.",
+    "positiveInteger": "Ingrese un número entero mayor que cero o deje el campo vacío.",
+    "aisle": "Ingrese una letra de la A a la Z.",
+    "gridNumber": "Ingrese un número entero de 1 a {{max}}.",
+    "nonNegativeInteger": "Ingrese un número entero de 0 en adelante.",
+    "integerMax": "El valor máximo es {{max}}.",
+    "email": "Ingrese un email válido, como compras@proveedor.com, o deje el campo vacío.",
+    "printable": "Use letras, números y signos, sin espacios.",
+    "taxId": "Ingrese de 5 a 20 letras o números; puede separarlos con puntos, guiones o barras."
+  }
 }

@@ -1,0 +1,355 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
+import type { StatusMessage } from '@/app/shell/statusMessages';
+import { errorMessage, useStatusBar } from '@/app/shell/statusMessages';
+import { useTransactionForm } from '@/app/shell/useTransactionForm';
+import { HelpLink } from '@/shared/help/HelpLink';
+import {
+  nonNegativeInteger,
+  optionalPositiveInteger,
+  optionalPrintable,
+  required,
+  requiredText,
+  textRule,
+} from '@/shared/ui/form/fieldRules';
+import { DataGrid } from '@/shared/ui/grid/DataGrid';
+import type { GridColumn } from '@/shared/ui/grid/gridTypes';
+import {
+  barcodeMaxLength,
+  createProduct,
+  descriptionMaxLength,
+  dimensionMax,
+  fetchProductSuppliers,
+  fetchWarehouseSettings,
+  maxQuantity,
+  productDetailQueryKey,
+  productNameMaxLength,
+  productsQueryKey,
+  productStatuses,
+  setWarehouseSetting,
+  updateProduct,
+  type Category,
+  type Product,
+  type ProductInput,
+  type ProductSupplier,
+  type Unit,
+} from './catalogApi';
+import { CategoryField, UnitField } from './CatalogFields';
+import { categoryPaths, useCategories, useUnits } from './catalogQueries';
+import { ProductInitialScreen, type ProductActivity, type ProductEntry, type ProductTarget } from './ProductInitialScreen';
+
+// MM01, MM02 y MM03: crear, modificar y visualizar un producto (E2.13). La misma pantalla en
+// tres modos, como LS01N a LS03N: inicial con SKU y depósito opcional (F8) y la ficha. Al grabar
+// vuelve a la pantalla inicial con lo ingresado.
+export function ProductTransaction({ activity }: { activity: ProductActivity }) {
+  const [target, setTarget] = useState<ProductTarget>();
+  const [last, setLast] = useState<ProductEntry>();
+
+  if (target === undefined) {
+    return (
+      <ProductInitialScreen
+        activity={activity}
+        initial={last}
+        onContinue={(next) => {
+          setLast({ sku: next.sku, warehouse: next.warehouse?.code ?? '' });
+          setTarget(next);
+        }}
+      />
+    );
+  }
+
+  return (
+    <ProductDetail
+      activity={activity}
+      target={target}
+      onDone={() => {
+        setTarget(undefined);
+      }}
+    />
+  );
+}
+
+export function CreateProductTransaction() {
+  return <ProductTransaction activity="create" />;
+}
+
+export function ChangeProductTransaction() {
+  return <ProductTransaction activity="change" />;
+}
+
+export function DisplayProductTransaction() {
+  return <ProductTransaction activity="display" />;
+}
+
+const productFormSchema = z.object({
+  sku: z.string(),
+  name: requiredText(productNameMaxLength),
+  description: textRule(descriptionMaxLength),
+  barcode: optionalPrintable(barcodeMaxLength),
+  // Categoría y unidad las valida su campo contra las filas (tabla de verificación).
+  category: z.string(),
+  baseUom: required(),
+  status: z.enum(productStatuses),
+  weightGrams: optionalPositiveInteger(dimensionMax),
+  lengthMm: optionalPositiveInteger(dimensionMax),
+  widthMm: optionalPositiveInteger(dimensionMax),
+  heightMm: optionalPositiveInteger(dimensionMax),
+  minStock: nonNegativeInteger(maxQuantity),
+});
+
+type ProductFormValues = z.input<typeof productFormSchema>;
+
+const nullable = (text: string) => (text.trim() === '' ? null : text.trim());
+const optionalNumber = (text: string) => (text.trim() === '' ? null : Number(text));
+const numberText = (value: number | null | undefined) => (value == null ? '' : String(value));
+
+interface ProductDetailProps {
+  activity: ProductActivity;
+  target: ProductTarget;
+  onDone: () => void;
+}
+
+// Lee lo que la ficha necesita antes de montar el formulario (categorías, unidades y, con
+// depósito, el stock mínimo), para que los valores por defecto no cambien después.
+function ProductDetail({ activity, target, onDone }: ProductDetailProps) {
+  const { t } = useTranslation('products');
+  const categories = useCategories();
+  const units = useUnits();
+  const { product, warehouse } = target;
+  const settings = useQuery({
+    queryKey: [...productDetailQueryKey(product?.id ?? 0), 'warehouse-settings'],
+    queryFn: ({ signal }) => fetchWarehouseSettings(product?.id ?? 0, signal),
+    enabled: product !== undefined && warehouse !== undefined,
+  });
+  const settingsPending = product !== undefined && warehouse !== undefined && settings.data === undefined;
+
+  if (categories.isError || units.isError || settings.isError) {
+    return <p className="text-error">{errorMessage(categories.error ?? units.error ?? settings.error, t('messages.loadFailed')).text}</p>;
+  }
+
+  if (categories.data === undefined || units.data === undefined || settingsPending) {
+    return <p className="text-ink-muted">{t('detail.loading')}</p>;
+  }
+
+  // Un depósito sin fila usa el valor por defecto: sin stock mínimo.
+  const minStock = settings.data?.find((setting) => setting.warehouse_id === warehouse?.id)?.min_stock ?? 0;
+
+  return (
+    <>
+      <ProductForm
+        activity={activity}
+        target={target}
+        categories={categories.data}
+        units={units.data}
+        minStock={minStock}
+        onDone={onDone}
+      />
+      {activity === 'display' && product !== undefined && <ProductSuppliers productId={product.id} />}
+    </>
+  );
+}
+
+interface ProductFormProps {
+  activity: ProductActivity;
+  target: ProductTarget;
+  categories: readonly Category[];
+  units: readonly Unit[];
+  minStock: number;
+  onDone: () => void;
+}
+
+function ProductForm({ activity, target, categories, units, minStock, onDone }: ProductFormProps) {
+  const { t } = useTranslation('products');
+  const queryClient = useQueryClient();
+  const { product, warehouse, sku } = target;
+  const paths = useMemo(() => categoryPaths(categories), [categories]);
+
+  const defaultValues = useMemo(
+    (): ProductFormValues => ({
+      sku,
+      name: product?.name ?? '',
+      description: product?.description ?? '',
+      barcode: product?.barcode ?? '',
+      category: product?.category_id == null ? '' : (paths.get(product.category_id) ?? ''),
+      baseUom: units.find((unit) => unit.id === product?.base_uom_id)?.code ?? '',
+      status: product?.status ?? 'active',
+      weightGrams: numberText(product?.weight_grams),
+      lengthMm: numberText(product?.length_mm),
+      widthMm: numberText(product?.width_mm),
+      heightMm: numberText(product?.height_mm),
+      minStock: String(minStock),
+    }),
+    [sku, product, paths, units, minStock],
+  );
+
+  const categoryIdOf = (path: string) => [...paths.entries()].find(([, candidate]) => candidate === path)?.[0];
+
+  const saveMinStock = async (saved: Product, text: string): Promise<StatusMessage | undefined> => {
+    if (warehouse === undefined || Number(text) === minStock) {
+      return undefined;
+    }
+
+    try {
+      await setWarehouseSetting(saved.id, warehouse.id, Number(text));
+
+      return undefined;
+    } catch (error) {
+      return {
+        type: 'W',
+        text: t('messages.settingNotSaved', { sku, warehouse: warehouse.code, reason: errorMessage(error, t('messages.saveFailed')).text }),
+        id: 'WAREHOUSE_SETTING_NOT_SAVED',
+      };
+    }
+  };
+
+  const { Form, Section, Field, values } = useTransactionForm({
+    schema: productFormSchema,
+    defaultValues,
+    namespace: 'products',
+    readOnly: activity === 'display',
+    savedMessage: activity === 'create' ? t('messages.created', { sku }) : t('messages.saved', { sku }),
+    saveFailedMessage: t('messages.saveFailed'),
+    serverFields: {
+      category_id: 'category',
+      base_uom_id: 'baseUom',
+      weight_grams: 'weightGrams',
+      length_mm: 'lengthMm',
+      width_mm: 'widthMm',
+      height_mm: 'heightMm',
+      min_stock: 'minStock',
+    },
+    onBack: onDone,
+    onSave: async (form) => {
+      const input: ProductInput = {
+        name: form.name,
+        description: nullable(form.description),
+        barcode: nullable(form.barcode),
+        category_id: form.category === '' ? null : (categoryIdOf(form.category) ?? null),
+        weight_grams: optionalNumber(form.weightGrams),
+        length_mm: optionalNumber(form.lengthMm),
+        width_mm: optionalNumber(form.widthMm),
+        height_mm: optionalNumber(form.heightMm),
+      };
+
+      const saved =
+        activity === 'create'
+          ? await createProduct({
+              ...input,
+              sku,
+              name: form.name,
+              base_uom_id: units.find((unit) => unit.code === form.baseUom)?.id ?? 0,
+            })
+          : await updateProduct(product?.id ?? 0, { ...input, status: form.status });
+
+      // El producto ya quedó grabado: si falla el stock mínimo, la ficha vuelve igual a la
+      // pantalla inicial y el W lo informa (son dos recursos del backend, sin una transacción
+      // que los una; D4).
+      const outcome = await saveMinStock(saved, form.minStock);
+
+      void queryClient.invalidateQueries({ queryKey: productsQueryKey });
+      onDone();
+
+      return outcome;
+    },
+  });
+
+  const statusOptions = productStatuses.map((status) => ({ value: status, label: t(`statuses.${status}`) }));
+  const fixed = t('detail.fixedAfterCreate');
+
+  return (
+    <div className="grid gap-3">
+      <Form>
+        <Section name="general">
+          <Field name="sku" readOnly className="w-64" description={activity === 'create' ? fixed : undefined} />
+          <Field name="name" required />
+          <Field name="description" rows={3} />
+          {activity !== 'create' && <Field name="status" options={statusOptions} />}
+          <Field name="barcode" className="w-64" />
+          <Field name="category" as={CategoryField} />
+          <Field
+            name="baseUom"
+            as={UnitField}
+            required
+            readOnly={activity !== 'create'}
+            description={activity === 'create' ? fixed : undefined}
+          />
+        </Section>
+        <Section name="dimensions">
+          <Field name="weightGrams" inputMode="numeric" className="w-32" />
+          <Field name="lengthMm" inputMode="numeric" className="w-32" />
+          <Field name="widthMm" inputMode="numeric" className="w-32" />
+          <Field name="heightMm" inputMode="numeric" className="w-32" />
+        </Section>
+        {warehouse !== undefined && (
+          <Section name="warehouse">
+            <Field name="minStock" inputMode="numeric" required className="w-40" description={t('detail.minStockHint', { code: warehouse.code })} />
+          </Section>
+        )}
+      </Form>
+      {product !== undefined && (
+        <section className="grid max-w-4xl gap-1 text-ink-muted">
+          <p>
+            {t('fields.status')}:{' '}
+            <HelpLink helpKey={`state.product.${values.status}`}>{t(`statuses.${values.status}`)}</HelpLink>
+          </p>
+          <p>{t('detail.lotTracked', { value: t(product.is_lot_tracked ? 'detail.yes' : 'detail.no') })}</p>
+        </section>
+      )}
+      {activity !== 'display' && <p className="text-xs text-ink-muted">{t('detail.saveHint')}</p>}
+    </div>
+  );
+}
+
+// Proveedores vinculados al producto, de solo lectura en la visualización (D5): se mantienen
+// desde los productos del proveedor.
+function ProductSuppliers({ productId }: { productId: number }) {
+  const { t } = useTranslation('products');
+  const { t: tSuppliers } = useTranslation('suppliers');
+  const { show } = useStatusBar();
+  const links = useQuery({
+    queryKey: [...productDetailQueryKey(productId), 'suppliers'],
+    queryFn: ({ signal }) => fetchProductSuppliers(productId, signal),
+  });
+
+  const columns = useMemo(
+    (): GridColumn<ProductSupplier>[] => [
+      { id: 'tax_id', header: t('detail.supplierTaxId'), value: (row) => row.supplier?.tax_id ?? '' },
+      { id: 'name', header: t('detail.supplierName'), value: (row) => row.supplier?.name ?? '' },
+      {
+        id: 'is_active',
+        header: t('detail.supplierActive'),
+        value: (row) => (row.supplier?.is_active === false ? 'inactive' : 'active'),
+        format: (value) => tSuppliers(`statuses.${String(value) as 'active' | 'inactive'}`),
+      },
+      { id: 'supplier_sku', header: t('detail.supplierSku'), value: (row) => row.supplier_sku },
+      { id: 'lead_time_days', header: t('detail.leadTimeDays'), value: (row) => row.lead_time_days, type: 'number' },
+    ],
+    [t, tSuppliers],
+  );
+
+  const exportName = 'proveedores-del-producto';
+
+  if (links.data === undefined) {
+    return null;
+  }
+
+  return (
+    <section className="mt-4 grid gap-2">
+      <h2 className="font-medium">{t('detail.suppliers')}</h2>
+      {links.data.length === 0 ? (
+        <p className="text-ink-muted">{t('detail.noSuppliers')}</p>
+      ) : (
+        <DataGrid
+          label={t('detail.suppliers')}
+          columns={columns}
+          source={{ kind: 'local', rows: links.data }}
+          rowKey={(row) => row.supplier_id}
+          exportName={exportName}
+          onMessage={show}
+        />
+      )}
+    </section>
+  );
+}

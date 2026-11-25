@@ -14,7 +14,7 @@ import { SelectionScreen } from '@/shared/ui/selection/SelectionScreen';
 import type { SelectionField } from '@/shared/ui/selection/selectionTypes';
 import { parameterValue } from '@/shared/ui/selection/selection';
 import { useSelectionScreen } from '@/shared/ui/selection/useSelectionScreen';
-import { codeRule, required } from './fieldRules';
+import { codeRule, required } from '@/shared/ui/form/fieldRules';
 import { useDefaultWarehouse } from './useDefaultWarehouse';
 import { WarehouseField } from './WarehouseField';
 import { createZone, fetchZones, updateZone, zonesQueryKey, zoneTypes, type Zone, type ZoneType, normalizeCode } from './warehousesApi';

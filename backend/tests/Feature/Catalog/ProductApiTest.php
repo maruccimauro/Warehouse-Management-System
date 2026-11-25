@@ -142,17 +142,20 @@ describe('queries', function () {
             ->assertJsonPath('data.*.sku', ['MAR-500', 'TOR-M6-30', 'TOR-M8-40']);
     });
 
-    it('searches by fragment of name or SKU without case, and by exact barcode', function (string $query, array $skus) {
+    it('searches by fragment of name, by SKU selection and by exact barcode', function (string $query, array $skus) {
         $this->actingAs($this->admin)
             ->getJson("/api/v1/products?{$query}")
             ->assertOk()
             ->assertJsonPath('data.*.sku', $skus);
     })->with([
         'nombre' => ['filter[name]=HEXAGONAL', ['TOR-M6-30', 'TOR-M8-40']],
-        'SKU' => ['filter[sku]=m8', ['TOR-M8-40']],
+        'SKU por patrón sin mayúsculas' => ['filter[sku][0][option]=CP&filter[sku][0][low]=*m8*', ['TOR-M8-40']],
+        'SKU por rango' => ['filter[sku][0][option]=BT&filter[sku][0][low]=TOR-M6-30&filter[sku][0][high]=TOR-M8-40', ['TOR-M6-30', 'TOR-M8-40']],
+        'SKU excluido' => ['filter[sku][0][sign]=E&filter[sku][0][option]=CP&filter[sku][0][low]=TOR*', ['MAR-500']],
         'código de barras' => ['filter[barcode]=7790000000010', ['TOR-M6-30']],
         'código de barras parcial' => ['filter[barcode]=779', []],
-        'estado' => ['filter[status]=discontinued', ['TOR-M8-40']],
+        'estado' => ['filter[status][]=discontinued', ['TOR-M8-40']],
+        'varios estados' => ['filter[status][]=discontinued&filter[status][]=active', ['MAR-500', 'TOR-M6-30', 'TOR-M8-40']],
         'orden por nombre' => ['sort=-name', ['TOR-M8-40', 'TOR-M6-30', 'MAR-500']],
     ]);
 
@@ -164,9 +167,9 @@ describe('queries', function () {
 
     it('rejects an invalid status filter', function () {
         $this->actingAs($this->admin)
-            ->getJson('/api/v1/products?filter[status]=deleted')
+            ->getJson('/api/v1/products?filter[status][]=deleted')
             ->assertStatus(422)
-            ->assertJsonValidationErrors(['filter.status'], 'errors');
+            ->assertJsonValidationErrors(['filter.status.0'], 'errors');
     });
 });
 
