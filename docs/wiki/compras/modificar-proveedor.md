@@ -9,13 +9,13 @@ La transacción `XK02` cambia los datos de un proveedor y lo activa o desactiva.
 3. Grabe con <kbd>Ctrl</kbd>+<kbd>S</kbd>. El sistema informa **Proveedor … grabado.** y vuelve a la pantalla inicial.
 
 ::: info
-Un proveedor inactivo no admite órdenes de compra nuevas y deja terminar las abiertas. Sus datos y sus productos se siguen manteniendo.
+Un proveedor inactivo no admite órdenes de compra nuevas y deja terminar las abiertas. Sus datos y sus artículos se siguen manteniendo.
 :::
 
 ## Pantalla inicial {#pantalla-inicial}
 
 ### Proveedor {#supplier}
 
-Identificador fiscal del proveedor, escrito con o sin separadores. Si no lo conoce, <kbd>F4</kbd> busca por fragmento del nombre o por el identificador fiscal completo.
+[Número](#number) del proveedor, con o sin los ceros a la izquierda: `12` y `000012` son el mismo. Si no lo conoce, <kbd>F4</kbd> busca por número, por fragmento del nombre o por el identificador fiscal completo.
 
 <!--@include: ./partes/proveedor-campos.md-->

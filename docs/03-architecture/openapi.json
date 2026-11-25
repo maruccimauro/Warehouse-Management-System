@@ -3738,6 +3738,8 @@
                         "schema": {
                             "type": "string",
                             "enum": [
+                                "number",
+                                "-number",
                                 "name",
                                 "-name",
                                 "tax_id",
@@ -3771,6 +3773,17 @@
                                 "null"
                             ],
                             "maxLength": 100
+                        }
+                    },
+                    {
+                        "name": "filter[number]",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1
                         }
                     },
                     {
@@ -7622,6 +7635,9 @@
                     "supplier": {
                         "type": "object",
                         "properties": {
+                            "number": {
+                                "type": "string"
+                            },
                             "tax_id": {
                                 "type": "string"
                             },
@@ -7633,6 +7649,7 @@
                             }
                         },
                         "required": [
+                            "number",
                             "tax_id",
                             "name",
                             "is_active"
@@ -8058,6 +8075,9 @@
                     "id": {
                         "type": "integer"
                     },
+                    "number": {
+                        "type": "string"
+                    },
                     "tax_id": {
                         "type": "string"
                     },
@@ -8094,6 +8114,7 @@
                 },
                 "required": [
                     "id",
+                    "number",
                     "tax_id",
                     "name",
                     "email",

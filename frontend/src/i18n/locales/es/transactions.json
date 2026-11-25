@@ -9,21 +9,21 @@
     "LS10": "Crear múltiples ubicaciones",
     "LX03": "Lista de ubicaciones",
     "ZW05": "Bloquear o desbloquear ubicación",
-    "MM01": "Crear producto",
-    "MM02": "Modificar producto",
-    "MM03": "Visualizar producto",
-    "MM60": "Lista de productos",
+    "MM01": "Crear catálogo",
+    "MM02": "Modificar catálogo",
+    "MM03": "Visualizar catálogo",
+    "MM60": "Lista del catálogo",
     "XK01": "Crear proveedor",
     "XK02": "Modificar proveedor",
     "XK03": "Visualizar proveedor",
-    "ZW06": "Gestionar productos del proveedor"
+    "ZW06": "Gestionar catálogo del proveedor"
   },
   "folders": {
     "logistics": "Logística",
     "warehouseStructure": "Estructura del depósito",
     "system": "Sistema",
     "userData": "Datos de usuario",
-    "catalog": "Productos",
+    "catalog": "Catálogo",
     "purchasing": "Compras",
     "suppliers": "Proveedores"
   }

@@ -223,6 +223,7 @@ function ZoneDetail({ warehouse, mode, zone, onModeChange, onBack }: ZoneDetailP
           {
             id: 'change',
             label: t('actions.change'),
+            primary: true,
             onClick: () => {
               onModeChange('change', zone);
             },

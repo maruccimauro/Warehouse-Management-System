@@ -2,12 +2,11 @@ import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTransactionActions } from '@/app/shell/shellActions';
 import { errorMessage, useStatusBar } from '@/app/shell/statusMessages';
-import { normalizeTaxId } from '@/shared/ui/form/fieldRules';
 import { SelectionScreen } from '@/shared/ui/selection/SelectionScreen';
 import { parameterValue } from '@/shared/ui/selection/selection';
 import type { SelectionField, SelectionInputProps } from '@/shared/ui/selection/selectionTypes';
 import { useSelectionScreen } from '@/shared/ui/selection/useSelectionScreen';
-import { findSupplier, type Supplier } from './catalogApi';
+import { findSupplier, normalizeSupplierNumber, type Supplier } from './catalogApi';
 import { SupplierField } from './CatalogFields';
 import { InfoNotice } from '@/shared/ui/InfoNotice';
 
@@ -15,12 +14,13 @@ interface SupplierInitialScreenProps {
   // Título de la pantalla: modificar, visualizar o los productos del proveedor.
   title: 'change' | 'display' | 'products';
   onContinue: (supplier: Supplier) => void;
-  // Identificador fiscal de la última entrada: F3 desde la ficha vuelve con él.
+  // Número de la última entrada: F3 desde la ficha vuelve con él.
   initial: string | undefined;
 }
 
 // Pantalla inicial de modificar y visualizar un proveedor y de sus productos (E2.13, D1): el
-// identificador fiscal, escrito o elegido con F4 por nombre. F8 lee el proveedor.
+// número del proveedor, escrito o elegido con F4 por número, nombre o identificador fiscal. F8
+// lee el proveedor.
 export function SupplierInitialScreen({ title, onContinue, initial }: SupplierInitialScreenProps) {
   const { t } = useTranslation('suppliers');
   const { show } = useStatusBar();
@@ -39,14 +39,14 @@ export function SupplierInitialScreen({ title, onContinue, initial }: SupplierIn
       return;
     }
 
-    const taxId = normalizeTaxId(parameterValue(values, 'supplier'));
+    const number = normalizeSupplierNumber(parameterValue(values, 'supplier'));
     running.current = true;
 
     try {
-      const supplier = await findSupplier(taxId);
+      const supplier = /^\d+$/.test(number) ? await findSupplier(number) : undefined;
 
       if (supplier === undefined) {
-        show({ type: 'E', text: t('messages.notFound', { taxId }), id: 'SUPPLIER_NOT_FOUND' });
+        show({ type: 'E', text: t('messages.notFound', { number }), id: 'SUPPLIER_NOT_FOUND' });
 
         return;
       }

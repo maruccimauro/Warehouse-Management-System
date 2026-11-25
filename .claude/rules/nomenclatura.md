@@ -14,9 +14,15 @@ Un mismo objeto y una misma acción se nombran igual en toda la aplicación: tí
 - Única excepción: los listados se titulan **Lista de <objetos>** (**Lista de productos**).
 - El objeto se nombra igual que su carpeta del menú y su sección de la wiki.
 
+## Vocabulario fijo
+
+- **Catálogo**: el maestro único de lo que el depósito guarda y mueve, compartido por todos los depósitos. Las transacciones se titulan **Crear catálogo**, **Modificar catálogo**, **Visualizar catálogo**, **Lista del catálogo** y **Gestionar catálogo del proveedor**.
+- **Artículo**: cada registro del catálogo, identificado por su SKU ("El artículo TOR-M8 no existe"). No se usa "producto" en la interfaz ni en la wiki: el catálogo puede incluir elementos que no son productos. Los códigos técnicos (`PRODUCT_NOT_FOUND`, `catalog.manage`, tablas y rutas de la API) no cambian.
+- **Proveedor**: se identifica por su **número** interno (`000012`); el identificador fiscal es un dato más del proveedor.
+
 ## Carpetas del menú
 
-- Nombre del objeto en plural (**Productos**, **Proveedores**) o del área funcional (**Logística**, **Compras**, **Sistema**). Una carpeta no lleva el nombre de un concepto distinto del objeto que contiene: debajo de **Productos** van **Crear producto**, **Modificar producto**, y así.
+- Nombre del objeto (**Catálogo**, **Proveedores**) o del área funcional (**Logística**, **Compras**, **Sistema**). Una carpeta no lleva el nombre de un concepto distinto del objeto que contiene: debajo de **Catálogo** van **Crear catálogo**, **Modificar catálogo**, y así.
 
 ## Botones de diálogos y pantallas
 

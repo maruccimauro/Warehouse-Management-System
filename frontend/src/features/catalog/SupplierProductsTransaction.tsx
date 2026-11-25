@@ -48,7 +48,7 @@ export function SupplierProductsTransaction() {
         title="products"
         initial={last}
         onContinue={(supplier) => {
-          setLast(supplier.tax_id);
+          setLast(supplier.number);
           setScreen({ kind: 'list', supplier });
         }}
       />
@@ -115,14 +115,14 @@ function LinkList({ supplier, onBack, onOpen, onCreate }: LinkListProps) {
 
   return (
     <div className="grid gap-3">
-      <p className="font-medium">{t('links.supplier', { taxId: supplier.tax_id, name: supplier.name })}</p>
+      <p className="font-medium">{t('links.supplier', { number: supplier.number, name: supplier.name })}</p>
       <ApplicationToolbar label={t('links.actions')} actions={actions} />
       <DataGrid
         label={t('links.title', { name: supplier.name })}
         columns={columns}
         source={source}
         rowKey={(row) => row.product_id}
-        exportName={`productos-${supplier.tax_id.toLowerCase()}`}
+        exportName={`productos-${supplier.number}`}
         onMessage={show}
         onRowActivate={onOpen}
       />
@@ -237,6 +237,7 @@ function LinkDetail({ supplier, mode, link, onModeChange, onBack }: LinkDetailPr
           {
             id: 'change',
             label: t('links.change'),
+            primary: true,
             onClick: () => {
               onModeChange('change', link);
             },
@@ -253,7 +254,7 @@ function LinkDetail({ supplier, mode, link, onModeChange, onBack }: LinkDetailPr
 
   return (
     <div className="grid gap-3">
-      <p className="font-medium">{t('links.supplier', { taxId: supplier.tax_id, name: supplier.name })}</p>
+      <p className="font-medium">{t('links.supplier', { number: supplier.number, name: supplier.name })}</p>
       <ApplicationToolbar label={t('links.detailActions')} actions={actions} />
       <Form>
         <Section name="link">

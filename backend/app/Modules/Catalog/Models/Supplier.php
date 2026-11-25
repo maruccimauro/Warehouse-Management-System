@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Proveedor, como el maestro de acreedores de SAP. El identificador fiscal
@@ -15,6 +16,7 @@ use Illuminate\Support\Carbon;
  * como el bloqueo de compras (SPERM) de SAP (REG-018).
  *
  * @property int $id
+ * @property int $number
  * @property string $tax_id
  * @property string $name
  * @property string|null $email
@@ -35,6 +37,38 @@ class Supplier extends Model
      * separadores. Sirve para cualquier país porque no valida dígitos
      * verificadores.
      */
+    /**
+     * Número interno con ceros a la izquierda hasta seis dígitos (000001).
+     */
+    public static function formatNumber(int $number): string
+    {
+        return str_pad((string) $number, 6, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Número escrito por el usuario (con o sin ceros) a entero; null si no es un número.
+     */
+    public static function parseNumber(string $value): ?int
+    {
+        $digits = trim($value);
+
+        return preg_match('/^\d{1,18}$/', $digits) === 1 && (int) $digits > 0 ? (int) $digits : null;
+    }
+
+    /**
+     * El número interno sale de su secuencia al crear el proveedor, sea por la
+     * Action o por cualquier otro camino (seeders, pruebas).
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (Supplier $supplier): void {
+            if (! isset($supplier->attributes['number'])) {
+                $next = DB::scalar("SELECT nextval('suppliers_number_seq')");
+                $supplier->number = is_numeric($next) ? (int) $next : throw new \LogicException('suppliers_number_seq no devolvió un número.');
+            }
+        });
+    }
+
     public static function normalizeTaxId(string $value): string
     {
         return mb_strtoupper((string) preg_replace('/[\s.\-\/]+/u', '', $value));
@@ -45,7 +79,7 @@ class Supplier extends Model
      */
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return ['is_active' => 'boolean', 'number' => 'integer'];
     }
 
     /**

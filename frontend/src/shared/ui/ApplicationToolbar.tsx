@@ -10,6 +10,8 @@ export interface ApplicationAction {
   label: string;
   onClick: () => void;
   disabled?: boolean;
+  // La acción principal de la pantalla (Modificar en una ficha en visualizar): botón destacado.
+  primary?: boolean;
 }
 
 interface ApplicationToolbarProps {
@@ -40,7 +42,7 @@ export function ApplicationToolbar({ label, actions }: ApplicationToolbarProps) 
       className="flex flex-wrap gap-2"
     >
       {actions.map((action) => (
-        <Button key={action.id} disabled={action.disabled} onClick={action.onClick}>
+        <Button key={action.id} variant={action.primary === true ? 'primary' : 'default'} disabled={action.disabled} onClick={action.onClick}>
           {action.label}
         </Button>
       ))}

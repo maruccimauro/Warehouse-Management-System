@@ -48,7 +48,7 @@ La ubicación está dentro de un inventario físico en curso y no admite movimie
 
 La ubicación dejó de usarse. No admite movimientos y no se ofrece para operar. Una ubicación de sistema no se puede desactivar.
 
-## Producto {#product}
+## Artículo {#product}
 
 Los cambios entre los tres estados son libres y los hace quien tiene [`catalog.manage`](./permisos#catalog-manage); quedan auditados.
 
@@ -74,7 +74,7 @@ Admite órdenes de compra nuevas.
 
 ### Inactivo {#supplier-inactive}
 
-No admite órdenes de compra nuevas y deja terminar las abiertas. Admite el mantenimiento de sus datos y de sus productos.
+No admite órdenes de compra nuevas y deja terminar las abiertas. Admite el mantenimiento de sus datos y de sus artículos.
 
 ## Usuario {#user}
 

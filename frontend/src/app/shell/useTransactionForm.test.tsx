@@ -75,7 +75,7 @@ function Screen({ onSave, readOnly = false }: HarnessProps) {
     <>
       <Form>
         <Section name="basicData">
-          <Field name="sku" required description="Código del producto." />
+          <Field name="sku" required description="Código del artículo." />
           {showName && <Field name="name" />}
           <Field name="warehouse" as={WarehouseInput} />
         </Section>
@@ -153,7 +153,7 @@ describe('useTransactionForm (bloques de formulario)', () => {
     const sku = screen.getByRole('textbox', { name: 'SKU' });
 
     expect(sku).toBeRequired();
-    expect(sku).toHaveAccessibleDescription('Código del producto.');
+    expect(sku).toHaveAccessibleDescription('Código del artículo.');
 
     await userEvent.type(sku, 'abc');
     expect(screen.getByRole('textbox', { name: 'SKU' })).toBe(sku);
@@ -191,7 +191,7 @@ describe('useTransactionForm (bloques de formulario)', () => {
     expect(onSave).not.toHaveBeenCalled();
     expect(statusBar()).toHaveTextContent('E SKU: Ingrese el SKU.');
     expect(screen.getByRole('textbox', { name: 'SKU' })).toHaveFocus();
-    expect(screen.getByRole('textbox', { name: 'SKU' })).toHaveAccessibleDescription('Código del producto. Ingrese el SKU.');
+    expect(screen.getByRole('textbox', { name: 'SKU' })).toHaveAccessibleDescription('Código del artículo. Ingrese el SKU.');
   });
 
   it('graba los valores transformados por el esquema, informa S y queda sin cambios pendientes', async () => {

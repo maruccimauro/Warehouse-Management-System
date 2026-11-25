@@ -1,5 +1,9 @@
 ## Datos del proveedor {#datos}
 
+### Número {#number}
+
+Número interno del proveedor, por ejemplo `000012`. El sistema lo asigna al crear el proveedor, en orden correlativo, y no cambia nunca: es el dato con que se busca al proveedor en las demás transacciones. No se muestra al crear, porque todavía no existe.
+
 ### Identificador fiscal {#tax-id}
 
 Obligatorio. Número de identificación tributaria del proveedor, por ejemplo el CUIT `30-71234567-1`. Se puede escribir con espacios, puntos, guiones o barras: el sistema los quita y lo guarda en mayúsculas, con 5 a 20 letras o números. Es único: dos proveedores no comparten identificador fiscal ([`VALUE_ALREADY_EXISTS`](/referencia/mensajes#value-already-exists)). A diferencia de otros códigos, se puede corregir al modificar.

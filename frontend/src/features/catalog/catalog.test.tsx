@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { jsonResponse, problemResponse, stubApi, testUser, userResponse } from '@/test/fakeApi';
 import { renderRoute } from '@/test/renderRoute';
 
-// Pruebas de componente de E2.13 sobre el armazón completo: productos, proveedores y vínculos.
+// Pruebas de componente de E2.13 sobre el armazón completo: artículos, proveedores y vínculos.
 
 const central = { id: 1, code: 'CENTRAL', name: 'Depósito central' };
 
@@ -42,7 +42,7 @@ function product(overrides: Record<string, unknown> = {}) {
   };
 }
 
-const acme = { id: 3, tax_id: '30712345671', name: 'ACME SA', email: null, phone: null, is_active: true };
+const acme = { id: 3, number: '000003', tax_id: '30712345671', name: 'ACME SA', email: null, phone: null, is_active: true };
 
 function page(items: unknown[]) {
   return jsonResponse(200, { data: items, meta: { current_page: 1, last_page: 1, per_page: 200, total: items.length } });
@@ -76,8 +76,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('MM01 a MM03: productos', () => {
-  it('crea un producto con categoría, unidad y stock mínimo del depósito', async () => {
+describe('MM01 a MM03: artículos', () => {
+  it('crea un artículo con categoría, unidad y stock mínimo del depósito', async () => {
     const api = stubApi({
       ...catalogHandlers,
       'GET /api/v1/products': () => page([]),
@@ -97,7 +97,7 @@ describe('MM01 a MM03: productos', () => {
     await userEvent.keyboard('{Control>}s{/Control}');
 
     await waitFor(() => {
-      expect(statusBar().getByRole('status')).toHaveTextContent('Producto TOR-M8-40 creado.');
+      expect(statusBar().getByRole('status')).toHaveTextContent('Artículo TOR-M8-40 creado.');
     });
     expect(api.requestsTo('GET', '/api/v1/products')[0]?.query.get('filter[sku][0][low]')).toBe('TOR-M8-40');
     expect(api.requestsTo('POST', '/api/v1/products')[0]?.body).toMatchObject({
@@ -118,7 +118,7 @@ describe('MM01 a MM03: productos', () => {
     await fill('SKU', 'tor-m6-30');
     await userEvent.keyboard('{F8}');
 
-    expect(await statusBar().findByRole('alert')).toHaveTextContent('El producto TOR-M6-30 ya existe.');
+    expect(await statusBar().findByRole('alert')).toHaveTextContent('El artículo TOR-M6-30 ya existe.');
     expect(statusBar().getByRole('link', { name: /VALUE_ALREADY_EXISTS/ })).toBeInTheDocument();
     expect(screen.queryByRole('textbox', { name: 'Nombre' })).not.toBeInTheDocument();
   });
@@ -130,11 +130,11 @@ describe('MM01 a MM03: productos', () => {
     await fill('SKU', 'nada');
     await userEvent.keyboard('{F8}');
 
-    expect(await statusBar().findByRole('alert')).toHaveTextContent('El producto NADA no existe.');
+    expect(await statusBar().findByRole('alert')).toHaveTextContent('El artículo NADA no existe.');
     expect(statusBar().getByRole('link', { name: /PRODUCT_NOT_FOUND/ })).toHaveAttribute('href', '/docs/referencia/mensajes#product-not-found');
   });
 
-  it('si el producto se graba y el stock mínimo no, avisa con un W y vuelve a la pantalla inicial', async () => {
+  it('si el artículo se graba y el stock mínimo no, avisa con un W y vuelve a la pantalla inicial', async () => {
     const api = stubApi({
       ...catalogHandlers,
       'GET /api/v1/products': () => page([product()]),
@@ -159,16 +159,16 @@ describe('MM01 a MM03: productos', () => {
       expect(statusBar().getByRole('link', { name: /WAREHOUSE_SETTING_NOT_SAVED/ })).toBeInTheDocument();
     });
     expect(api.requestsTo('PATCH', '/api/v1/products/7')[0]?.body).toMatchObject({ status: 'discontinued', category_id: 2 });
-    expect(await screen.findByRole('heading', { name: 'Modificar producto', level: 2 })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Modificar catálogo', level: 2 })).toBeInTheDocument();
   });
 
-  it('visualizar muestra la ficha en solo lectura y los proveedores del producto', async () => {
+  it('visualizar muestra la ficha en solo lectura y los proveedores del artículo', async () => {
     stubApi({
       ...catalogHandlers,
       'GET /api/v1/products': () => page([product()]),
       'GET /api/v1/products/7/suppliers': () =>
         jsonResponse(200, {
-          data: [{ product_id: 7, supplier_id: 3, supplier: { tax_id: '30712345671', name: 'ACME SA', is_active: true }, supplier_sku: 'A-100', lead_time_days: 5 }],
+          data: [{ product_id: 7, supplier_id: 3, supplier: { number: '000003', tax_id: '30712345671', name: 'ACME SA', is_active: true }, supplier_sku: 'A-100', lead_time_days: 5 }],
         }),
     });
 
@@ -182,7 +182,7 @@ describe('MM01 a MM03: productos', () => {
   });
 });
 
-describe('MM60: lista de productos', () => {
+describe('MM60: lista de artículos', () => {
   it('envía el SKU como selección y la categoría por id', async () => {
     const api = stubApi({ ...catalogHandlers, 'GET /api/v1/products': () => page([product()]) });
 
@@ -215,7 +215,7 @@ describe('XK01 a XK03: proveedores', () => {
     await userEvent.keyboard('{Control>}s{/Control}');
 
     await waitFor(() => {
-      expect(statusBar().getByRole('status')).toHaveTextContent('Proveedor ACME SA creado.');
+      expect(statusBar().getByRole('status')).toHaveTextContent('Proveedor 000003 ACME SA creado.');
     });
     expect(api.requestsTo('POST', '/api/v1/suppliers')[0]?.body).toEqual({
       tax_id: '30712345671',
@@ -234,29 +234,29 @@ describe('XK01 a XK03: proveedores', () => {
     });
 
     renderRoute('/t/XK02');
-    await fill('Proveedor', '30.71234567.1');
+    await fill('Proveedor', '3');
     await userEvent.keyboard('{F8}');
 
     await userEvent.selectOptions(await screen.findByRole('combobox', { name: 'Estado' }), 'inactive');
     await userEvent.keyboard('{Control>}s{/Control}');
 
     await waitFor(() => {
-      expect(statusBar().getByRole('status')).toHaveTextContent('Proveedor ACME SA grabado.');
+      expect(statusBar().getByRole('status')).toHaveTextContent('Proveedor 000003 ACME SA grabado.');
     });
-    expect(api.requestsTo('GET', '/api/v1/suppliers')[0]?.query.get('filter[tax_id]')).toBe('30712345671');
+    expect(api.requestsTo('GET', '/api/v1/suppliers')[0]?.query.get('filter[number]')).toBe('000003');
     expect(api.requestsTo('PATCH', '/api/v1/suppliers/3')[0]?.body).toMatchObject({ is_active: false });
   });
 });
 
-describe('ZW06: productos del proveedor', () => {
+describe('ZW06: artículos del proveedor', () => {
   async function openNewLink() {
     renderRoute('/t/ZW06');
-    await fill('Proveedor', '30712345671');
+    await fill('Proveedor', '000003');
     await userEvent.keyboard('{F8}');
-    await userEvent.click(await screen.findByRole('button', { name: 'Vincular producto' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Vincular artículo' }));
   }
 
-  it('vincula un producto con su código y plazo', async () => {
+  it('vincula un artículo con su código y plazo', async () => {
     const api = stubApi({
       ...catalogHandlers,
       'GET /api/v1/suppliers': () => page([acme]),
@@ -268,18 +268,18 @@ describe('ZW06: productos del proveedor', () => {
     });
 
     await openNewLink();
-    await fill('Producto', 'tor-m6-30');
+    await fill('Artículo', 'tor-m6-30');
     await fill('Código del proveedor', 'A-100');
     await fill('Plazo de entrega (días)', '5');
     await userEvent.keyboard('{Control>}s{/Control}');
 
     await waitFor(() => {
-      expect(statusBar().getByRole('status')).toHaveTextContent('Producto TOR-M6-30 vinculado al proveedor.');
+      expect(statusBar().getByRole('status')).toHaveTextContent('Artículo TOR-M6-30 vinculado al proveedor.');
     });
     expect(api.requestsTo('PUT', '/api/v1/suppliers/3/products/7')[0]?.body).toEqual({ supplier_sku: 'A-100', lead_time_days: 5 });
   });
 
-  it('no pisa un vínculo existente al vincular de nuevo el mismo producto', async () => {
+  it('no pisa un vínculo existente al vincular de nuevo el mismo artículo', async () => {
     const api = stubApi({
       ...catalogHandlers,
       'GET /api/v1/suppliers': () => page([acme]),
@@ -290,10 +290,10 @@ describe('ZW06: productos del proveedor', () => {
     });
 
     await openNewLink();
-    await fill('Producto', 'tor-m6-30');
+    await fill('Artículo', 'tor-m6-30');
     await userEvent.keyboard('{Control>}s{/Control}');
 
-    expect(await statusBar().findByRole('alert')).toHaveTextContent('El producto TOR-M6-30 ya está vinculado a este proveedor.');
+    expect(await statusBar().findByRole('alert')).toHaveTextContent('El artículo TOR-M6-30 ya está vinculado a este proveedor.');
     expect(api.requestsTo('PUT', '/api/v1/suppliers/3/products/7')).toHaveLength(0);
   });
 });

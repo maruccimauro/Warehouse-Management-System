@@ -59,6 +59,26 @@ describe('creation', function () {
             ->assertJsonPath('data.is_active', true);
     });
 
+    it('assigns a sequential internal number shown with leading zeros', function () {
+        $first = existingSupplier('30712345671', 'Primero');
+        $second = existingSupplier('30712345679', 'Segundo');
+
+        expect($second->number)->toBe($first->number + 1);
+
+        $this->actingAs($this->purchasing)
+            ->getJson("/api/v1/suppliers/{$first->id}")
+            ->assertOk()
+            ->assertJsonPath('data.number', str_pad((string) $first->number, 6, '0', STR_PAD_LEFT));
+    });
+
+    it('formats numbers past six digits without truncating them', function () {
+        expect(Supplier::formatNumber(7))->toBe('000007')
+            ->and(Supplier::formatNumber(1234567))->toBe('1234567')
+            ->and(Supplier::parseNumber('000012'))->toBe(12)
+            ->and(Supplier::parseNumber('0'))->toBeNull()
+            ->and(Supplier::parseNumber('A1'))->toBeNull();
+    });
+
     it('normalizes tax ids of other countries', function (string $input, string $stored) {
         $this->actingAs($this->purchasing)
             ->postJson('/api/v1/suppliers', supplierPayload(['tax_id' => $input]))
@@ -267,6 +287,22 @@ describe('listing', function () {
             ->getJson('/api/v1/suppliers?filter[name]=eléctrica')
             ->assertOk()
             ->assertJsonPath('data.*.tax_id', ['30712345679']);
+    });
+
+    it('filters by the internal number written with or without leading zeros', function () {
+        $supplier = Supplier::query()->where('name', 'Herramientas Patagonia')->sole();
+
+        foreach ([Supplier::formatNumber($supplier->number), (string) $supplier->number] as $written) {
+            $this->actingAs($this->purchasing)
+                ->getJson("/api/v1/suppliers?filter[number]={$written}")
+                ->assertOk()
+                ->assertJsonPath('data.*.name', ['Herramientas Patagonia']);
+        }
+
+        $this->actingAs($this->purchasing)
+            ->getJson('/api/v1/suppliers?filter[number]=ABC')
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['filter.number'], 'errors');
     });
 
     it('filters by the tax id written in any format', function () {

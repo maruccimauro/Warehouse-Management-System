@@ -40,17 +40,17 @@ Crear, modificar, activar y desactivar zonas y ubicaciones, incluida la creació
 
 Bloquear y desbloquear ubicaciones, con un motivo. Lo tienen el Administrador y el Supervisor.
 
-## Productos y proveedores {#catalogo}
+## Catálogo y proveedores {#catalogo}
 
 Consultar el catálogo no exige permiso: alcanza con la sesión.
 
 ### `catalog.manage` {#catalog-manage}
 
-Crear y modificar categorías, unidades de medida y productos, incluido el estado del producto. Los datos de un producto en un depósito, como el stock mínimo, exigen además operar en ese depósito. Solo lo tiene el Administrador.
+Crear y modificar categorías, unidades de medida y artículos, incluido el estado del artículo. Los datos de un artículo en un depósito, como el stock mínimo, exigen además operar en ese depósito. Solo lo tiene el Administrador.
 
 ### `suppliers.manage` {#suppliers-manage}
 
-Crear, modificar, activar y desactivar proveedores, y vincularlos con los productos que proveen. Lo tienen el Administrador y Compras.
+Crear, modificar, activar y desactivar proveedores, y vincularlos con los artículos que proveen. Lo tienen el Administrador y Compras.
 
 ## Usuarios {#usuarios}
 

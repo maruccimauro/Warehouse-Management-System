@@ -3,6 +3,7 @@
 namespace App\Modules\Catalog\Http\Resources;
 
 use App\Modules\Catalog\Models\ProductSupplier;
+use App\Modules\Catalog\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,7 +18,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class ProductSupplierResource extends JsonResource
 {
     /**
-     * @return array{product_id: int, supplier_id: int, product?: array{sku: string, name: string, status: string}, supplier?: array{tax_id: string, name: string, is_active: bool}, supplier_sku: string|null, lead_time_days: int|null, created_at: string, updated_at: string}
+     * @return array{product_id: int, supplier_id: int, product?: array{sku: string, name: string, status: string}, supplier?: array{number: string, tax_id: string, name: string, is_active: bool}, supplier_sku: string|null, lead_time_days: int|null, created_at: string, updated_at: string}
      */
     public function toArray(Request $request): array
     {
@@ -34,7 +35,7 @@ class ProductSupplierResource extends JsonResource
 
         $supplier = $link->relationLoaded('supplier') ? $link->supplier : null;
         if ($supplier !== null) {
-            $data['supplier'] = ['tax_id' => $supplier->tax_id, 'name' => $supplier->name, 'is_active' => $supplier->is_active];
+            $data['supplier'] = ['number' => Supplier::formatNumber($supplier->number), 'tax_id' => $supplier->tax_id, 'name' => $supplier->name, 'is_active' => $supplier->is_active];
         }
 
         return [

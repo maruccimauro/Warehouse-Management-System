@@ -12,8 +12,7 @@ import {
   type Category,
   type Product,
   type Supplier,
-  type Unit,
-} from './catalogApi';
+  type Unit, normalizeSupplierNumber } from './catalogApi';
 import { categoryPaths, useCategories, useUnits } from './catalogQueries';
 
 type ProductFieldProps = Omit<SearchHelpFieldProps<Product>, 'searchHelp' | 'check'>;
@@ -58,8 +57,8 @@ export function ProductField(props: ProductFieldProps) {
 
 type SupplierFieldProps = Omit<SearchHelpFieldProps<Supplier>, 'searchHelp' | 'check'>;
 
-// Campo Proveedor con F4 de servidor: por nombre (fragmento) o identificador fiscal (exacto,
-// sin separadores). El campo acepta el identificador fiscal, que es único.
+// Campo Proveedor con F4 de servidor: por número, nombre (fragmento) o identificador fiscal
+// (exacto, sin separadores). El campo acepta el número interno del proveedor, con o sin ceros.
 export function SupplierField(props: SupplierFieldProps) {
   const { t } = useTranslation('suppliers');
 
@@ -67,8 +66,9 @@ export function SupplierField(props: SupplierFieldProps) {
     (): SearchHelp<Supplier> => ({
       title: t('supplierHelp.title'),
       columns: [
-        { id: 'tax_id', header: t('fields.taxId'), value: (row) => row.tax_id },
+        { id: 'number', header: t('fields.number'), value: (row) => row.number },
         { id: 'name', header: t('fields.name'), value: (row) => row.name },
+        { id: 'tax_id', header: t('fields.taxId'), value: (row) => row.tax_id },
         { id: 'is_active', header: t('fields.status'), value: (row) => (row.is_active ? 'active' : 'inactive'), format: (value) => t(`statuses.${String(value) as 'active' | 'inactive'}`) },
       ],
       source: {
@@ -76,15 +76,16 @@ export function SupplierField(props: SupplierFieldProps) {
         queryKey: [...suppliersQueryKey, 'help'],
         fetchPage: (params, signal) => fetchSuppliers({ ...params, sort: params.sort ?? { field: 'name', desc: false } }, signal),
         filtersOf: (criteria) => ({
+          ...(criteria['number'] === undefined ? {} : { number: normalizeSupplierNumber(criteria['number']) }),
           ...(criteria['name'] === undefined ? {} : { name: criteria['name'] }),
           ...(criteria['tax_id'] === undefined ? {} : { tax_id: normalizeTaxId(criteria['tax_id']) }),
         }),
       },
-      criteria: ['name', 'tax_id'],
-      valueOf: (row) => row.tax_id,
+      criteria: ['number', 'name', 'tax_id'],
+      valueOf: (row) => row.number,
       descriptionOf: (row) => row.name,
-      normalize: normalizeTaxId,
-      invalidMessage: (taxId) => t('messages.notFound', { taxId }),
+      normalize: normalizeSupplierNumber,
+      invalidMessage: (number) => t('messages.notFound', { number }),
       exportName: 'proveedores',
     }),
     [t],

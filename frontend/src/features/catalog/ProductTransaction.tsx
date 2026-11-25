@@ -299,6 +299,7 @@ function ProductSuppliers({ productId }: { productId: number }) {
 
   const columns = useMemo(
     (): GridColumn<ProductSupplier>[] => [
+      { id: 'number', header: t('detail.supplierNumber'), value: (row) => row.supplier?.number ?? '' },
       { id: 'tax_id', header: t('detail.supplierTaxId'), value: (row) => row.supplier?.tax_id ?? '' },
       { id: 'name', header: t('detail.supplierName'), value: (row) => row.supplier?.name ?? '' },
       {

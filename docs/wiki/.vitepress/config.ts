@@ -68,7 +68,7 @@ export default defineConfig({
           { text: 'Crear proveedor (XK01)', link: '/compras/crear-proveedor' },
           { text: 'Modificar proveedor (XK02)', link: '/compras/modificar-proveedor' },
           { text: 'Visualizar proveedor (XK03)', link: '/compras/visualizar-proveedor' },
-          { text: 'Gestionar productos del proveedor (ZW06)', link: '/compras/productos-del-proveedor' },
+          { text: 'Gestionar catálogo del proveedor (ZW06)', link: '/compras/catalogo-del-proveedor' },
         ],
       },
       {
@@ -81,10 +81,10 @@ export default defineConfig({
           { text: 'Visualizar ubicación (LS03N)', link: '/administracion/visualizar-ubicacion' },
           { text: 'Crear múltiples ubicaciones (LS10)', link: '/administracion/crear-multiples-ubicaciones' },
           { text: 'Lista de ubicaciones (LX03)', link: '/administracion/lista-de-ubicaciones' },
-          { text: 'Crear producto (MM01)', link: '/administracion/crear-producto' },
-          { text: 'Modificar producto (MM02)', link: '/administracion/modificar-producto' },
-          { text: 'Visualizar producto (MM03)', link: '/administracion/visualizar-producto' },
-          { text: 'Lista de productos (MM60)', link: '/administracion/lista-de-productos' },
+          { text: 'Crear catálogo (MM01)', link: '/administracion/crear-catalogo' },
+          { text: 'Modificar catálogo (MM02)', link: '/administracion/modificar-catalogo' },
+          { text: 'Visualizar catálogo (MM03)', link: '/administracion/visualizar-catalogo' },
+          { text: 'Lista del catálogo (MM60)', link: '/administracion/lista-del-catalogo' },
         ],
       },
       {

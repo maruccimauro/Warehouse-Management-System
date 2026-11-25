@@ -22,14 +22,14 @@ const ls03nPage = 'administracion/visualizar-ubicacion';
 const ls10Page = 'administracion/crear-multiples-ubicaciones';
 const lx03Page = 'administracion/lista-de-ubicaciones';
 const zw05Page = 'supervisor/bloqueo-de-ubicaciones';
-const mm01Page = 'administracion/crear-producto';
-const mm02Page = 'administracion/modificar-producto';
-const mm03Page = 'administracion/visualizar-producto';
-const mm60Page = 'administracion/lista-de-productos';
+const mm01Page = 'administracion/crear-catalogo';
+const mm02Page = 'administracion/modificar-catalogo';
+const mm03Page = 'administracion/visualizar-catalogo';
+const mm60Page = 'administracion/lista-del-catalogo';
 const xk01Page = 'compras/crear-proveedor';
 const xk02Page = 'compras/modificar-proveedor';
 const xk03Page = 'compras/visualizar-proveedor';
-const zw06Page = 'compras/productos-del-proveedor';
+const zw06Page = 'compras/catalogo-del-proveedor';
 
 // Campos de la ficha de ubicación: la misma ayuda en crear, modificar y visualizar (la wiki la
 // incluye desde un solo archivo en las tres páginas, D6 de E2.12).
@@ -52,7 +52,7 @@ const productFields = [
   'heightMm',
   'minStock',
 ] as const;
-const supplierFields = ['taxId', 'name', 'status', 'email', 'phone'] as const;
+const supplierFields = ['number', 'taxId', 'name', 'status', 'email', 'phone'] as const;
 
 function fieldLinks<const Code extends string, const Field extends string>(code: Code, page: string, fields: readonly Field[]) {
   return Object.fromEntries(fields.map((field) => [`field.${code}.${field}`, `${page}#${anchor(field)}`])) as Record<

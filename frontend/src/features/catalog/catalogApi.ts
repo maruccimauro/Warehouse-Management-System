@@ -62,8 +62,17 @@ export const warehouseSettingSchema = z.object({
   min_stock: z.number().int(),
 });
 
+// Número interno del proveedor tal como lo muestra la API (000001): lo escrito con o sin
+// ceros a la izquierda se lleva a ese formato.
+export function normalizeSupplierNumber(text: string): string {
+  const trimmed = text.trim();
+
+  return /^\d+$/.test(trimmed) ? trimmed.replace(/^0+(?=\d)/, '').padStart(6, '0') : trimmed;
+}
+
 export const supplierSchema = z.object({
   id: z.number().int(),
+  number: z.string(),
   tax_id: z.string(),
   name: z.string(),
   email: z.string().nullable(),
@@ -76,7 +85,7 @@ export const productSupplierSchema = z.object({
   product_id: z.number().int(),
   supplier_id: z.number().int(),
   product: z.object({ sku: z.string(), name: z.string(), status: z.enum(productStatuses) }).optional(),
-  supplier: z.object({ tax_id: z.string(), name: z.string(), is_active: z.boolean() }).optional(),
+  supplier: z.object({ number: z.string(), tax_id: z.string(), name: z.string(), is_active: z.boolean() }).optional(),
   supplier_sku: z.string().nullable(),
   lead_time_days: z.number().int().nullable(),
 });
@@ -188,8 +197,8 @@ export function fetchSupplier(id: number, signal?: AbortSignal): Promise<Supplie
 }
 
 // Lee un proveedor por identificador fiscal (ya normalizado), como la pantalla inicial.
-export async function findSupplier(taxId: string, signal?: AbortSignal): Promise<Supplier | undefined> {
-  const page = await fetchSuppliers({ page: 1, perPage: 1, filters: { tax_id: taxId } }, signal);
+export async function findSupplier(number: string, signal?: AbortSignal): Promise<Supplier | undefined> {
+  const page = await fetchSuppliers({ page: 1, perPage: 1, filters: { number } }, signal);
 
   return page.items[0];
 }

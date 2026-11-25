@@ -180,6 +180,7 @@ function WarehouseDetail({ mode, warehouse, onModeChange, onBack }: WarehouseDet
     actions.push({
       id: 'change',
       label: t('actions.change'),
+      primary: true,
       onClick: () => {
         onModeChange('change', current);
       },

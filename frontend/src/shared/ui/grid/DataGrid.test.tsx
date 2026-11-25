@@ -48,11 +48,11 @@ function renderGrid(props: Partial<DataGridProps<Product>> = {}) {
   render(
     <QueryClientProvider client={client}>
       <DataGrid
-        label="Productos"
+        label="Artículos"
         columns={columns}
         source={{ kind: 'local', rows: products }}
         rowKey={(row) => row.id}
-        exportName="productos"
+        exportName="artículos"
         onMessage={onMessage}
         onRowActivate={onRowActivate}
         {...props}
@@ -60,7 +60,7 @@ function renderGrid(props: Partial<DataGridProps<Product>> = {}) {
     </QueryClientProvider>,
   );
 
-  return { onMessage, onRowActivate, grid: screen.getByRole('grid', { name: 'Productos' }) };
+  return { onMessage, onRowActivate, grid: screen.getByRole('grid', { name: 'Artículos' }) };
 }
 
 function bodyRows(grid: HTMLElement): string[][] {
@@ -378,7 +378,7 @@ function pageOf(params: ListParams, total: number): ListPage<Product> {
   const items = Array.from({ length: Math.max(0, Math.min(params.perPage, total - start)) }, (_, index) => ({
     id: start + index + 1,
     sku: `SKU-${start + index + 1}`,
-    name: `Producto ${start + index + 1}`,
+    name: `Artículo ${start + index + 1}`,
     category: 'General',
     stock: 1,
     status: 'active' as const,
@@ -410,7 +410,7 @@ describe('DataGrid en modo servidor', () => {
     await user.click(within(grid).getByRole('button', { name: 'SKU' }));
     await user.click(within(grid).getByRole('button', { name: 'SKU' }));
 
-    await user.click(cell(grid, 'Producto 1'));
+    await user.click(cell(grid, 'Artículo 1'));
     expect(screen.getByRole('button', { name: 'Definir filtro (Nombre)' })).toHaveAttribute('aria-disabled', 'true');
 
     await user.click(firstOf(within(grid).getAllByRole('gridcell', { name: 'Activo' })));

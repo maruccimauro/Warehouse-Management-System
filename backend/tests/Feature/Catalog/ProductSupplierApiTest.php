@@ -172,7 +172,7 @@ describe('querying', function () {
             ->assertOk()
             ->assertJsonPath('data.*.supplier_id', [$this->acme->id, $this->other->id])
             ->assertJsonPath('data.*.lead_time_days', [5, 10])
-            ->assertJsonPath('data.0.supplier', ['tax_id' => $this->acme->tax_id, 'name' => $this->acme->name, 'is_active' => true])
+            ->assertJsonPath('data.0.supplier', ['number' => Supplier::formatNumber($this->acme->refresh()->number), 'tax_id' => $this->acme->tax_id, 'name' => $this->acme->name, 'is_active' => true])
             ->assertJsonMissingPath('data.0.product');
     });
 

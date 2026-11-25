@@ -53,6 +53,15 @@ Desde E2.20 cada transacción del registro (`frontend/src/app/transactions.ts`) 
 - Como en SAP, una transacción inexistente y una sin autorización dan mensajes distintos en la barra de estado (tipo E). Una ruta `/t/CÓDIGO` sin autorización vuelve al menú con ese mensaje. Ocultar es usabilidad: el backend autoriza cada operación.
 - Cada transacción se carga en diferido (`React.lazy` con `import()`) y las dependencias van en chunks propios (`codeSplitting` de Rolldown en `vite.config.ts`), que el navegador conserva en caché entre despliegues. Un chunk que no carga, por ejemplo en una pestaña abierta durante un despliegue, muestra un error con la opción de recargar sin romper el armazón.
 
+### Alta, modificación, visualización y baja
+
+Criterio decidido el 25/11/2026 (E2.24, opción 1 del usuario), escrito para que cada objeto nuevo siga el mismo patrón:
+
+- Los datos maestros con volumen y con permisos distintos para consultar y editar (catálogo, proveedores, ubicaciones, usuarios) llevan el trío **Crear**, **Modificar** y **Visualizar** (las actividades 01, 02 y 03 de SAP), con pantalla inicial y ficha (`useInitialScreenFlow`), más su **Lista**. Visualizar no exige permiso de edición.
+- Las tablas de configuración chicas (depósitos, zonas, categorías, unidades de medida) llevan un mantenimiento único **Gestionar <objetos>**, con lista y ficha en visualizar, el botón Modificar y Crear en la barra de aplicación, como las vistas de tabla de SAP (SM30).
+- Las bajas son lógicas: un registro con historia se desactiva (o se discontinúa) desde Modificar o desde la ficha, con confirmación, y no se borra. Un bloqueo operativo que maneja otro permiso tiene transacción propia (`ZW05`, `locations.block`).
+- El identificador de negocio de cada maestro es propio y estable, nunca el `id` técnico: código en depósitos, zonas y ubicaciones, SKU en el catálogo, número interno asignado por una secuencia en proveedores (`suppliers_number_seq`, mostrado con seis dígitos).
+
 ### Datos sin grabar
 
 Equivale a `POPUP_TO_CONFIRM_LOSS_OF_DATA` de SAP. La transacción declara si tiene cambios (`useUnsavedChanges`) y el armazón intercepta toda salida: F3, Mayús+F3, `/n`, el árbol, el botón Atrás del navegador (`useBlocker` del router), el cierre de sesión y el cierre o la recarga de la pestaña (`beforeunload`, con el aviso propio del navegador). El diálogo es un `<dialog>` modal nativo con dos acciones, "Salir sin grabar" y "Seguir editando"; el foco inicial va a la segunda, que es la acción segura. No se ofrece "Grabar y salir" como tercer botón: grabar puede fallar por validación y encadenar grabación y salida suma estados de error sin un formulario que lo necesite todavía. `/o` abre otra ventana y no pasa por el aviso. Desde E2.12, F3 con un Atrás propio de la transacción (de la ficha a la lista o a la pantalla inicial) también pasa por el aviso: descarta lo editado igual que salir al menú.

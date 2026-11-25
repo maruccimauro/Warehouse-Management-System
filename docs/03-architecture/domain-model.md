@@ -342,7 +342,7 @@ Las transferencias siguen la columna de lo abierto. Las reversiones no se valida
 
 | Desde | Hacia | Disparador | Permiso | Condiciones y reglas |
 | - | - | - | - | - |
-| (nuevo) | activo | `POST /suppliers` | `suppliers.manage` | Identificador fiscal normalizado (sin espacios, puntos, guiones ni barras, en mayúsculas) y único |
+| (nuevo) | activo | `POST /suppliers` | `suppliers.manage` | Identificador fiscal normalizado (sin espacios, puntos, guiones ni barras, en mayúsculas) y único; número interno asignado por `suppliers_number_seq` |
 | activo | inactivo | `PATCH /suppliers/{id}` con `is_active: false` | `suppliers.manage` | Sin condiciones: las órdenes abiertas terminan. Auditado (`supplier.deactivated`) |
 | inactivo | activo | `PATCH /suppliers/{id}` con `is_active: true` | `suppliers.manage` | Sin condiciones. Auditado (`supplier.activated`) |
 

@@ -64,7 +64,7 @@ Uno o más datos no son válidos. Cada campo con error muestra el motivo debajo 
 
 ### `VALUE_ALREADY_EXISTS` {#value-already-exists}
 
-El valor ya está registrado y debe ser único: el código de un depósito, de una zona o de una ubicación dentro del depósito, el correo de un usuario, el SKU o el código de barras de un producto, el identificador fiscal de un proveedor o el código del proveedor entre sus productos. También se informa al vincular a un proveedor un producto que ya tiene vinculado.
+El valor ya está registrado y debe ser único: el código de un depósito, de una zona o de una ubicación dentro del depósito, el correo de un usuario, el SKU o el código de barras de un artículo, el identificador fiscal de un proveedor o el código del proveedor entre sus artículos. También se informa al vincular a un proveedor un artículo que ya tiene vinculado.
 
 **Qué hacer:** use otro valor o busque el registro existente.
 
@@ -164,21 +164,21 @@ La plantilla de [Crear múltiples ubicaciones](/administracion/crear-multiples-u
 
 ### `PRODUCT_NOT_FOUND` {#product-not-found}
 
-No existe un producto con el SKU indicado. La ficha no se abre o, al vincular un producto a un proveedor, el vínculo no se graba.
+No existe un artículo con el SKU indicado. La ficha no se abre o, al vincular un artículo a un proveedor, el vínculo no se graba.
 
-**Qué hacer:** verifique el SKU o busque el producto con <kbd>F4</kbd>, por nombre o por código de barras.
+**Qué hacer:** verifique el SKU o busque el artículo con <kbd>F4</kbd>, por nombre o por código de barras.
 
 ### `SUPPLIER_NOT_FOUND` {#supplier-not-found}
 
-No existe un proveedor con el identificador fiscal indicado. La ficha no se abre.
+No existe un proveedor con el número indicado. La ficha no se abre.
 
-**Qué hacer:** verifique el identificador fiscal o busque el proveedor por nombre con <kbd>F4</kbd>.
+**Qué hacer:** verifique el número o busque el proveedor con <kbd>F4</kbd> por nombre o identificador fiscal.
 
 ### `WAREHOUSE_SETTING_NOT_SAVED` {#warehouse-setting-not-saved}
 
-Mensaje W. Al grabar un producto con un depósito en la pantalla inicial, los datos generales se grabaron, pero el stock mínimo del depósito no. El mensaje indica el motivo, por ejemplo que el usuario no opera en ese depósito.
+Mensaje W. Al grabar un artículo con un depósito en la pantalla inicial, los datos generales se grabaron, pero el stock mínimo del depósito no. El mensaje indica el motivo, por ejemplo que el usuario no opera en ese depósito.
 
-**Qué hacer:** corrija la causa y cargue el stock mínimo en [Modificar producto](/administracion/modificar-producto) con el mismo depósito.
+**Qué hacer:** corrija la causa y cargue el stock mínimo en [Modificar catálogo](/administracion/modificar-catalogo) con el mismo depósito.
 
 ## Errores técnicos {#errores-tecnicos}
 

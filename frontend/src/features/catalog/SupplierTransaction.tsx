@@ -33,7 +33,7 @@ type SupplierActivity = MaintenanceActivity;
 // directamente, porque el proveedor no tiene un código propio que verificar antes: el
 // identificador fiscal repetido se informa al grabar (VALUE_ALREADY_EXISTS).
 export function SupplierTransaction({ activity }: { activity: SupplierActivity }) {
-  const flow = useInitialScreenFlow((next: Supplier) => next.tax_id);
+  const flow = useInitialScreenFlow((next: Supplier) => next.number);
   // Crear: cada grabación vuelve a una ficha vacía para el alta siguiente.
   const [round, setRound] = useState(0);
 
@@ -70,6 +70,7 @@ export function DisplaySupplierTransaction() {
 }
 
 const supplierFormSchema = z.object({
+  number: z.string(),
   taxId: taxIdRule(),
   name: requiredText(supplierNameMaxLength),
   email: optionalEmail(emailMaxLength),
@@ -91,6 +92,7 @@ function SupplierDetail({ activity, supplier, onDone }: SupplierDetailProps) {
 
   const defaultValues = useMemo(
     () => ({
+      number: supplier?.number ?? '',
       taxId: supplier?.tax_id ?? '',
       name: supplier?.name ?? '',
       email: supplier?.email ?? '',
@@ -125,7 +127,7 @@ function SupplierDetail({ activity, supplier, onDone }: SupplierDetailProps) {
       void queryClient.invalidateQueries({ queryKey: suppliersQueryKey });
       onDone();
 
-      return t(activity === 'create' ? 'messages.created' : 'messages.saved', { name: saved.name });
+      return t(activity === 'create' ? 'messages.created' : 'messages.saved', { number: saved.number, name: saved.name });
     },
   });
 
@@ -139,6 +141,7 @@ function SupplierDetail({ activity, supplier, onDone }: SupplierDetailProps) {
       {activity === 'create' && <h2 className="font-medium">{t('detail.createTitle')}</h2>}
       <Form>
         <Section name="general">
+          {activity !== 'create' && <Field name="number" readOnly className="w-32" />}
           <Field name="taxId" required className="w-64" description={activity === 'display' ? undefined : t('detail.taxIdHint')} />
           <Field name="name" required />
           {activity !== 'create' && <Field name="status" options={statusOptions} />}
@@ -182,7 +185,7 @@ function SupplierProductsReadOnly({ supplier }: { supplier: Supplier }) {
         columns={columns}
         source={source}
         rowKey={(row) => row.product_id}
-        exportName={`productos-${supplier.tax_id.toLowerCase()}`}
+        exportName={`productos-${supplier.number}`}
         onMessage={show}
       />
     </section>

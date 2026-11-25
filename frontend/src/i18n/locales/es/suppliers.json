@@ -1,21 +1,22 @@
 {
   "fields": {
     "supplier": "Proveedor",
+    "number": "Número",
     "taxId": "Identificador fiscal",
     "name": "Nombre",
     "email": "Email",
     "phone": "Teléfono",
     "status": "Estado",
-    "product": "Producto",
-    "productName": "Nombre del producto",
-    "productStatus": "Estado del producto",
+    "product": "Artículo",
+    "productName": "Nombre del artículo",
+    "productStatus": "Estado del artículo",
     "supplierSku": "Código del proveedor",
     "leadTimeDays": "Plazo de entrega (días)"
   },
   "sections": {
     "general": "Datos del proveedor",
     "contact": "Contacto",
-    "link": "Vínculo con el producto"
+    "link": "Vínculo con el artículo"
   },
   "statuses": {
     "active": "Activo",
@@ -27,43 +28,43 @@
   "initial": {
     "change": "Modificar proveedor",
     "display": "Visualizar proveedor",
-    "products": "Productos del proveedor",
-    "hint": "Ingrese el identificador fiscal o búsquelo por nombre con F4, y continúe con F8."
+    "products": "Catálogo del proveedor",
+    "hint": "Ingrese el número del proveedor o búsquelo con F4 por número, nombre o identificador fiscal, y continúe con F8."
   },
   "detail": {
     "createTitle": "Crear proveedor",
     "taxIdHint": "Se guarda sin espacios, puntos, guiones ni barras: 30-71234567-1 y 30712345671 son el mismo.",
     "saveHint": "Grabe con Ctrl+S. F3 vuelve a la pantalla inicial.",
-    "products": "Productos del proveedor",
-    "noProducts": "El proveedor no tiene productos vinculados."
+    "products": "Catálogo del proveedor",
+    "noProducts": "El proveedor no tiene artículos vinculados."
   },
   "messages": {
-    "created": "Proveedor {{name}} creado.",
-    "saved": "Proveedor {{name}} grabado.",
+    "created": "Proveedor {{number}} {{name}} creado.",
+    "saved": "Proveedor {{number}} {{name}} grabado.",
     "saveFailed": "No se pudo grabar el proveedor.",
-    "notFound": "No existe un proveedor con el identificador fiscal {{taxId}}.",
+    "notFound": "No existe el proveedor {{number}}.",
     "loadFailed": "No se pudo leer el proveedor."
   },
   "links": {
-    "supplier": "Proveedor {{taxId}}: {{name}}",
-    "actions": "Acciones de los productos del proveedor",
-    "create": "Vincular producto",
+    "supplier": "Proveedor {{number}}: {{name}}",
+    "actions": "Acciones de los artículos del proveedor",
+    "create": "Vincular artículo",
     "change": "Modificar",
     "remove": "Quitar vínculo",
-    "title": "Productos de {{name}}",
+    "title": "Artículos de {{name}}",
     "detailActions": "Acciones del vínculo",
-    "supplierSkuHint": "Opcional. El código con que el proveedor identifica el producto; se guarda tal como se escribe.",
+    "supplierSkuHint": "Opcional. El código con que el proveedor identifica el artículo; se guarda tal como se escribe.",
     "leadTimeHint": "Opcional. Días corridos desde el pedido hasta la entrega, de 0 a {{max}}.",
-    "created": "Producto {{sku}} vinculado al proveedor.",
-    "saved": "Vínculo con el producto {{sku}} grabado.",
+    "created": "Artículo {{sku}} vinculado al proveedor.",
+    "saved": "Vínculo con el artículo {{sku}} grabado.",
     "saveFailed": "No se pudo grabar el vínculo.",
-    "removed": "Vínculo con el producto {{sku}} quitado.",
+    "removed": "Vínculo con el artículo {{sku}} quitado.",
     "removeFailed": "No se pudo quitar el vínculo.",
     "removeTitle": "Quitar vínculo",
-    "removeConfirm": "El producto {{sku}} deja de estar vinculado a {{name}} y no se podrá incluir en órdenes de compra nuevas a este proveedor. ¿Quitar el vínculo?",
+    "removeConfirm": "El artículo {{sku}} deja de estar vinculado a {{name}} y no se podrá incluir en órdenes de compra nuevas a este proveedor. ¿Quitar el vínculo?",
     "cancel": "Cancelar",
-    "alreadyLinked": "El producto {{sku}} ya está vinculado a este proveedor.",
+    "alreadyLinked": "El artículo {{sku}} ya está vinculado a este proveedor.",
     "hint": "Doble clic o Enter sobre una fila abre el vínculo. F3 vuelve a la pantalla inicial.",
-    "productNotFound": "El producto {{sku}} no existe."
+    "productNotFound": "El artículo {{sku}} no existe."
   }
 }

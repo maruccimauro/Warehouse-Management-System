@@ -25,7 +25,7 @@
     "blocked": "Bloqueado"
   },
   "productHelp": {
-    "title": "Productos"
+    "title": "Artículos"
   },
   "categoryHelp": {
     "title": "Categorías",
@@ -39,21 +39,22 @@
     "invalid": "La unidad {{code}} no existe."
   },
   "initial": {
-    "create": "Crear producto",
-    "change": "Modificar producto",
-    "display": "Visualizar producto",
+    "create": "Crear catálogo",
+    "change": "Modificar catálogo",
+    "display": "Visualizar catálogo",
     "hint": "Ingrese el SKU y continúe con F8. El depósito es opcional: con él, la ficha muestra también el stock mínimo de ese depósito."
   },
   "detail": {
-    "loading": "Leyendo los datos del producto...",
+    "loading": "Leyendo los datos del artículo...",
     "lotTracked": "Seguimiento por lote: {{value}}",
     "yes": "sí",
     "no": "no",
     "fixedAfterCreate": "No cambia después del alta.",
     "minStockHint": "Cantidad en la unidad base para el depósito {{code}}. 0 indica sin stock mínimo.",
     "saveHint": "Grabe con Ctrl+S. F3 vuelve a la pantalla inicial.",
-    "suppliers": "Proveedores del producto",
-    "noSuppliers": "El producto no tiene proveedores vinculados.",
+    "suppliers": "Proveedores del artículo",
+    "noSuppliers": "El artículo no tiene proveedores vinculados.",
+    "supplierNumber": "Número de proveedor",
     "supplierTaxId": "Identificador fiscal",
     "supplierName": "Proveedor",
     "supplierSku": "Código del proveedor",
@@ -61,17 +62,17 @@
     "supplierActive": "Activo"
   },
   "messages": {
-    "created": "Producto {{sku}} creado.",
-    "saved": "Producto {{sku}} grabado.",
-    "saveFailed": "No se pudo grabar el producto.",
-    "alreadyExists": "El producto {{sku}} ya existe.",
-    "notFound": "El producto {{sku}} no existe.",
-    "loadFailed": "No se pudo leer el producto.",
-    "settingNotSaved": "Producto {{sku}} grabado, pero el stock mínimo del depósito {{warehouse}} no se grabó: {{reason}} Corríjalo en Modificar producto."
+    "created": "Artículo {{sku}} creado.",
+    "saved": "Artículo {{sku}} grabado.",
+    "saveFailed": "No se pudo grabar el artículo.",
+    "alreadyExists": "El artículo {{sku}} ya existe.",
+    "notFound": "El artículo {{sku}} no existe.",
+    "loadFailed": "No se pudo leer el artículo.",
+    "settingNotSaved": "Artículo {{sku}} grabado, pero el stock mínimo del depósito {{warehouse}} no se grabó: {{reason}} Corríjalo en Modificar catálogo."
   },
   "list": {
-    "selection": "Lista de productos",
+    "selection": "Lista del catálogo",
     "hint": "Acote por SKU (un valor, un rango o un patrón con *, como TOR*), nombre, código de barras o categoría, o ejecute con F8 sin criterios para ver todo el catálogo. El estado se filtra en la lista.",
-    "title": "Productos"
+    "title": "Artículos"
   }
 }
