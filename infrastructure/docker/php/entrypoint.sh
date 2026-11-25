@@ -29,6 +29,14 @@ elif [ "$owner_uid" != "$app_uid" ]; then
     exit 1
 fi
 
+# vendor/ es un volumen nombrado (docker-compose.yml): Docker lo crea con dueño root
+# la primera vez. Composer lo escribe como www-data. Las dependencias del host, que
+# usa el LSP, no se tocan desde aquí; se actualizan copiándolas del contenedor con
+# docker compose cp app:/var/www/backend/vendor ./backend/
+if [ -d vendor ] && [ "$(stat -c %u vendor)" != "$app_uid" ]; then
+    chown -R www-data:www-data vendor
+fi
+
 if [ ! -f composer.json ]; then
     echo "app: backend/composer.json no existe; se arranca sin preparar la aplicación." >&2
     exec "$@"

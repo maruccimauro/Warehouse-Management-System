@@ -28,6 +28,12 @@ services:
     command: ["php-fpm"]
     volumes:
       - ./backend:/var/www/backend
+      # vendor/ fuera del bind mount, como node_modules del frontend: en Docker Desktop
+      # para Windows el montaje es 9p y cada stat cuesta milisegundos. OPcache revisa las
+      # fechas de los cientos de archivos de vendor que carga cada solicitud y la primera
+      # tras una pausa tardaba de 2 a 4 s. El código de app/ sigue montado y se ve al
+      # instante. El vendor del host (para el LSP) queda aparte: ver entrypoint.sh.
+      - backend_vendor:/var/www/backend/vendor
       # docs/ para que las pruebas lean el catálogo de business-rules.md y
       # scramble:export escriba docs/03-architecture/openapi.json (ADR-012).
       - ./docs:/var/www/docs
@@ -109,5 +115,6 @@ services:
 
 volumes:
   db_data:
+  backend_vendor:
   frontend_node_modules:
   wiki_node_modules:
