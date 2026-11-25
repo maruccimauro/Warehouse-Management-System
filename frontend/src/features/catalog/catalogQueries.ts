@@ -44,3 +44,11 @@ export function categoryPaths(categories: readonly Category[]): Map<number, stri
 
   return paths;
 }
+
+// Ruta que tendrá una categoría grabada, con la ruta actual de su categoría superior: la lista
+// de categorías todavía no se volvió a leer cuando la pantalla inicial la necesita.
+export function savedCategoryPath(category: Category, paths: ReadonlyMap<number, string>): string {
+  const parent = category.parent_id === null ? undefined : paths.get(category.parent_id);
+
+  return parent === undefined ? category.name : `${parent}${categoryPathSeparator}${category.name}`;
+}

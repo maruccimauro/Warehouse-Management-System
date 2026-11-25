@@ -1,0 +1,30 @@
+{
+  "list": {
+    "title": "Unidades de medida",
+    "actions": "Acciones de unidades de medida"
+  },
+  "detail": {
+    "actions": "Acciones de la unidad de medida"
+  },
+  "sections": {
+    "general": "Datos de la unidad de medida"
+  },
+  "fields": {
+    "code": "Unidad",
+    "name": "Nombre"
+  },
+  "actions": {
+    "create": "Crear",
+    "change": "Modificar"
+  },
+  "messages": {
+    "created": "Unidad de medida creada.",
+    "saved": "Unidad de medida grabada.",
+    "saveFailed": "No se pudo grabar la unidad de medida."
+  },
+  "initial": {
+    "change": "Modificar unidad de medida",
+    "display": "Visualizar unidad de medida",
+    "hint": "Ingrese la unidad o elíjala con F4, y continúe con F8."
+  }
+}

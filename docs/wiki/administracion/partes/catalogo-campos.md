@@ -34,11 +34,11 @@ Opcional, de hasta 64 caracteres, sin espacios. Es único en el catálogo ([`VAL
 
 ### Categoría {#category}
 
-Opcional. Agrupa artículos afines. Se muestra con su ruta desde la categoría superior, por ejemplo **Ferretería / Tornillería**, y se elige con <kbd>F4</kbd>. Escrita a mano, se acepta sin distinguir mayúsculas.
+Opcional. Agrupa artículos afines. Se muestra con su ruta desde la categoría superior, por ejemplo **Ferretería / Tornillería**, y se elige con <kbd>F4</kbd>. Escrita a mano, se acepta sin distinguir mayúsculas. Las categorías se mantienen en [Gestionar categorías](/administracion/categorias).
 
 ### Unidad base {#base-uom}
 
-Obligatoria. Unidad en que se cuenta el stock del artículo, por ejemplo `UN` (unidad) o `G` (gramo), con su <kbd>F4</kbd>. Se elige al crear y no cambia después: todas las cantidades del artículo quedan expresadas en ella.
+Obligatoria. Unidad en que se cuenta el stock del artículo, por ejemplo `UN` (unidad) o `G` (gramo), con su <kbd>F4</kbd>. Se elige al crear y no cambia después: todas las cantidades del artículo quedan expresadas en ella. Las unidades se mantienen en [Gestionar unidades de medida](/administracion/unidades-de-medida).
 
 ## Peso y medidas {#peso-y-medidas}
 

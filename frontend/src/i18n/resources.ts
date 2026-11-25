@@ -1,4 +1,5 @@
 import esAuth from './locales/es/auth.json';
+import esCategories from './locales/es/categories.json';
 import esCommon from './locales/es/common.json';
 import esErrors from './locales/es/errors.json';
 import esForm from './locales/es/form.json';
@@ -13,6 +14,7 @@ import esShell from './locales/es/shell.json';
 import esSu3 from './locales/es/su3.json';
 import esSuppliers from './locales/es/suppliers.json';
 import esTransactions from './locales/es/transactions.json';
+import esUnits from './locales/es/units.json';
 import esWarehouses from './locales/es/warehouses.json';
 import esZones from './locales/es/zones.json';
 
@@ -21,6 +23,7 @@ import esZones from './locales/es/zones.json';
 export const resources = {
   es: {
     auth: esAuth,
+    categories: esCategories,
     common: esCommon,
     errors: esErrors,
     form: esForm,
@@ -35,6 +38,7 @@ export const resources = {
     su3: esSu3,
     suppliers: esSuppliers,
     transactions: esTransactions,
+    units: esUnits,
     warehouses: esWarehouses,
     zones: esZones,
   },

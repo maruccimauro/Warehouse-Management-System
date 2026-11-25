@@ -1,0 +1,35 @@
+{
+  "list": {
+    "title": "Categorías",
+    "actions": "Acciones de categorías"
+  },
+  "detail": {
+    "actions": "Acciones de la categoría",
+    "path": "Categoría {{path}}",
+    "parentHint": "Vacío: la categoría queda en el primer nivel.",
+    "loading": "Leyendo las categorías..."
+  },
+  "sections": {
+    "general": "Datos de la categoría"
+  },
+  "fields": {
+    "path": "Categoría",
+    "name": "Nombre",
+    "parent": "Categoría superior"
+  },
+  "actions": {
+    "create": "Crear",
+    "change": "Modificar"
+  },
+  "messages": {
+    "created": "Categoría creada.",
+    "saved": "Categoría grabada.",
+    "saveFailed": "No se pudo grabar la categoría.",
+    "loadFailed": "No se pudieron leer las categorías."
+  },
+  "initial": {
+    "change": "Modificar categoría",
+    "display": "Visualizar categoría",
+    "hint": "Ingrese la categoría con su ruta, por ejemplo Ferretería / Tornillería, o elíjala con F4, y continúe con F8."
+  }
+}

@@ -22,6 +22,14 @@ Cada pantalla del sistema es una transacción con un código, que la abre desde 
 | `MM02` | Modificar catálogo | Logística ▸ Catálogo | [`catalog.manage`](./permisos#catalog-manage) | [Modificar catálogo](/administracion/modificar-catalogo) |
 | `MM03` | Visualizar catálogo | Logística ▸ Catálogo | Ninguno: cualquier usuario con sesión | [Visualizar catálogo](/administracion/visualizar-catalogo) |
 | `MM60` | Lista del catálogo | Logística ▸ Catálogo | Ninguno: cualquier usuario con sesión | [Lista del catálogo](/administracion/lista-del-catalogo) |
+| `ZW07` | Gestionar categorías | Logística ▸ Catálogo | [`catalog.manage`](./permisos#catalog-manage) | [Gestionar categorías](/administracion/categorias) |
+| `ZW71` | Crear categoría | Logística ▸ Catálogo | [`catalog.manage`](./permisos#catalog-manage) | [Crear categoría](/administracion/crear-categoria) |
+| `ZW72` | Modificar categoría | Logística ▸ Catálogo | [`catalog.manage`](./permisos#catalog-manage) | [Modificar categoría](/administracion/modificar-categoria) |
+| `ZW73` | Visualizar categoría | Logística ▸ Catálogo | Ninguno: cualquier usuario con sesión | [Visualizar categoría](/administracion/visualizar-categoria) |
+| `ZW08` | Gestionar unidades de medida | Logística ▸ Catálogo | [`catalog.manage`](./permisos#catalog-manage) | [Gestionar unidades de medida](/administracion/unidades-de-medida) |
+| `ZW81` | Crear unidad de medida | Logística ▸ Catálogo | [`catalog.manage`](./permisos#catalog-manage) | [Crear unidad de medida](/administracion/crear-unidad-de-medida) |
+| `ZW82` | Modificar unidad de medida | Logística ▸ Catálogo | [`catalog.manage`](./permisos#catalog-manage) | [Modificar unidad de medida](/administracion/modificar-unidad-de-medida) |
+| `ZW83` | Visualizar unidad de medida | Logística ▸ Catálogo | Ninguno: cualquier usuario con sesión | [Visualizar unidad de medida](/administracion/visualizar-unidad-de-medida) |
 | `XK01` | Crear proveedor | Compras ▸ Proveedores | [`suppliers.manage`](./permisos#suppliers-manage) | [Crear proveedor](/compras/crear-proveedor) |
 | `XK02` | Modificar proveedor | Compras ▸ Proveedores | [`suppliers.manage`](./permisos#suppliers-manage) | [Modificar proveedor](/compras/modificar-proveedor) |
 | `XK03` | Visualizar proveedor | Compras ▸ Proveedores | Ninguno: cualquier usuario con sesión | [Visualizar proveedor](/compras/visualizar-proveedor) |

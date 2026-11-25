@@ -186,6 +186,41 @@ export async function fetchAllUnits(signal?: AbortSignal): Promise<Unit[]> {
   return page.items;
 }
 
+// Mantenimiento de categorías y unidades (ZW07 y ZW08, E2.23) con catalog.manage. La
+// profundidad y los ciclos del árbol los valida el backend (CATEGORY_HIERARCHY_TOO_DEEP y
+// CATEGORY_HIERARCHY_CYCLE); el código de la unidad no cambia después del alta.
+export const categoryNameMaxLength = 120;
+export const unitCodeMaxLength = 10;
+export const unitNameMaxLength = 60;
+
+const categoryResponse = z.object({ data: categorySchema }).transform((response) => response.data);
+const unitResponse = z.object({ data: unitSchema }).transform((response) => response.data);
+
+export interface CategoryInput {
+  name: string;
+  parent_id: number | null;
+}
+
+export function createCategory(input: CategoryInput): Promise<Category> {
+  return api.request('POST', '/categories', { body: input, schema: categoryResponse });
+}
+
+export function updateCategory(id: number, input: CategoryInput): Promise<Category> {
+  return api.request('PATCH', `/categories/${String(id)}`, { body: input, schema: categoryResponse });
+}
+
+export function fetchUnits(params: ListParams, signal?: AbortSignal): Promise<ListPage<Unit>> {
+  return api.request('GET', listPath('/units', params), { schema: unitPage, signal });
+}
+
+export function createUnit(input: { code: string; name: string }): Promise<Unit> {
+  return api.request('POST', '/units', { body: input, schema: unitResponse });
+}
+
+export function updateUnit(id: number, input: { name: string }): Promise<Unit> {
+  return api.request('PATCH', `/units/${String(id)}`, { body: input, schema: unitResponse });
+}
+
 // Proveedores.
 
 export function fetchSuppliers(params: ListParams, signal?: AbortSignal): Promise<ListPage<Supplier>> {

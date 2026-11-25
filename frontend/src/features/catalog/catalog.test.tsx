@@ -338,3 +338,104 @@ describe('ZW61 a ZW63: transacciones individuales del artículo del proveedor', 
     expect(screen.queryByRole('button', { name: 'Quitar vínculo' })).not.toBeInTheDocument();
   });
 });
+
+describe('ZW07 y ZW71 a ZW73: categorías', () => {
+  it('ZW07 lista las categorías con su ruta y crea una subcategoría', async () => {
+    const api = stubApi({
+      ...catalogHandlers,
+      'POST /api/v1/categories': () => jsonResponse(201, { data: { id: 3, parent_id: 2, name: 'Bulones' } }),
+    });
+
+    renderRoute('/t/ZW07');
+
+    expect(await screen.findByRole('gridcell', { name: 'Ferretería / Tornillería' }, { timeout: 5000 })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Crear' }));
+    await fill('Nombre', 'Bulones');
+    await fill('Categoría superior', 'ferretería / tornillería');
+    await userEvent.keyboard('{Control>}s{/Control}');
+
+    await waitFor(() => {
+      expect(statusBar().getByRole('status')).toHaveTextContent('Categoría creada.');
+    });
+    expect(api.requestsTo('POST', '/api/v1/categories')[0]?.body).toEqual({ name: 'Bulones', parent_id: 2 });
+  });
+
+  it('ZW72 informa el ciclo del backend con su código y deja la ficha abierta', async () => {
+    stubApi({
+      ...catalogHandlers,
+      'PATCH /api/v1/categories/1': () =>
+        problemResponse(422, 'CATEGORY_HIERARCHY_CYCLE', { detail: 'La categoría Ferretería no puede depender de Tornillería.' }),
+    });
+
+    renderRoute('/t/ZW72');
+    await fill('Categoría', 'ferretería');
+    await userEvent.keyboard('{F8}');
+
+    await fill('Categoría superior', 'Ferretería / Tornillería');
+    await userEvent.keyboard('{Control>}s{/Control}');
+
+    expect(await statusBar().findByRole('link', { name: /CATEGORY_HIERARCHY_CYCLE/ })).toHaveAttribute(
+      'href',
+      '/docs/referencia/mensajes#category-hierarchy-cycle',
+    );
+    expect(screen.getByRole('textbox', { name: 'Nombre' })).toHaveValue('Ferretería');
+  });
+
+  it('ZW73 muestra la categoría en solo lectura y sin modificar', async () => {
+    stubApi(catalogHandlers);
+
+    renderRoute('/t/ZW73');
+    await fill('Categoría', 'Ferretería / Tornillería');
+    await userEvent.keyboard('{F8}');
+
+    expect(await screen.findByRole('textbox', { name: 'Nombre' })).toHaveAttribute('readonly');
+    expect(screen.getByText('Categoría Ferretería / Tornillería')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Modificar' })).not.toBeInTheDocument();
+  });
+});
+
+describe('ZW08 y ZW81 a ZW83: unidades de medida', () => {
+  it('ZW81 crea una unidad con el código en mayúsculas y deja la ficha vacía', async () => {
+    const api = stubApi({
+      ...catalogHandlers,
+      'POST /api/v1/units': () => jsonResponse(201, { data: { id: 3, code: 'KG', name: 'Kilogramo' } }),
+    });
+
+    renderRoute('/t/ZW81');
+    await fill('Unidad', 'kg');
+    await fill('Nombre', 'Kilogramo');
+    await userEvent.keyboard('{Control>}s{/Control}');
+
+    await waitFor(() => {
+      expect(statusBar().getByRole('status')).toHaveTextContent('Unidad de medida creada.');
+    });
+    expect(api.requestsTo('POST', '/api/v1/units')[0]?.body).toEqual({ code: 'KG', name: 'Kilogramo' });
+    await waitFor(() => {
+      expect(screen.getByRole('textbox', { name: 'Nombre' })).toHaveValue('');
+    });
+  });
+
+  it('ZW82 cambia solo el nombre: el código queda en solo lectura', async () => {
+    const api = stubApi({
+      ...catalogHandlers,
+      'PATCH /api/v1/units/1': () => jsonResponse(200, { data: { id: 1, code: 'UN', name: 'Unidades' } }),
+    });
+
+    renderRoute('/t/ZW82');
+    await fill('Unidad', 'un');
+    await userEvent.keyboard('{F8}');
+
+    // La ficha repite el campo Unidad (el código), en solo lectura.
+    await waitFor(() => {
+      expect(screen.getByRole('textbox', { name: 'Unidad' })).toHaveAttribute('readonly');
+    });
+    await fill('Nombre', 'Unidades');
+    await userEvent.keyboard('{Control>}s{/Control}');
+
+    await waitFor(() => {
+      expect(statusBar().getByRole('status')).toHaveTextContent('Unidad de medida grabada.');
+    });
+    expect(api.requestsTo('PATCH', '/api/v1/units/1')[0]?.body).toEqual({ name: 'Unidades' });
+  });
+});

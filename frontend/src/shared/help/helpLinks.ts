@@ -39,6 +39,14 @@ const zw23Page = 'administracion/visualizar-zona';
 const zw61Page = 'compras/crear-articulo-del-proveedor';
 const zw62Page = 'compras/modificar-articulo-del-proveedor';
 const zw63Page = 'compras/visualizar-articulo-del-proveedor';
+const zw07Page = 'administracion/categorias';
+const zw71Page = 'administracion/crear-categoria';
+const zw72Page = 'administracion/modificar-categoria';
+const zw73Page = 'administracion/visualizar-categoria';
+const zw08Page = 'administracion/unidades-de-medida';
+const zw81Page = 'administracion/crear-unidad-de-medida';
+const zw82Page = 'administracion/modificar-unidad-de-medida';
+const zw83Page = 'administracion/visualizar-unidad-de-medida';
 
 // Campos de la ficha de ubicación: la misma ayuda en crear, modificar y visualizar (la wiki la
 // incluye desde un solo archivo en las tres páginas, D6 de E2.12).
@@ -183,6 +191,14 @@ const fixedLinks = {
   'transaction.ZW61': zw61Page,
   'transaction.ZW62': zw62Page,
   'transaction.ZW63': zw63Page,
+  'transaction.ZW07': zw07Page,
+  'transaction.ZW71': zw71Page,
+  'transaction.ZW72': zw72Page,
+  'transaction.ZW73': zw73Page,
+  'transaction.ZW08': zw08Page,
+  'transaction.ZW81': zw81Page,
+  'transaction.ZW82': zw82Page,
+  'transaction.ZW83': zw83Page,
   ...fieldLinks('ZW01', zw01Page, ['code', 'name', 'address']),
   ...fieldLinks('ZW02', zw02Page, ['warehouse', 'code', 'name', 'type']),
   ...fieldLinks('LS01N', ls01nPage, locationFields),
@@ -220,6 +236,14 @@ const fixedLinks = {
   ...fieldLinks('ZW61', zw61Page, ['supplier', 'product', 'supplierSku', 'leadTimeDays']),
   ...fieldLinks('ZW62', zw62Page, ['supplier', 'product', 'supplierSku', 'leadTimeDays']),
   ...fieldLinks('ZW63', zw63Page, ['supplier', 'product', 'supplierSku', 'leadTimeDays']),
+  ...fieldLinks('ZW07', zw07Page, ['name', 'parent']),
+  ...fieldLinks('ZW71', zw71Page, ['name', 'parent']),
+  ...fieldLinks('ZW72', zw72Page, ['category', 'name', 'parent']),
+  ...fieldLinks('ZW73', zw73Page, ['category', 'name', 'parent']),
+  ...fieldLinks('ZW08', zw08Page, ['code', 'name']),
+  ...fieldLinks('ZW81', zw81Page, ['code', 'name']),
+  ...fieldLinks('ZW82', zw82Page, ['unit', 'code', 'name']),
+  ...fieldLinks('ZW83', zw83Page, ['unit', 'code', 'name']),
 } as const;
 
 export type HelpKey =
