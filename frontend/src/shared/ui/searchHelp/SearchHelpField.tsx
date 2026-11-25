@@ -1,5 +1,5 @@
 import type { RowData } from '@tanstack/react-table';
-import { useEffect, useId, useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GridMessage } from '../grid/gridTypes';
 import { Icon } from '../icons';
@@ -67,9 +67,15 @@ export function SearchHelpField<TData extends RowData>({
   const [syncedValue, setSyncedValue] = useState(value);
 
   const normalize = searchHelp.normalize ?? ((raw: string) => raw.trim());
-  const rowOf = (candidate: string) => searchHelp.source.rows.find((row) => searchHelp.valueOf(row) === candidate);
+  const localRows = searchHelp.source.kind === 'local' ? searchHelp.source.rows : undefined;
+  // Filas todavía en camino (las zonas del depósito recién elegido): lo escrito no se rechaza
+  // hasta tenerlas; al llegar se verifica y, si ya se había confirmado, se informa el error.
+  const loading = searchHelp.source.kind === 'local' && searchHelp.source.loading === true;
+  const rowOf = (candidate: string) => localRows?.find((row) => searchHelp.valueOf(row) === candidate);
   const exists = (candidate: string) => candidate === '' || rowOf(candidate) !== undefined;
-  const isValid = (candidate: string) => !check || exists(candidate);
+  // Con fuente de servidor el campo no tiene tabla de verificación: la pantalla valida el valor
+  // al leer el registro.
+  const isValid = (candidate: string) => !check || localRows === undefined || loading || exists(candidate);
 
   // Un valor que llega desde afuera (restablecido por la pantalla) reemplaza lo escrito. El
   // que este campo acaba de informar no: el texto puede diferir solo por la normalización.
@@ -82,6 +88,39 @@ export function SearchHelpField<TData extends RowData>({
       setCommitted(value);
     }
   }
+
+  // Las filas pueden llegar después de lo escrito (las zonas del depósito recién elegido): con
+  // filas nuevas se vuelve a verificar el valor y se informa a la pantalla si cambió su validez.
+  const rowsSeen = useRef({ rows: localRows, loading });
+  const latestCheck = useRef({ text, committed, normalize, isValid, onChange, onMessage, searchHelp });
+
+  useLayoutEffect(() => {
+    latestCheck.current = { text, committed, normalize, isValid, onChange, onMessage, searchHelp };
+  });
+
+  useEffect(() => {
+    if ((rowsSeen.current.rows === localRows && rowsSeen.current.loading === loading) || loading) {
+      return;
+    }
+
+    rowsSeen.current = { rows: localRows, loading };
+
+    const latest = latestCheck.current;
+    const current = latest.normalize(latest.text);
+
+    if (current === '') {
+      return;
+    }
+
+    const valid = latest.isValid(current);
+
+    setInvalid(!valid && current === latest.committed);
+    latest.onChange(current, valid);
+
+    if (!valid && current === latest.committed) {
+      latest.onMessage({ type: 'E', text: latest.searchHelp.invalidMessage(current), id: 'VALUE_NOT_FOUND' });
+    }
+  }, [localRows, loading]);
 
   // Al cerrar el popup el foco vuelve al campo, también si se abrió con el botón (D7).
   useEffect(() => {
@@ -110,7 +149,7 @@ export function SearchHelpField<TData extends RowData>({
     }
 
     setInvalid(true);
-    onMessage({ type: 'E', text: searchHelp.invalidMessage(normalized) });
+    onMessage({ type: 'E', text: searchHelp.invalidMessage(normalized), id: 'VALUE_NOT_FOUND' });
   };
 
   const openHelp = () => {
@@ -121,7 +160,7 @@ export function SearchHelpField<TData extends RowData>({
     // Lo escrito que no es un valor válido restringe el primer criterio (D2).
     const normalized = normalize(text);
 
-    setInitialCriterion(exists(normalized) ? '' : text.trim());
+    setInitialCriterion(localRows !== undefined && exists(normalized) ? '' : text.trim());
     setOpen(true);
   };
 
@@ -210,7 +249,7 @@ export function SearchHelpField<TData extends RowData>({
         open={open}
         searchHelp={searchHelp}
         initialCriterion={initialCriterion}
-        currentValue={currentRow === undefined ? undefined : searchHelp.valueOf(currentRow)}
+        currentValue={localRows === undefined ? normalize(text) || undefined : currentRow === undefined ? undefined : searchHelp.valueOf(currentRow)}
         onSelect={select}
         onCancel={() => {
           setOpen(false);

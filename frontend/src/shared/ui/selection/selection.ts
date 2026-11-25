@@ -6,7 +6,26 @@ import type { SelectionField, SelectionValues, SelectOptionsField } from './sele
 
 export type SelectionPart = 'low' | 'high';
 
-export type SelectionErrorCode = 'required' | 'invalid' | 'integer' | 'lowMissing' | 'lowGreater';
+export type SelectionErrorCode = 'required' | 'invalid' | 'integer' | 'lowMissing' | 'lowGreater' | 'patternInRange';
+
+// Código estable de cada error, el que muestra la barra de estado y enlaza a la referencia de
+// mensajes de la wiki.
+export const selectionMessageIds: Readonly<Record<SelectionErrorCode, string>> = {
+  required: 'REQUIRED_FIELDS_MISSING',
+  invalid: 'VALUE_NOT_FOUND',
+  integer: 'INTEGER_EXPECTED',
+  lowMissing: 'RANGE_LOW_MISSING',
+  lowGreater: 'RANGE_INVERTED',
+  patternInRange: 'PATTERN_IN_RANGE',
+};
+
+// Un valor individual con * es un patrón (CP, o NP si excluye): A-01* son todas las
+// ubicaciones que empiezan así. En un rango el * no es comodín y se rechaza.
+export const patternWildcard = '*';
+
+function isPattern(text: string): boolean {
+  return text.includes(patternWildcard);
+}
 
 export interface SelectionError {
   fieldId: string;
@@ -48,7 +67,9 @@ export function initialSelectionValues(
 // La entrada que muestran desde y hasta en la pantalla: la primera que incluye un valor o un
 // rango, como en SAP. Las demás se ven en el diálogo de selección múltiple.
 export function mainEntryIndex(entries: readonly SelectOption[]): number {
-  return entries.findIndex((entry) => entry.sign === 'I' && (entry.option === 'EQ' || entry.option === 'BT'));
+  return entries.findIndex(
+    (entry) => entry.sign === 'I' && (entry.option === 'EQ' || entry.option === 'CP' || entry.option === 'BT'),
+  );
 }
 
 // Escribe desde y hasta en la entrada principal: con hasta es un rango (BT) y sin él un valor
@@ -82,6 +103,10 @@ export function entryError(
     return { part: 'low', code: 'lowMissing' };
   }
 
+  if (optionHasHigh(entry.option) && (isPattern(entry.low) || isPattern(high))) {
+    return { part: isPattern(entry.low) ? 'low' : 'high', code: 'patternInRange' };
+  }
+
   if (field.type === 'integer') {
     if (!integerPattern.test(entry.low)) {
       return { part: 'low', code: 'integer' };
@@ -100,7 +125,8 @@ export function entryError(
 }
 
 // Normaliza las entradas de un SELECT-OPTIONS: recorta, aplica la normalización del campo y
-// descarta las vacías. Un rango sin hasta pasa a valor único, como en SAP.
+// descarta las vacías. Un rango sin hasta pasa a valor único, como en SAP, y un valor único
+// con * pasa a patrón (EQ a CP, NE a NP); un patrón sin * vuelve a valor único.
 export function normalizeEntries(field: SelectOptionsField, entries: readonly SelectOption[]): SelectOption[] {
   return entries.flatMap((entry): SelectOption[] => {
     const low = normalizeText(field, entry.low);
@@ -110,10 +136,17 @@ export function normalizeEntries(field: SelectOptionsField, entries: readonly Se
       return [];
     }
 
-    if (optionHasHigh(entry.option)) {
-      return high === ''
-        ? [{ sign: entry.sign, option: entry.option === 'BT' ? 'EQ' : 'NE', low }]
-        : [{ sign: entry.sign, option: entry.option, low, high }];
+    if (optionHasHigh(entry.option) && high !== '') {
+      return [{ sign: entry.sign, option: entry.option, low, high }];
+    }
+
+    const negative = entry.option === 'NB' || entry.option === 'NE' || entry.option === 'NP';
+    const single = optionHasHigh(entry.option) || entry.option === 'EQ' || entry.option === 'NE' || entry.option === 'CP' || entry.option === 'NP';
+
+    if (single) {
+      const option = isPattern(low) ? (negative ? 'NP' : 'CP') : negative ? 'NE' : 'EQ';
+
+      return [{ sign: entry.sign, option, low }];
     }
 
     return [{ sign: entry.sign, option: entry.option, low }];

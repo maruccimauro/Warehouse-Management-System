@@ -1,6 +1,6 @@
 # Estados
 
-El estado de un objeto define qué operaciones admite. Esta página explica cada estado y los cambios posibles entre ellos. Un cambio no permitido se rechaza con [`INVALID_STATE_TRANSITION`](./errores#invalid-state-transition).
+El estado de un objeto define qué operaciones admite. Esta página explica cada estado y los cambios posibles entre ellos. Un cambio no permitido se rechaza con [`INVALID_STATE_TRANSITION`](./mensajes#invalid-state-transition).
 
 ## Depósito {#warehouse}
 
@@ -17,7 +17,7 @@ Admite todas las operaciones. Un depósito nuevo nace activo, con sus ubicacione
 
 ### Inactivo {#warehouse-inactive}
 
-No admite operaciones, como bloquear o desbloquear ubicaciones ([`WAREHOUSE_INACTIVE`](./errores#warehouse-inactive)). Se consulta con su historial y admite el mantenimiento de zonas y ubicaciones.
+No admite operaciones, como bloquear o desbloquear ubicaciones ([`WAREHOUSE_INACTIVE`](./mensajes#warehouse-inactive)). Se consulta con su historial y admite el mantenimiento de zonas y ubicaciones.
 
 ## Ubicación {#location}
 
@@ -86,4 +86,4 @@ Puede ingresar al sistema.
 
 ### Inactivo {#user-inactive}
 
-No puede ingresar ([`USER_INACTIVE`](./errores#user-inactive)) y sus sesiones abiertas se cierran al desactivarlo.
+No puede ingresar ([`USER_INACTIVE`](./mensajes#user-inactive)) y sus sesiones abiertas se cierran al desactivarlo.

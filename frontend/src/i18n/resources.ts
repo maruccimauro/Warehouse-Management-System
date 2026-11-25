@@ -4,6 +4,7 @@ import esErrors from './locales/es/errors.json';
 import esForm from './locales/es/form.json';
 import esGrid from './locales/es/grid.json';
 import esHome from './locales/es/home.json';
+import esLocations from './locales/es/locations.json';
 import esNotFound from './locales/es/notFound.json';
 import esSearchHelp from './locales/es/searchHelp.json';
 import esSelection from './locales/es/selection.json';
@@ -11,6 +12,7 @@ import esShell from './locales/es/shell.json';
 import esSu3 from './locales/es/su3.json';
 import esTransactions from './locales/es/transactions.json';
 import esWarehouses from './locales/es/warehouses.json';
+import esZones from './locales/es/zones.json';
 
 // Un namespace por pantalla y dos compartidos (common y errors). Agregar un idioma es
 // agregar su carpeta en locales/ y registrarla acá y en languages: los componentes no cambian.
@@ -22,6 +24,7 @@ export const resources = {
     form: esForm,
     grid: esGrid,
     home: esHome,
+    locations: esLocations,
     notFound: esNotFound,
     searchHelp: esSearchHelp,
     selection: esSelection,
@@ -29,6 +32,7 @@ export const resources = {
     su3: esSu3,
     transactions: esTransactions,
     warehouses: esWarehouses,
+    zones: esZones,
   },
 } as const;
 

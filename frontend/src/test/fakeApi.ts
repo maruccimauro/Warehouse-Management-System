@@ -4,6 +4,8 @@ import type { AuthenticatedUser } from '@/features/auth/authApi';
 export interface RecordedRequest {
   method: string;
   path: string;
+  // Parámetros de la consulta (filtros, orden y página de un listado).
+  query: URLSearchParams;
   headers: Headers;
   body: unknown;
 }
@@ -104,6 +106,7 @@ export function stubApi(handlers: Record<string, Handler> = {}, initial: Partial
     const request: RecordedRequest = {
       method,
       path: url.pathname,
+      query: url.searchParams,
       headers: new Headers(init?.headers),
       body: parseBody(init),
     };

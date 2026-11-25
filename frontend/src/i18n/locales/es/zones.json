@@ -1,0 +1,44 @@
+{
+  "selection": {
+    "title": "Zonas del depósito",
+    "hint": "Ingrese el depósito y ejecute con F8."
+  },
+  "list": {
+    "title": "Zonas del depósito {{code}}",
+    "warehouse": "Depósito {{code}}: {{name}}",
+    "actions": "Acciones de zonas"
+  },
+  "detail": {
+    "actions": "Acciones de la zona",
+    "systemZone": "Zona de sistema: la crea el depósito y su tipo no cambia."
+  },
+  "sections": {
+    "general": "Datos de la zona"
+  },
+  "fields": {
+    "warehouse": "Depósito",
+    "code": "Zona",
+    "name": "Nombre",
+    "type": "Tipo",
+    "isSystem": "De sistema"
+  },
+  "types": {
+    "receiving": "Recepción",
+    "storage": "Almacenamiento",
+    "picking": "Preparación",
+    "packing": "Empaque",
+    "dispatch": "Despacho",
+    "quarantine": "Cuarentena"
+  },
+  "yes": "Sí",
+  "no": "No",
+  "actions": {
+    "create": "Crear",
+    "change": "Modificar"
+  },
+  "messages": {
+    "created": "Zona creada.",
+    "saved": "Zona grabada.",
+    "saveFailed": "No se pudo grabar la zona."
+  }
+}

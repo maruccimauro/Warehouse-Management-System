@@ -22,8 +22,14 @@ El botón de la ayuda no recibe el foco con <kbd>Tab</kbd>: con el teclado se us
 
 ## Verificación del valor {#verificacion}
 
-El campo verifica lo escrito contra la lista de valores posibles. Convierte los códigos a mayúsculas y, al confirmar con <kbd>Enter</kbd> o al salir del campo, marca un valor inexistente y lo informa con un mensaje E. La pantalla no graba mientras un campo tenga un valor inexistente.
+El campo verifica lo escrito contra la lista de valores posibles. Convierte los códigos a mayúsculas y, al confirmar con <kbd>Enter</kbd> o al salir del campo, marca un valor inexistente y lo informa con el mensaje E [`VALUE_NOT_FOUND`](/referencia/mensajes#value-not-found). La pantalla no graba mientras un campo tenga un valor inexistente.
+
+Si los valores posibles todavía se están leyendo (por ejemplo, las zonas del depósito recién elegido), el campo espera a tenerlos para verificar lo escrito.
+
+## Campos con muchos valores {#busqueda-en-servidor}
+
+En los campos con miles de valores posibles, como **Ubicación**, la ayuda no carga la lista entera: busca en el servidor lo que contiene el texto de la restricción y muestra los resultados por páginas. En esos campos el valor no se verifica al salir del campo, sino al continuar, cuando la pantalla lee el registro.
 
 ## Campo Depósito {#deposito}
 
-El campo **Depósito** ofrece solo los depósitos asignados al usuario. Las pantallas operativas lo completan con el parámetro de usuario [`LGN`](./parametros-de-usuario#lgn), si ese depósito sigue entre los asignados.
+El campo **Depósito** de las pantallas que operan o modifican datos ofrece solo los depósitos asignados al usuario. En las consultas, como [Visualizar ubicación](/administracion/visualizar-ubicacion) o la [Lista de ubicaciones](/administracion/lista-de-ubicaciones), ofrece todos los que el usuario puede consultar. Las pantallas lo completan con el parámetro de usuario [`LGN`](./parametros-de-usuario#lgn), si ese depósito sigue entre los asignados.

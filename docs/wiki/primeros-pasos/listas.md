@@ -23,7 +23,7 @@ En las listas de datos maestros, que pueden tener miles de filas, el servidor or
 
 **Exportar a hoja de cálculo** descarga un archivo CSV con todo el resultado filtrado, con las columnas visibles y en el orden en que se ven. El archivo usa punto y coma como separador y coma decimal, y abre directamente en una planilla de cálculo.
 
-En las listas paginadas se exportan hasta 5.000 filas; si el resultado tiene más, un mensaje W lo avisa. Para exportar el resto, restrinja la selección.
+En las listas paginadas se exportan hasta 5.000 filas; si el resultado tiene más, lo avisa el mensaje W [`GRID_EXPORT_TRUNCATED`](/referencia/mensajes#grid-export-truncated). Para exportar el resto, restrinja la selección.
 
 ## Teclado {#teclado}
 

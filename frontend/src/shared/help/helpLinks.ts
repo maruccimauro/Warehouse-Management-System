@@ -8,16 +8,35 @@
 //   transacción  página propia                     transaction.SU3
 //   campo        página de la transacción #campo   field.SU3.lgn
 //   estado       referencia/estados#objeto-estado   state.location.blocked
-//   error        referencia/errores#code            error.WAREHOUSE_INACTIVE
+//   mensaje      referencia/mensajes#code           message.WAREHOUSE_INACTIVE
 //   permiso      referencia/permisos#nombre         permission.locations.block
 
 export const wikiBasePath = '/docs/';
 
 const su3Page = 'primeros-pasos/parametros-de-usuario';
+const zw01Page = 'administracion/depositos';
+const zw02Page = 'administracion/zonas';
+const ls01nPage = 'administracion/crear-ubicacion';
+const ls02nPage = 'administracion/modificar-ubicacion';
+const ls03nPage = 'administracion/visualizar-ubicacion';
+const ls10Page = 'administracion/generar-ubicaciones';
+const lx03Page = 'administracion/lista-de-ubicaciones';
+const zw05Page = 'supervisor/bloqueo-de-ubicaciones';
 
-// Códigos de error documentados en referencia/errores: los que la aplicación puede mostrar
+// Campos de la ficha de ubicación: la misma ayuda en crear, modificar y visualizar (la wiki la
+// incluye desde un solo archivo en las tres páginas, D6 de E2.12).
+const locationFields = ['warehouse', 'code', 'zone', 'status', 'aisle', 'rack', 'level', 'position', 'maxUnits'] as const;
+
+function fieldLinks<const Code extends string, const Field extends string>(code: Code, page: string, fields: readonly Field[]) {
+  return Object.fromEntries(fields.map((field) => [`field.${code}.${field}`, `${page}#${anchor(field)}`])) as Record<
+    `field.${Code}.${Field}`,
+    string
+  >;
+}
+
+// Códigos de error documentados en referencia/mensajes: los que la aplicación puede mostrar
 // hoy, del backend (ADR-010) y del cliente (NETWORK_ERROR, INVALID_RESPONSE).
-const documentedErrorCodes = [
+const documentedMessageCodes = [
   'INVALID_CREDENTIALS',
   'USER_INACTIVE',
   'PASSWORD_CHANGE_REQUIRED',
@@ -47,6 +66,16 @@ const documentedErrorCodes = [
   'PAYLOAD_TOO_LARGE',
   'UNSUPPORTED_MEDIA_TYPE',
   'HTTP_ERROR',
+  // Mensajes del cliente (E2.12): la pantalla los emite antes de llamar al servidor.
+  'REQUIRED_FIELDS_MISSING',
+  'VALUE_NOT_FOUND',
+  'INTEGER_EXPECTED',
+  'RANGE_LOW_MISSING',
+  'RANGE_INVERTED',
+  'PATTERN_IN_RANGE',
+  'GRID_EXPORT_TRUNCATED',
+  'LOCATION_NOT_FOUND',
+  'LOCATION_BATCH_TOO_LARGE',
 ] as const;
 
 const documentedStates = {
@@ -68,7 +97,7 @@ const documentedPermissions = [
   'users.manage',
 ] as const;
 
-type DocumentedErrorCode = (typeof documentedErrorCodes)[number];
+type DocumentedMessageCode = (typeof documentedMessageCodes)[number];
 type DocumentedStateKey = {
   [Entity in keyof typeof documentedStates]: `state.${Entity}.${(typeof documentedStates)[Entity][number]}`;
 }[keyof typeof documentedStates];
@@ -76,8 +105,12 @@ type DocumentedPermission = (typeof documentedPermissions)[number];
 
 // Ancla en minúsculas con guiones: WAREHOUSE_INACTIVE -> warehouse-inactive,
 // warehouses.view_all -> warehouses-view-all.
+// maxUnits -> max-units.
 function anchor(value: string): string {
-  return value.toLowerCase().replaceAll(/[._]/g, '-');
+  return value
+    .replaceAll(/([a-z])([A-Z])/g, '$1-$2')
+    .toLowerCase()
+    .replaceAll(/[._]/g, '-');
 }
 
 const fixedLinks = {
@@ -85,11 +118,39 @@ const fixedLinks = {
   'transaction.SU3': su3Page,
   'field.SU3.locale': `${su3Page}#locale`,
   'field.SU3.lgn': `${su3Page}#lgn`,
+  'transaction.ZW01': zw01Page,
+  'transaction.ZW02': zw02Page,
+  'transaction.LS01N': ls01nPage,
+  'transaction.LS02N': ls02nPage,
+  'transaction.LS03N': ls03nPage,
+  'transaction.LS10': ls10Page,
+  'transaction.LX03': lx03Page,
+  'transaction.ZW05': zw05Page,
+  ...fieldLinks('ZW01', zw01Page, ['code', 'name', 'address']),
+  ...fieldLinks('ZW02', zw02Page, ['warehouse', 'code', 'name', 'type']),
+  ...fieldLinks('LS01N', ls01nPage, locationFields),
+  ...fieldLinks('LS02N', ls02nPage, locationFields),
+  ...fieldLinks('LS03N', ls03nPage, locationFields),
+  ...fieldLinks('LS10', ls10Page, [
+    'warehouse',
+    'zone',
+    'aislesFrom',
+    'aislesTo',
+    'racksFrom',
+    'racksTo',
+    'levelsFrom',
+    'levelsTo',
+    'positionsFrom',
+    'positionsTo',
+    'maxUnits',
+  ]),
+  ...fieldLinks('LX03', lx03Page, ['warehouse', 'code']),
+  ...fieldLinks('ZW05', zw05Page, ['warehouse', 'code', 'reason']),
 } as const;
 
 export type HelpKey =
   | keyof typeof fixedLinks
-  | `error.${DocumentedErrorCode}`
+  | `message.${DocumentedMessageCode}`
   | DocumentedStateKey
   | `permission.${DocumentedPermission}`;
 
@@ -97,8 +158,8 @@ export type HelpKey =
 export const helpLinks: Readonly<Record<HelpKey, string>> = {
   ...fixedLinks,
   ...(Object.fromEntries(
-    documentedErrorCodes.map((code) => [`error.${code}`, `referencia/errores#${anchor(code)}`]),
-  ) as Record<`error.${DocumentedErrorCode}`, string>),
+    documentedMessageCodes.map((code) => [`message.${code}`, `referencia/mensajes#${anchor(code)}`]),
+  ) as Record<`message.${DocumentedMessageCode}`, string>),
   ...(Object.fromEntries(
     Object.entries(documentedStates).flatMap(([entity, states]) =>
       states.map((state) => [`state.${entity}.${state}`, `referencia/estados#${entity}-${state}`]),

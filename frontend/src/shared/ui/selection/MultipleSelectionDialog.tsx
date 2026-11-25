@@ -5,7 +5,7 @@ import { Button } from '../Button';
 import { GridDialog } from '../grid/GridDialog';
 import type { GridMessage } from '../grid/gridTypes';
 import { Icon } from '../icons';
-import { entryError, normalizeEntries, type SelectionErrorCode } from './selection';
+import { entryError, normalizeEntries, selectionMessageIds, type SelectionErrorCode } from './selection';
 import { SelectionInput } from './SelectionInput';
 import type { SelectOptionsField } from './selectionTypes';
 
@@ -94,7 +94,7 @@ function MultipleSelectionForm({
   const [selected, setSelected] = useState<TabId>('single');
   const [singles, setSingles] = useState<DraftRow[]>(() =>
     entries
-      .filter((entry) => entry.sign === 'I' && entry.option === 'EQ')
+      .filter((entry) => entry.sign === 'I' && (entry.option === 'EQ' || entry.option === 'CP'))
       .map((entry, index) => ({ key: `entry-${String(index)}`, low: entry.low, high: '' })),
   );
   const [ranges, setRanges] = useState<DraftRow[]>(() =>
@@ -105,7 +105,9 @@ function MultipleSelectionForm({
   // Entradas que estas pestañas no editan (exclusiones u otros operadores armados por la
   // pantalla): se conservan tal cual.
   const [others] = useState(() =>
-    entries.filter((entry) => !(entry.sign === 'I' && (entry.option === 'EQ' || entry.option === 'BT'))),
+    entries.filter(
+      (entry) => !(entry.sign === 'I' && (entry.option === 'EQ' || entry.option === 'CP' || entry.option === 'BT')),
+    ),
   );
 
   const counts: Record<TabId, number> = {
@@ -126,7 +128,7 @@ function MultipleSelectionForm({
 
       if (error !== undefined) {
         setSelected('ranges');
-        onMessage({ type: 'E', text: errorText(error.code) });
+        onMessage({ type: 'E', text: errorText(error.code), id: selectionMessageIds[error.code] });
         // El panel recién elegido se muestra en el próximo render.
         requestAnimationFrame(() => {
           focusInput(`${id}-ranges-${String(index)}-${error.part}`);
@@ -142,7 +144,7 @@ function MultipleSelectionForm({
 
       if (error !== undefined) {
         setSelected('single');
-        onMessage({ type: 'E', text: errorText(error.code) });
+        onMessage({ type: 'E', text: errorText(error.code), id: selectionMessageIds[error.code] });
         requestAnimationFrame(() => {
           focusInput(`${id}-single-${String(index)}-low`);
         });

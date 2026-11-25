@@ -22,7 +22,7 @@ class LocationListRequest extends ListRequest
     protected function filters(): array
     {
         return [
-            'code' => FilterMode::Partial,
+            'code' => FilterMode::Selection,
             'zone_id' => FilterMode::In,
             'status' => FilterMode::In,
             'aisle' => FilterMode::Exact,

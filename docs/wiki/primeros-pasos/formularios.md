@@ -12,7 +12,7 @@ Las transacciones que crean o modifican datos presentan sus campos en bloques co
 
 Un campo con un valor no válido muestra el error debajo, con el campo marcado. El error aparece al salir del campo después de editarlo y desde ahí se actualiza con cada cambio; también aparece al grabar.
 
-Al grabar con errores, el sistema no graba, lleva el foco al primer campo con error y lo informa en la barra de estado con un mensaje E que nombra el campo, por ejemplo **LGN: El valor no existe.** Lo mismo ocurre cuando el servidor rechaza un dato ([`VALIDATION_FAILED`](/referencia/errores#validation-failed)): cada mensaje aparece en su campo y se quita al corregir el valor.
+Al grabar con errores, el sistema no graba, lleva el foco al primer campo con error y lo informa en la barra de estado con un mensaje E que nombra el campo, por ejemplo **LGN: El valor no existe.** Lo mismo ocurre cuando el servidor rechaza un dato ([`VALIDATION_FAILED`](/referencia/mensajes#validation-failed)): cada mensaje aparece en su campo y se quita al corregir el valor.
 
 ## Visualizar {#visualizar}
 

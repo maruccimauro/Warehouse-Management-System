@@ -15,7 +15,7 @@ const appearance: Record<MessageType, { icon: IconName; className: string }> = {
 // del mensaje que SAP abre con doble clic en la barra de estado (D8 de E2.16).
 function MessageId({ id }: { id: string }) {
   const { t } = useTranslation('shell');
-  const helpKey = `error.${id}`;
+  const helpKey = `message.${id}`;
   const className = 'shrink-0 font-mono text-xs text-ink-muted';
 
   if (!isHelpKey(helpKey)) {

@@ -113,7 +113,11 @@ abstract class ListRequest extends FormRequest
                 $rules["filter.{$field}"] = ['sometimes', 'nullable', 'list', 'max:'.self::MAX_FILTER_VALUES];
                 $rules[$entry] = ['required', 'array:sign,option,low,high'];
                 $rules["{$entry}.sign"] = ['sometimes', Rule::enum(SelectionSign::class)];
-                $rules["{$entry}.option"] = ['required', Rule::enum(SelectionOption::class)];
+                $options = Rule::enum(SelectionOption::class);
+                // Un patrón con * no tiene sentido sobre un número: el valor no lo admite.
+                $rules["{$entry}.option"] = ['required', in_array('integer', $value, true)
+                    ? $options->except([SelectionOption::ContainsPattern, SelectionOption::NotContainsPattern])
+                    : $options];
                 $rules["{$entry}.low"] = ['required', ...$value];
                 $rules["{$entry}.high"] = ["required_if:{$entry}.option,{$withHigh}", "prohibited_unless:{$entry}.option,{$withHigh}", ...$value];
             } else {
@@ -284,7 +288,18 @@ abstract class ListRequest extends FormRequest
             SelectionOption::LessOrEqual => $query->where($column, '<=', $low),
             SelectionOption::Between => $query->whereBetween($column, [$low, $high]),
             SelectionOption::NotBetween => $query->whereNotBetween($column, [$low, $high]),
+            SelectionOption::ContainsPattern => $query->whereLike($column, self::likePattern(self::asString($low))),
+            SelectionOption::NotContainsPattern => $query->whereNotLike($column, self::likePattern(self::asString($low))),
         };
+    }
+
+    /**
+     * Patrón de CP y NP: * es cualquier cantidad de caracteres y el resto se
+     * busca literal. A-01* son las ubicaciones del pasillo A, estantería 01.
+     */
+    private static function likePattern(string $value): string
+    {
+        return str_replace('*', '%', self::escapeLike($value));
     }
 
     /**

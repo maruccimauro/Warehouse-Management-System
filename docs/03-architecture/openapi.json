@@ -890,17 +890,6 @@
                         }
                     },
                     {
-                        "name": "filter[code]",
-                        "in": "query",
-                        "schema": {
-                            "type": [
-                                "string",
-                                "null"
-                            ],
-                            "maxLength": 100
-                        }
-                    },
-                    {
                         "name": "filter[zone_id][]",
                         "in": "query",
                         "required": true,
@@ -965,6 +954,43 @@
                                 "null"
                             ]
                         }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "code": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "sign": {
+                                                "$ref": "#/components/schemas/SelectionSign"
+                                            },
+                                            "option": {
+                                                "$ref": "#/components/schemas/SelectionOption"
+                                            },
+                                            "low": {
+                                                "type": "string",
+                                                "maxLength": 100
+                                            },
+                                            "high": {
+                                                "type": "string",
+                                                "maxLength": 100
+                                            }
+                                        },
+                                        "required": [
+                                            "option",
+                                            "low"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "x-deepObject-style": "qs"
                     }
                 ],
                 "responses": {
@@ -7626,6 +7652,32 @@
                     "auditor"
                 ],
                 "title": "Role"
+            },
+            "SelectionOption": {
+                "type": "string",
+                "description": "Operador de una entrada de FilterMode::Selection, con los c\u00f3digos de OPTION de un SELECT-OPTIONS de SAP. CP y NP comparan con un patr\u00f3n en el que * reemplaza cualquier cantidad de caracteres (E2.12, D3); el resto del valor se busca literal y sin distinguir may\u00fasculas. + y # de SAP no se admiten.\n",
+                "enum": [
+                    "EQ",
+                    "NE",
+                    "GT",
+                    "GE",
+                    "LT",
+                    "LE",
+                    "BT",
+                    "NB",
+                    "CP",
+                    "NP"
+                ],
+                "title": "SelectionOption"
+            },
+            "SelectionSign": {
+                "type": "string",
+                "description": "Signo de una entrada de FilterMode::Selection, como SIGN en SAP: I incluye las filas que cumplen la entrada y E las excluye.\n",
+                "enum": [
+                    "I",
+                    "E"
+                ],
+                "title": "SelectionSign"
             },
             "StoreCategoryRequest": {
                 "type": "object",

@@ -7,16 +7,34 @@
 // de ejecución, así que se importa directamente. En el contenedor wiki, docker-compose monta
 // frontend/src/shared/help en la misma posición relativa que en el repositorio.
 import { existsSync, readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { helpLinks } from '../../../frontend/src/shared/help/helpLinks.ts';
 
 const wikiRoot = fileURLToPath(new URL('..', import.meta.url));
 const pageCache = new Map<string, string | undefined>();
 
+// Una página puede incluir fragmentos con <!--@include: ./ruta.md-->, como hace VitePress al
+// compilar: las anclas del fragmento son anclas de la página que lo incluye.
+const includePattern = /<!--\s*@include:\s*([^\s>]+?)\s*-->/g;
+
+function withIncludes(file: string, depth = 0): string {
+  const source = readFileSync(file, 'utf8');
+
+  if (depth > 5) {
+    return source;
+  }
+
+  return source.replaceAll(includePattern, (_, relative: string) => {
+    const included = fileURLToPath(new URL(relative, pathToFileURL(file)));
+
+    return existsSync(included) ? withIncludes(included, depth + 1) : '';
+  });
+}
+
 function pageSource(page: string): string | undefined {
   if (!pageCache.has(page)) {
     const file = `${wikiRoot}${page === '' ? 'index' : page}.md`;
-    pageCache.set(page, existsSync(file) ? readFileSync(file, 'utf8') : undefined);
+    pageCache.set(page, existsSync(file) ? withIncludes(file) : undefined);
   }
 
   return pageCache.get(page);

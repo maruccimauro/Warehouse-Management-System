@@ -58,13 +58,15 @@ export interface TransactionFieldProps<TName extends string> {
   autoComplete?: string;
   required?: boolean;
   // Ayuda persistente debajo del control, ya traducida.
-  description?: string;
+  description?: string | undefined;
   // Sin etiqueta propia: el nombre lo da otro elemento (la fila de una tabla de parámetros).
   labelledBy?: string;
   // Ids de otros textos que describen el campo (la columna de descripción de esa tabla).
   describedBy?: string;
   // Ancho del control (por defecto, el de la columna).
   className?: string;
+  // Solo este campo en solo lectura (el código, que no cambia después del alta, DM-19).
+  readOnly?: boolean;
 }
 
 export interface TransactionFormOptions<TSchema extends FormSchema> {
@@ -74,8 +76,9 @@ export interface TransactionFormOptions<TSchema extends FormSchema> {
   // Namespace de traducción con fields.<nombre> y sections.<clave>.
   namespace: Namespace;
   // Recibe los valores ya transformados por el esquema y los valores editados, que pasan a
-  // ser los nuevos valores por defecto al grabar bien.
-  onSave: (values: z.output<TSchema>) => Promise<void>;
+  // ser los nuevos valores por defecto al grabar bien. Si devuelve un texto, es el mensaje S
+  // (por ejemplo, con la cantidad que creó); si no, savedMessage.
+  onSave: (values: z.output<TSchema>) => Promise<unknown>;
   savedMessage: string;
   saveFailedMessage: string;
   // Visualizar (actividad 03 de SAP, D5): todo en solo lectura y sin Ctrl+S. Cambiarlo vuelve
@@ -83,6 +86,11 @@ export interface TransactionFormOptions<TSchema extends FormSchema> {
   readOnly?: boolean;
   // Campo del formulario para cada clave de errors del 422, cuando el nombre difiere.
   serverFields?: Readonly<Record<string, TransactionFieldName<z.input<TSchema>>>>;
+  // Acción que envía el formulario: grabar (Ctrl+S) o ejecutar (F8), para los programas que
+  // procesan lo ingresado en lugar de grabar una ficha (la generación de ubicaciones).
+  submitWith?: 'save' | 'execute';
+  // F3 propio: volver de la ficha a la lista o a la pantalla inicial de la transacción.
+  onBack?: (() => void) | undefined;
 }
 
 export interface TransactionForm<TValues> {
@@ -110,7 +118,7 @@ function toText(value: unknown): string {
 export function useTransactionForm<TSchema extends FormSchema>(
   options: TransactionFormOptions<TSchema>,
 ): TransactionForm<z.input<TSchema>> {
-  const { schema, namespace, readOnly = false } = options;
+  const { schema, namespace, readOnly = false, submitWith = 'save' } = options;
   const { show } = useStatusBar();
   const { t } = useTranslation(namespace);
   const labelOf = (name: string) => (t as unknown as DynamicT)(`fields.${name}`);
@@ -140,10 +148,10 @@ export function useTransactionForm<TSchema extends FormSchema>(
       }
 
       try {
-        await onSave(parsed.data);
+        const saved = await onSave(parsed.data);
         // Lo grabado pasa a ser el valor por defecto: sin cambios pendientes.
         formApi.reset(value);
-        show({ type: 'S', text: savedMessage });
+        show({ type: 'S', text: typeof saved === 'string' ? saved : savedMessage });
       } catch (error) {
         if (error instanceof ApiError && error.code === 'VALIDATION_FAILED') {
           const fieldMap: Readonly<Record<string, string>> = serverFields ?? {};
@@ -171,7 +179,7 @@ export function useTransactionForm<TSchema extends FormSchema>(
       const first = firstInvalidField(formApi);
 
       if (first !== undefined) {
-        show({ type: 'E', text: `${labelOf(first.name)}: ${first.message}` });
+        show({ type: 'E', text: `${labelOf(first.name)}: ${first.message}`, id: 'VALIDATION_FAILED' });
         document.getElementById(controlId(first.name))?.focus();
       }
     },
@@ -197,12 +205,16 @@ export function useTransactionForm<TSchema extends FormSchema>(
   };
 
   useUnsavedChanges(!readOnly && !isDefaultValue);
+  const submit = readOnly
+    ? undefined
+    : () => {
+        void save();
+      };
+
   useTransactionActions({
-    save: readOnly
-      ? undefined
-      : () => {
-          void save();
-        },
+    save: submitWith === 'save' ? submit : undefined,
+    execute: submitWith === 'execute' ? submit : undefined,
+    back: options.onBack,
   });
 
   // Creados una sola vez por formulario (y modo): si se recrearan en cada render, React
@@ -246,7 +258,9 @@ export function useTransactionForm<TSchema extends FormSchema>(
       labelledBy,
       describedBy: extraDescribedBy,
       className = '',
+      readOnly: fieldReadOnly = false,
     }: TransactionFieldProps<string>) {
+      const locked = readOnly || fieldReadOnly;
       const { t: fieldT, i18n } = useTranslation(namespace);
       const { show: showMessage } = useStatusBar();
       const submitted = useSelector(form.store, (state) => state.submissionAttempts > 0);
@@ -291,7 +305,7 @@ export function useTransactionForm<TSchema extends FormSchema>(
                   {...common}
                   aria-invalid={error !== undefined}
                   value={value}
-                  disabled={readOnly}
+                  disabled={locked}
                   onChange={change}
                   onBlur={field.handleBlur}
                   onMessage={showMessage}
@@ -302,7 +316,7 @@ export function useTransactionForm<TSchema extends FormSchema>(
                 <select
                   {...common}
                   className={`field-input max-w-72 ${className}`}
-                  disabled={readOnly}
+                  disabled={locked}
                   value={value}
                   onChange={(event) => {
                     change(event.target.value);
@@ -324,7 +338,7 @@ export function useTransactionForm<TSchema extends FormSchema>(
                   type={type}
                   inputMode={inputMode}
                   autoComplete={autoComplete}
-                  readOnly={readOnly}
+                  readOnly={locked}
                   value={value}
                   onChange={(event) => {
                     change(event.target.value);

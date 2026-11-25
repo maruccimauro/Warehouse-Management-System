@@ -3,6 +3,47 @@
     "title": "Depósitos",
     "code": "Depósito",
     "name": "Nombre",
-    "invalid": "El depósito {{code}} no existe o no está asignado al usuario."
+    "invalid": "El depósito {{code}} no existe o no está asignado al usuario.",
+    "invalidVisible": "El depósito {{code}} no existe o el usuario no puede consultarlo."
+  },
+  "list": {
+    "title": "Depósitos",
+    "actions": "Acciones de depósitos"
+  },
+  "detail": {
+    "actions": "Acciones del depósito"
+  },
+  "sections": {
+    "general": "Datos del depósito"
+  },
+  "fields": {
+    "code": "Depósito",
+    "name": "Nombre",
+    "address": "Dirección",
+    "status": "Estado"
+  },
+  "statuses": {
+    "active": "Activo",
+    "inactive": "Inactivo"
+  },
+  "actions": {
+    "create": "Crear",
+    "change": "Modificar",
+    "activate": "Activar",
+    "deactivate": "Desactivar"
+  },
+  "confirm": {
+    "activateTitle": "Activar depósito",
+    "deactivateTitle": "Desactivar depósito",
+    "activate": "El depósito {{code}} vuelve a admitir operaciones. ¿Activarlo?",
+    "deactivate": "El depósito {{code}} deja de admitir operaciones hasta que se active de nuevo. ¿Desactivarlo?",
+    "cancel": "Cancelar"
+  },
+  "messages": {
+    "created": "Depósito creado.",
+    "saved": "Depósito grabado.",
+    "saveFailed": "No se pudo grabar el depósito.",
+    "activated": "Depósito {{code}} activado.",
+    "deactivated": "Depósito {{code}} desactivado."
   }
 }

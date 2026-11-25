@@ -162,6 +162,21 @@ it('applies every selection option', function (string $option, string $low, ?str
     'NB' => ['NB', '2', '3', ['N1']],
 ]);
 
+it('compares a text criterion with a pattern where * is any text and the rest is literal', function () {
+    sampleRecords(
+        ['code' => 'P1', 'section' => 'A-01-01'],
+        ['code' => 'P2', 'section' => 'A-02-01'],
+        ['code' => 'P3', 'section' => 'B-01-01'],
+        ['code' => 'P4', 'section' => 'A_01%'],
+    );
+
+    expect(listedCodes(selectionQuery('section', [['option' => 'CP', 'low' => 'a-01*']])))->toBe(['P1'])
+        ->and(listedCodes(selectionQuery('section', [['option' => 'CP', 'low' => '*-01-01']])))->toBe(['P1', 'P3'])
+        // % y _ se buscan literales: no son comodines.
+        ->and(listedCodes(selectionQuery('section', [['option' => 'CP', 'low' => 'A_01%']])))->toBe(['P4'])
+        ->and(listedCodes(selectionQuery('section', [['option' => 'NP', 'low' => 'A*']])))->toBe(['P3']);
+});
+
 it('subtracts the excluding entries, and without including entries starts from every row', function () {
     sampleRecords(
         ['code' => 'E1', 'section' => 'A01'],
@@ -194,7 +209,8 @@ it('rejects a malformed selection entry with VALIDATION_FAILED', function (array
         ->assertJsonPath('code', 'VALIDATION_FAILED')
         ->assertJsonValidationErrors([$field], 'errors');
 })->with([
-    'operador inexistente' => [['option' => 'CP', 'low' => '1'], 'filter.rank.0.option'],
+    'operador inexistente' => [['option' => 'XX', 'low' => '1'], 'filter.rank.0.option'],
+    'patrón sobre un número' => [['option' => 'CP', 'low' => '1*'], 'filter.rank.0.option'],
     'signo inexistente' => [['sign' => 'X', 'option' => 'EQ', 'low' => '1'], 'filter.rank.0.sign'],
     'sin límite inferior' => [['option' => 'EQ'], 'filter.rank.0.low'],
     'rango sin límite superior' => [['option' => 'BT', 'low' => '1'], 'filter.rank.0.high'],

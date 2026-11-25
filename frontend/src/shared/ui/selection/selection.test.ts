@@ -16,6 +16,26 @@ const fields: SelectionField[] = [
 ];
 
 describe('lógica de la pantalla de selección', () => {
+  it('un valor con * es un patrón (CP o NP) y un patrón sin * vuelve a ser un valor', () => {
+    expect(
+      normalizeEntries(code, [
+        { sign: 'I', option: 'EQ', low: 'a-01*' },
+        { sign: 'I', option: 'NE', low: '*-04' },
+        { sign: 'I', option: 'CP', low: 'b-02' },
+      ]),
+    ).toEqual([
+      { sign: 'I', option: 'CP', low: 'A-01*' },
+      { sign: 'I', option: 'NP', low: '*-04' },
+      { sign: 'I', option: 'EQ', low: 'B-02' },
+    ]);
+  });
+
+  it('un rango no admite el comodín: error en el límite que lo tiene', () => {
+    const result = checkSelection(fields, { warehouse: 'CENTRAL', code: [{ sign: 'I', option: 'BT', low: 'A', high: 'B*' }] }, new Set());
+
+    expect(result).toEqual({ ok: false, error: { fieldId: 'code', target: 'high', code: 'patternInRange' } });
+  });
+
   it('desde y hasta escriben la entrada principal: valor, rango y vacío la quita', () => {
     const single = withMainEntry([], 'A', '');
     const range = withMainEntry(single, 'A', 'M');

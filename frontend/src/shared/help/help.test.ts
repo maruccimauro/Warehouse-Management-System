@@ -16,7 +16,7 @@ function element(html: string, selector: string): Element {
 
 describe('claves de ayuda', () => {
   it('arma las anclas de errores, estados y permisos según DM-11', () => {
-    expect(helpUrl('error.WAREHOUSE_INACTIVE')).toBe('/docs/referencia/errores#warehouse-inactive');
+    expect(helpUrl('message.WAREHOUSE_INACTIVE')).toBe('/docs/referencia/mensajes#warehouse-inactive');
     expect(helpUrl('state.location.blocked')).toBe('/docs/referencia/estados#location-blocked');
     expect(helpUrl('permission.warehouses.view_all')).toBe('/docs/referencia/permisos#warehouses-view-all');
     expect(helpUrl('home')).toBe('/docs/');
@@ -24,9 +24,9 @@ describe('claves de ayuda', () => {
 
   it('reconoce solo las claves declaradas', () => {
     expect(isHelpKey('field.SU3.lgn')).toBe(true);
-    expect(isHelpKey('error.UNKNOWN')).toBe(false);
+    expect(isHelpKey('message.UNKNOWN')).toBe(false);
     expect(isHelpKey('toString')).toBe(false);
-    expect(Object.keys(helpLinks)).not.toContain('error.REVERSAL_EXCEEDS_REMAINING');
+    expect(Object.keys(helpLinks)).not.toContain('message.REVERSAL_EXCEEDS_REMAINING');
   });
 });
 

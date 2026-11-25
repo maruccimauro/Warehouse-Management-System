@@ -11,7 +11,7 @@ Para trabajar en el WMS se necesita una cuenta de usuario, que crea el administr
 Si se intentó abrir una pantalla concreta antes de iniciar la sesión (por ejemplo, un enlace a `/t/SU3`), el sistema la abre después del ingreso; si no, muestra la pantalla principal.
 
 ::: info
-Por seguridad, el mensaje es el mismo cuando el correo no existe y cuando la contraseña es incorrecta ([`INVALID_CREDENTIALS`](/referencia/errores#invalid-credentials)).
+Por seguridad, el mensaje es el mismo cuando el correo no existe y cuando la contraseña es incorrecta ([`INVALID_CREDENTIALS`](/referencia/mensajes#invalid-credentials)).
 :::
 
 ### Demasiados intentos {#demasiados-intentos}
@@ -20,7 +20,7 @@ Después de varios intentos fallidos seguidos, el sistema deja de aceptar ingres
 
 ### Cuenta desactivada {#cuenta-desactivada}
 
-Una cuenta desactivada por el administrador no puede ingresar, aunque la contraseña sea correcta: el sistema lo informa con [`USER_INACTIVE`](/referencia/errores#user-inactive). Desactivar una cuenta también cierra sus sesiones abiertas.
+Una cuenta desactivada por el administrador no puede ingresar, aunque la contraseña sea correcta: el sistema lo informa con [`USER_INACTIVE`](/referencia/mensajes#user-inactive). Desactivar una cuenta también cierra sus sesiones abiertas.
 
 ## Cambio de contraseña obligatorio {#cambio-obligatorio}
 
@@ -40,4 +40,4 @@ La contraseña también se cambia en cualquier momento desde la transacción [SU
 
 El botón **Cerrar sesión** está en el encabezado, junto al nombre del usuario. Si la transacción abierta tiene datos sin grabar, el sistema pide confirmación antes de salir ([datos sin grabar](./pantalla-principal#datos-sin-grabar)).
 
-Una sesión que expiró se informa con [`UNAUTHENTICATED`](/referencia/errores#unauthenticated) y vuelve a la pantalla de ingreso.
+Una sesión que expiró se informa con [`UNAUTHENTICATED`](/referencia/mensajes#unauthenticated) y vuelve a la pantalla de ingreso.

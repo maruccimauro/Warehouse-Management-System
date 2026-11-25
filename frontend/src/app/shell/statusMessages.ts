@@ -30,7 +30,23 @@ export function useStatusBar(): StatusBarContextValue {
   return value;
 }
 
+// Error que ya trae su mensaje para la barra de estado: una pantalla lo lanza desde onSave
+// cuando un control propio impide grabar (por ejemplo, una plantilla que supera el límite).
+export class StatusMessageError extends Error {
+  readonly statusMessage: StatusMessage;
+
+  constructor(statusMessage: StatusMessage) {
+    super(statusMessage.text);
+    this.name = 'StatusMessageError';
+    this.statusMessage = statusMessage;
+  }
+}
+
 export function errorMessage(error: unknown, fallback: string): StatusMessage {
+  if (error instanceof StatusMessageError) {
+    return error.statusMessage;
+  }
+
   if (error instanceof ApiError) {
     return { type: 'E', text: problemMessage(error), id: error.code };
   }

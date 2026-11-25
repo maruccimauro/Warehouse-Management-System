@@ -114,7 +114,7 @@ describe('SelectionScreen (pantalla de selección)', () => {
     await execute();
 
     expect(onExecute).not.toHaveBeenCalled();
-    expect(onMessage).toHaveBeenLastCalledWith({ type: 'E', text: 'Completar todos los campos obligatorios.' });
+    expect(onMessage).toHaveBeenLastCalledWith({ type: 'E', text: 'Completar todos los campos obligatorios.', id: 'REQUIRED_FIELDS_MISSING' });
     expect(screen.getByRole('textbox', { name: 'Depósito' })).toHaveFocus();
   });
 
@@ -125,7 +125,7 @@ describe('SelectionScreen (pantalla de selección)', () => {
     await execute();
 
     expect(onExecute).not.toHaveBeenCalled();
-    expect(onMessage).toHaveBeenLastCalledWith({ type: 'E', text: 'Depósito: el valor no existe.' });
+    expect(onMessage).toHaveBeenLastCalledWith({ type: 'E', text: 'Depósito: el valor no existe.', id: 'VALUE_NOT_FOUND' });
   });
 
   it('desde y hasta arman un rango normalizado; los límites no usan la tabla de verificación', async () => {
@@ -174,6 +174,7 @@ describe('SelectionScreen (pantalla de selección)', () => {
     expect(onMessage).toHaveBeenLastCalledWith({
       type: 'E',
       text: 'Nivel: el límite inferior es mayor que el superior.',
+      id: 'RANGE_INVERTED',
     });
     expect(screen.getByRole('textbox', { name: 'Nivel hasta' })).toHaveFocus();
   });
@@ -251,7 +252,7 @@ describe('SelectionScreen (pantalla de selección)', () => {
     await userEvent.type(within(popup).getByRole('textbox', { name: 'Hasta 1' }), 'm');
     await userEvent.click(within(popup).getByRole('button', { name: 'Copiar (F8)' }));
 
-    expect(onMessage).toHaveBeenLastCalledWith({ type: 'E', text: 'Código: un rango necesita el valor desde.' });
+    expect(onMessage).toHaveBeenLastCalledWith({ type: 'E', text: 'Código: un rango necesita el valor desde.', id: 'RANGE_LOW_MISSING' });
     expect(dialog('Código')).toBeInTheDocument();
 
     await userEvent.click(within(popup).getByRole('button', { name: 'Cancelar' }));

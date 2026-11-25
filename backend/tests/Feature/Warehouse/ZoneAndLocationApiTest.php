@@ -150,17 +150,30 @@ describe('queries', function () {
             ->assertJsonValidationErrors(['filter.type.0'], 'errors');
     });
 
-    it('lists the locations of a warehouse filtered by zone and code fragment', function () {
+    it('lists the locations of a warehouse filtered by zone and a code pattern', function () {
         $this->actingAs($this->admin)->postJson("/api/v1/warehouses/{$this->central->id}/locations/bulk", gridPayload($this->storage))->assertCreated();
 
+        // El código es un criterio de selección: CP con * busca por patrón y sin
+        // distinguir mayúsculas, como el fragmento de la ayuda de búsqueda.
         $this->actingAs(userWithAccess(Role::Operator))
-            ->getJson("/api/v1/warehouses/{$this->central->id}/locations?filter[zone_id][]={$this->storage->id}&filter[code]=b-1&per_page=100")
+            ->getJson("/api/v1/warehouses/{$this->central->id}/locations?filter[zone_id][]={$this->storage->id}&filter[code][0][option]=CP&filter[code][0][low]=*b-1*&per_page=100")
             ->assertOk()
             ->assertJsonPath('meta.total', 4)
             ->assertJsonPath('data.0.code', 'B-10-01')
             ->assertJsonPath('data.0.aisle', 'B')
             ->assertJsonPath('data.0.rack', '10')
             ->assertJsonPath('data.0.status', 'active');
+    });
+
+    it('lists the locations of a warehouse in a code range', function () {
+        $this->actingAs($this->admin)->postJson("/api/v1/warehouses/{$this->central->id}/locations/bulk", gridPayload($this->storage))->assertCreated();
+
+        $this->actingAs(userWithAccess(Role::Operator))
+            ->getJson("/api/v1/warehouses/{$this->central->id}/locations?filter[code][0][option]=BT&filter[code][0][low]=A-01-01&filter[code][0][high]=A-01-99&per_page=100")
+            ->assertOk()
+            ->assertJsonPath('meta.total', 4)
+            ->assertJsonPath('data.0.code', 'A-01-01')
+            ->assertJsonPath('data.3.code', 'A-01-04');
     });
 
     it('shows a zone and a location of a visible warehouse', function () {

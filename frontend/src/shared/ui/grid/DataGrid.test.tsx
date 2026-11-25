@@ -444,6 +444,7 @@ describe('DataGrid en modo servidor', () => {
       expect(onMessage).toHaveBeenCalledWith({
         type: 'W',
         text: 'Se exportaron las primeras 5000 filas de 6000. Restrinja la selección para exportar el resto.',
+        id: 'GRID_EXPORT_TRUNCATED',
       });
     });
 

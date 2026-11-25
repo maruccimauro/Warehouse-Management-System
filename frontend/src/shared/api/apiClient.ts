@@ -10,7 +10,7 @@ const stateChangingMethods: ReadonlySet<HttpMethod> = new Set(['POST', 'PUT', 'P
 export interface RequestOptions {
   body?: unknown;
   idempotencyKey?: string;
-  signal?: AbortSignal;
+  signal?: AbortSignal | undefined;
 }
 
 export interface RequestOptionsWithSchema<S extends z.ZodType> extends RequestOptions {

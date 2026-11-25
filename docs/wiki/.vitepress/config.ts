@@ -20,6 +20,10 @@ export default defineConfig({
   // Los enlaces rotos hacen fallar el build: la ayuda F1 y los enlaces de la aplicación
   // apuntan a estas páginas.
   ignoreDeadLinks: false,
+  // Fragmentos que varias páginas incluyen con <!--@include: ...-->: una sola fuente para la
+  // ayuda de campos que comparten transacciones (los de la ficha de ubicación). No son
+  // páginas propias.
+  srcExclude: ['**/partes/**'],
   head: [['meta', { name: 'theme-color', content: '#1f4e79' }]],
   vite: {
     server: {
@@ -36,6 +40,8 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: 'Primeros pasos', link: '/primeros-pasos/ingreso' },
+      { text: 'Supervisor', link: '/supervisor/bloqueo-de-ubicaciones' },
+      { text: 'Administración', link: '/administracion/depositos' },
       { text: 'Referencia', link: '/referencia/transacciones' },
     ],
     sidebar: [
@@ -52,12 +58,28 @@ export default defineConfig({
         ],
       },
       {
+        text: 'Supervisor',
+        items: [{ text: 'Bloqueo de ubicaciones (ZW05)', link: '/supervisor/bloqueo-de-ubicaciones' }],
+      },
+      {
+        text: 'Administración',
+        items: [
+          { text: 'Depósitos (ZW01)', link: '/administracion/depositos' },
+          { text: 'Zonas (ZW02)', link: '/administracion/zonas' },
+          { text: 'Crear ubicación (LS01N)', link: '/administracion/crear-ubicacion' },
+          { text: 'Modificar ubicación (LS02N)', link: '/administracion/modificar-ubicacion' },
+          { text: 'Visualizar ubicación (LS03N)', link: '/administracion/visualizar-ubicacion' },
+          { text: 'Generar ubicaciones (LS10)', link: '/administracion/generar-ubicaciones' },
+          { text: 'Lista de ubicaciones (LX03)', link: '/administracion/lista-de-ubicaciones' },
+        ],
+      },
+      {
         text: 'Referencia',
         items: [
           { text: 'Transacciones', link: '/referencia/transacciones' },
           { text: 'Teclas', link: '/referencia/teclas' },
           { text: 'Estados', link: '/referencia/estados' },
-          { text: 'Errores', link: '/referencia/errores' },
+          { text: 'Mensajes', link: '/referencia/mensajes' },
           { text: 'Permisos y roles', link: '/referencia/permisos' },
         ],
       },

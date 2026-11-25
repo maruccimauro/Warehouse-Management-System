@@ -3,7 +3,7 @@ import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { SelectOption } from '@/shared/api/listing';
 import type { GridMessage } from '../grid/gridTypes';
-import { checkSelection, initialSelectionValues, type SelectionErrorCode } from './selection';
+import { checkSelection, initialSelectionValues, selectionMessageIds, type SelectionErrorCode } from './selection';
 import type { SelectionField, SelectionValues } from './selectionTypes';
 
 export interface SelectionScreenState {
@@ -66,7 +66,7 @@ export function useSelectionScreen(fields: readonly SelectionField[], initial?: 
     const { fieldId, target, code } = result.error;
     const field = fields.find((candidate) => candidate.id === fieldId);
 
-    onMessage({ type: 'E', text: selectionErrorText(t, code, field?.label ?? fieldId) });
+    onMessage({ type: 'E', text: selectionErrorText(t, code, field?.label ?? fieldId), id: selectionMessageIds[code] });
     document.getElementById(controlId(baseId, fieldId, target))?.focus();
 
     return undefined;

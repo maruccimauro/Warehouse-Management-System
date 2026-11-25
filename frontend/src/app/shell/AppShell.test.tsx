@@ -175,6 +175,13 @@ describe('armazón: árbol de transacciones', () => {
     favorites.focus();
     await userEvent.keyboard('{ArrowDown}');
 
+    const logistics = within(tree).getByRole('treeitem', { name: /^Logística/ });
+
+    expect(logistics).toHaveFocus();
+
+    // Plegada, la carpeta siguiente queda debajo.
+    await userEvent.keyboard('{ArrowLeft}{ArrowDown}');
+
     const system = within(tree).getByRole('treeitem', { name: /^Sistema/ });
 
     expect(system).toHaveFocus();
@@ -508,7 +515,7 @@ describe('armazón: ayuda F1', () => {
 
     const link = await statusBar().findByRole('link', { name: 'Ayuda sobre el mensaje INTERNAL_ERROR' });
 
-    expect(link).toHaveAttribute('href', '/docs/referencia/errores#internal-error');
+    expect(link).toHaveAttribute('href', '/docs/referencia/mensajes#internal-error');
     expect(link).toHaveAttribute('target', 'wms-help');
   });
 

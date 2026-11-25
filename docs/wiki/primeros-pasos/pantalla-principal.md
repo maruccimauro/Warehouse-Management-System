@@ -66,7 +66,7 @@ La barra inferior informa el resultado de cada acción con un mensaje de uno de 
 | E | Error: la acción no se realizó |
 | I | Información |
 
-Los errores muestran su código entre paréntesis, por ejemplo `(WAREHOUSE_INACTIVE)`. El código es un enlace a su explicación en la [referencia de errores](/referencia/errores).
+Los mensajes E y W muestran su código entre paréntesis, por ejemplo `(WAREHOUSE_INACTIVE)`. El código es un enlace a su explicación en la [referencia de mensajes](/referencia/mensajes).
 
 A la derecha, la barra muestra la transacción abierta, el **Depósito por defecto** (el parámetro [`LGN`](./parametros-de-usuario#lgn)), el usuario y el idioma.
 

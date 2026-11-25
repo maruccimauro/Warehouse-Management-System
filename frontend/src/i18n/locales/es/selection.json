@@ -8,7 +8,8 @@
     "invalid": "{{label}}: el valor no existe.",
     "integer": "{{label}}: ingresar un número entero.",
     "lowMissing": "{{label}}: un rango necesita el valor desde.",
-    "lowGreater": "{{label}}: el límite inferior es mayor que el superior."
+    "lowGreater": "{{label}}: el límite inferior es mayor que el superior.",
+    "patternInRange": "{{label}}: un rango no admite el comodín *. Use un valor individual con * o quite el comodín."
   },
   "dialog": {
     "title": "Selección múltiple: {{label}}",

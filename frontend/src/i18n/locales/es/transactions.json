@@ -1,8 +1,18 @@
 {
   "titles": {
-    "SU3": "Parámetros de usuario"
+    "SU3": "Parámetros de usuario",
+    "ZW01": "Depósitos",
+    "ZW02": "Zonas",
+    "LS01N": "Crear ubicación",
+    "LS02N": "Modificar ubicación",
+    "LS03N": "Visualizar ubicación",
+    "LS10": "Generar ubicaciones",
+    "LX03": "Lista de ubicaciones",
+    "ZW05": "Bloquear o desbloquear ubicación"
   },
   "folders": {
+    "logistics": "Logística",
+    "warehouseStructure": "Estructura del depósito",
     "system": "Sistema",
     "userData": "Datos de usuario"
   }

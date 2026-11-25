@@ -16,10 +16,11 @@ La wiki es el manual de usuario. La aplicación enlaza a ella con claves de ayud
 | Supervisor | `supervisor/` | Aprobaciones, reversiones, bloqueos e inventario físico |
 | Compras | `compras/` | Proveedores y órdenes de compra |
 | Administración | `administracion/` | Depósitos, zonas y ubicaciones, catálogo, usuarios y roles |
-| Referencia | `referencia/` | Transacciones, teclas, estados, movimientos, errores y permisos |
+| Referencia | `referencia/` | Transacciones, teclas, estados, movimientos, mensajes y permisos |
 
 - Una sección se publica (carpeta, `sidebar` y `nav` en `.vitepress/config.ts`) cuando tiene su primera página real. No hay páginas "en construcción".
 - Cada transacción tiene una página propia en la sección del puesto que la usa y una fila en `referencia/transacciones.md`.
+- Lo que comparten varias transacciones (los campos de la ficha de ubicación en crear, modificar y visualizar) se escribe una sola vez en un fragmento de `<sección>/partes/` y cada página lo incluye con `<!--@include: ./partes/archivo.md-->`. `partes/` está en `srcExclude`: no genera páginas propias. Las anclas del fragmento quedan en cada página que lo incluye, y `check:help-links` expande los `@include` al verificarlas.
 - Las rutas y los nombres de archivo van en español, en minúsculas y con guiones: `primeros-pasos/parametros-de-usuario.md`.
 
 ## 2. Anclas y claves de ayuda
@@ -31,7 +32,7 @@ Toda clave de ayuda lleva un ancla explícita con `{#...}`, que no cambia si cam
 | Transacción | Su página | (la página) | `primeros-pasos/parametros-de-usuario` |
 | Campo de una transacción | La página de la transacción | Nombre del campo en el formulario | `primeros-pasos/parametros-de-usuario#lgn` |
 | Estado | `referencia/estados` | `<objeto>-<estado>` en inglés, como en la API | `estados#location-blocked` |
-| Error | `referencia/errores` | `code` en minúsculas con guiones | `errores#warehouse-inactive` |
+| Mensaje (E o W, del servidor o de la pantalla) | `referencia/mensajes` | `code` en minúsculas con guiones | `mensajes#warehouse-inactive` |
 | Permiso | `referencia/permisos` | Nombre con guiones en lugar de puntos y guiones bajos | `permisos#warehouses-view-all` |
 | Movimiento (desde E3) | `referencia/movimientos` | `mov-<código>` | `movimientos#mov-101` |
 
@@ -53,7 +54,7 @@ Atajo o buena práctica.
 :::
 ```
 
-- Página de transacción: párrafo inicial con código, permiso y ruta en el menú (**Sistema ▸ Datos de usuario**); un `##` por bloque de la pantalla y un `###` con ancla por campo; mensajes y errores posibles con enlace a `referencia/errores`.
+- Página de transacción: párrafo inicial con código, permiso y ruta en el menú (**Sistema ▸ Datos de usuario**); un `##` por bloque de la pantalla y un `###` con ancla por campo; mensajes y errores posibles con enlace a `referencia/mensajes`. Todo aviso o error que la pantalla puede mostrar (límites, valores inexistentes, rangos) se explica en la página de la transacción y tiene su entrada con código en `referencia/mensajes`, para que el usuario sepa qué pasó, por qué y cómo seguir.
 - Página de referencia: tabla de cambios posibles al principio y un `###` con ancla por entrada, con **Qué hacer:** en los errores.
 
 ## 4. Estilo

@@ -1,6 +1,6 @@
 # Permisos y roles
 
-Un **permiso** habilita una acción concreta, por ejemplo bloquear ubicaciones. Los permisos no se asignan uno por uno: el administrador asigna **roles**, y cada rol reúne los permisos de un puesto de trabajo. El menú muestra solo las transacciones que los permisos del usuario habilitan, y el servidor vuelve a controlar cada operación ([`FORBIDDEN`](./errores#forbidden)).
+Un **permiso** habilita una acción concreta, por ejemplo bloquear ubicaciones. Los permisos no se asignan uno por uno: el administrador asigna **roles**, y cada rol reúne los permisos de un puesto de trabajo. El menú muestra solo las transacciones que los permisos del usuario habilitan, y el servidor vuelve a controlar cada operación ([`FORBIDDEN`](./mensajes#forbidden)).
 
 Esta página lista los permisos que usan las funciones disponibles hoy. Los de recepción, pedidos, picking, despacho e inventario físico se suman con esas funciones.
 

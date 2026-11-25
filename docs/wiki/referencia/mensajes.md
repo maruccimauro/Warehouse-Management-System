@@ -1,6 +1,8 @@
-# Errores
+# Mensajes
 
-Cuando una acción no se realiza, la barra de estado muestra un mensaje E con el código del error entre paréntesis, por ejemplo **El depósito está inactivo. (WAREHOUSE_INACTIVE)**. Esta página explica cada código: qué significa y qué hacer. Los códigos son estables: el texto del mensaje puede cambiar, el código no.
+La barra de estado informa el resultado de cada acción. Cuando una acción no se realiza (mensaje E) o se realiza con una observación (mensaje W), el mensaje lleva un código entre paréntesis, por ejemplo **El depósito está inactivo. (WAREHOUSE_INACTIVE)**. El código es un enlace a esta página, que explica qué significa cada uno y qué hacer. Los códigos son estables: el texto del mensaje puede cambiar, el código no.
+
+Algunos mensajes los emite el servidor al rechazar una operación; otros, la propia pantalla, antes de enviar nada, cuando lo ingresado no puede funcionar (por ejemplo, una plantilla que supera el límite de un lote).
 
 ## Sesión y acceso {#sesion-y-acceso}
 
@@ -101,6 +103,64 @@ El cambio dejaría el sistema sin ningún administrador activo, al quitar el rol
 Un usuario no puede desactivar su propia cuenta.
 
 **Qué hacer:** si la cuenta debe desactivarse, pídalo a otro administrador.
+
+## Mensajes de las pantallas {#mensajes-de-pantallas}
+
+La pantalla los emite al verificar lo ingresado, antes de consultar o grabar.
+
+### `REQUIRED_FIELDS_MISSING` {#required-fields-missing}
+
+Falta completar un campo obligatorio de una [pantalla de selección](/primeros-pasos/pantallas-de-seleccion). El foco va al campo.
+
+**Qué hacer:** complete el campo y vuelva a ejecutar.
+
+### `VALUE_NOT_FOUND` {#value-not-found}
+
+El valor escrito en un campo con [ayuda de búsqueda](/primeros-pasos/ayuda-de-busqueda#verificacion) no está entre los valores posibles: no existe o no está disponible para el usuario, por ejemplo un depósito no asignado o una zona de sistema donde solo se admiten zonas propias.
+
+**Qué hacer:** elija el valor con <kbd>F4</kbd> o corrija lo escrito.
+
+### `INTEGER_EXPECTED` {#integer-expected}
+
+Un criterio numérico de una pantalla de selección tiene un valor que no es un número entero.
+
+**Qué hacer:** escriba un número entero, sin decimales ni letras.
+
+### `RANGE_LOW_MISSING` {#range-low-missing}
+
+Un rango tiene el valor **hasta** pero no el **desde**.
+
+**Qué hacer:** complete el desde, o pase el valor al desde si busca un único valor.
+
+### `RANGE_INVERTED` {#range-inverted}
+
+En un rango numérico, el desde es mayor que el hasta.
+
+**Qué hacer:** intercambie los límites.
+
+### `PATTERN_IN_RANGE` {#pattern-in-range}
+
+Un rango tiene el comodín `*`. Los [patrones](/primeros-pasos/pantallas-de-seleccion#patrones) solo se admiten en valores individuales.
+
+**Qué hacer:** use un valor individual con `*`, por ejemplo `A-01*`, o quite el comodín del rango.
+
+### `GRID_EXPORT_TRUNCATED` {#grid-export-truncated}
+
+Mensaje W. La [exportación](/primeros-pasos/listas#exportar) de una lista paginada se detuvo en las primeras 5.000 filas: el archivo no tiene todo el resultado.
+
+**Qué hacer:** restrinja la selección o los filtros y exporte por partes.
+
+### `LOCATION_NOT_FOUND` {#location-not-found}
+
+La ubicación indicada no existe en el depósito. La ficha no se abre.
+
+**Qué hacer:** verifique el depósito y el código, o busque la ubicación con <kbd>F4</kbd>.
+
+### `LOCATION_BATCH_TOO_LARGE` {#location-batch-too-large}
+
+La plantilla de [Generar ubicaciones](/administracion/generar-ubicaciones#limite) crea más ubicaciones que el máximo por lote (2.000). El mensaje indica la cantidad calculada y el máximo; no se crea ninguna ubicación.
+
+**Qué hacer:** divida la estructura en varios lotes, por ejemplo uno por grupo de pasillos.
 
 ## Errores técnicos {#errores-tecnicos}
 

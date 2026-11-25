@@ -21,8 +21,8 @@ features:
     details: F3 vuelve atrás, F4 busca valores, F8 ejecuta y Ctrl+S graba. Todo se opera sin mouse.
     link: /referencia/teclas
   - title: Mensajes con código
-    details: La barra de estado informa el resultado de cada acción con su tipo y su código, que se explica en la referencia de errores.
-    link: /referencia/errores
+    details: La barra de estado informa el resultado de cada acción con su tipo y su código, que se explica en la referencia de mensajes.
+    link: /referencia/mensajes
 ---
 
 ## Ideas clave
@@ -33,4 +33,4 @@ features:
 
 **El menú muestra lo que el usuario puede hacer.** Las transacciones aparecen según los permisos de los roles asignados; la [referencia de permisos](/referencia/permisos) explica qué habilita cada uno.
 
-**La barra de estado informa el resultado.** Cada acción termina con un mensaje de éxito (S), advertencia (W), error (E) o información (I). Los errores muestran su código entre paréntesis, que se busca en la [referencia de errores](/referencia/errores).
+**La barra de estado informa el resultado.** Cada acción termina con un mensaje de éxito (S), advertencia (W), error (E) o información (I). Los errores muestran su código entre paréntesis, que se busca en la [referencia de mensajes](/referencia/mensajes).

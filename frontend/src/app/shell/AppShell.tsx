@@ -69,6 +69,7 @@ function ShellLayout() {
   const { t, i18n } = useTranslation(['shell', 'transactions', 'common']);
   const navigate = useNavigate();
   const { available, run } = useShellActions();
+  const { confirmDiscard } = useUnsavedChangesContext();
   const { preferences } = useUserPreferences();
   const { allowed } = useTransactionAccess();
   const toggleFavorite = useFavoriteToggle();
@@ -85,10 +86,19 @@ function ShellLayout() {
   const title = transaction === undefined ? t('menuTitle') : t(transaction.titleKey, { ns: 'transactions' });
   const inTransaction = transaction !== undefined;
 
+  // F3: el Atrás propio de la transacción (de la ficha a la lista o a la pantalla inicial)
+  // descarta lo editado igual que salir, así que también pide confirmación con cambios sin
+  // grabar. Sin Atrás propio, vuelve al menú y el bloqueo de navegación pregunta.
   const back = () => {
-    if (!run('back')) {
-      void navigate('/');
+    if (available.back) {
+      confirmDiscard(() => {
+        run('back');
+      });
+
+      return;
     }
+
+    void navigate('/');
   };
 
   const exit = () => {

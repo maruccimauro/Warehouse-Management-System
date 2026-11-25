@@ -16,7 +16,8 @@ export interface ListSort {
 // (FilterMode::Selection del backend). I incluye y E excluye; BT y NB llevan high. Las entradas
 // I se combinan con O y las E se restan del resultado.
 export type SelectionSign = 'I' | 'E';
-export type SelectionOptionCode = 'EQ' | 'NE' | 'GT' | 'GE' | 'LT' | 'LE' | 'BT' | 'NB';
+// CP y NP comparan con un patrón en el que * es cualquier texto (solo en criterios de texto).
+export type SelectionOptionCode = 'EQ' | 'NE' | 'GT' | 'GE' | 'LT' | 'LE' | 'BT' | 'NB' | 'CP' | 'NP';
 
 export interface SelectOption {
   sign: SelectionSign;

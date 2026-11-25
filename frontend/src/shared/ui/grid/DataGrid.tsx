@@ -151,6 +151,16 @@ export function DataGrid<TData extends RowData>({
   const [subtotal, setSubtotal] = useState<string>();
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
+  // Otra consulta (las restricciones de un F4, la zona elegida en un árbol) vuelve a la primera
+  // página: la página 3 del resultado anterior puede no existir en el nuevo.
+  const sourceKey = server ? JSON.stringify(source.queryKey) : '';
+  const [pagedKey, setPagedKey] = useState(sourceKey);
+
+  if (pagedKey !== sourceKey) {
+    setPagedKey(sourceKey);
+    setPage(1);
+    setSelected(new Set());
+  }
   const [filterTarget, setFilterTarget] = useState<GridFilterTarget<TData> | null>(null);
   const [layoutOpen, setLayoutOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -394,7 +404,7 @@ export function DataGrid<TData extends RowData>({
       downloadCsv(csvFileName(exportName), toCsv(visible, rows));
       onMessage(
         rows.length < total
-          ? { type: 'W', text: t('messages.exportTruncated', { count: maxExportRows, total }) }
+          ? { type: 'W', text: t('messages.exportTruncated', { count: maxExportRows, total }), id: 'GRID_EXPORT_TRUNCATED' }
           : { type: 'S', text: t('messages.exported', { count: rows.length }) },
       );
     } catch (error) {

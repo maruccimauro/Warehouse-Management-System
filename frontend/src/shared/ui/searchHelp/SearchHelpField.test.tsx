@@ -179,7 +179,7 @@ describe('SearchHelpField (F4)', () => {
 
     expect(field).toHaveValue('OES');
     expect(field).toHaveAttribute('aria-invalid', 'true');
-    expect(onMessage).toHaveBeenCalledExactlyOnceWith({ type: 'E', text: 'El depósito OES no existe.' });
+    expect(onMessage).toHaveBeenCalledExactlyOnceWith({ type: 'E', text: 'El depósito OES no existe.', id: 'VALUE_NOT_FOUND' });
 
     // Volver a salir del campo sin cambios no repite el mensaje.
     field.focus();
