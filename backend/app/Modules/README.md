@@ -72,6 +72,8 @@ Reproducen el DDL de `docs/03-architecture/database-design.md`.
 
 `tests/Feature/Http/ListingConventionsTest.php` prueba el contrato de listados y `tests/Feature/Database/UniqueConstraintTranslationTest.php` provoca cada restricción única registrada contra el esquema real.
 
+`tests/Feature/Http/WriteAuthorizationMatrixTest.php` cruza cada endpoint de escritura con cada rol y un usuario sin rol: 403 `FORBIDDEN` sin el permiso, una respuesta que no es de autorización con él, y 401 sin sesión. Un endpoint de escritura nuevo se declara en `writeEndpointPermissions()` con su permiso en el mismo commit; si falta, la prueba de cobertura falla. El alcance por depósito (404 y 403) se prueba en cada módulo.
+
 ## Documentación OpenAPI
 
 La especificación se genera desde el código con Scramble (ADR-012) y se versiona en `docs/03-architecture/openapi.json`. Al agregar o cambiar un endpoint:
