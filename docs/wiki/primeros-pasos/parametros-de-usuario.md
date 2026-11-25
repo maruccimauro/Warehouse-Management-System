@@ -6,7 +6,7 @@ Los cambios de idioma y de parámetros se aplican al grabar con <kbd>Ctrl</kbd>+
 
 ## Datos del usuario {#datos-del-usuario}
 
-Muestra el **Nombre** y el **Correo electrónico** de la cuenta, de solo lectura. Los modifica el administrador.
+Muestra el **Usuario** (el código de la cuenta), el **Nombre** y el **Correo electrónico**, de solo lectura. Los modifica el administrador en [Modificar usuario](/administracion/modificar-usuario).
 
 ## Valores fijos {#valores-fijos}
 

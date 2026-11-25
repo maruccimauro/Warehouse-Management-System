@@ -8,6 +8,7 @@ import esHome from './locales/es/home.json';
 import esLocations from './locales/es/locations.json';
 import esNotFound from './locales/es/notFound.json';
 import esProducts from './locales/es/products.json';
+import esRoles from './locales/es/roles.json';
 import esSearchHelp from './locales/es/searchHelp.json';
 import esSelection from './locales/es/selection.json';
 import esShell from './locales/es/shell.json';
@@ -15,6 +16,7 @@ import esSu3 from './locales/es/su3.json';
 import esSuppliers from './locales/es/suppliers.json';
 import esTransactions from './locales/es/transactions.json';
 import esUnits from './locales/es/units.json';
+import esUsers from './locales/es/users.json';
 import esWarehouses from './locales/es/warehouses.json';
 import esZones from './locales/es/zones.json';
 
@@ -32,6 +34,7 @@ export const resources = {
     locations: esLocations,
     notFound: esNotFound,
     products: esProducts,
+    roles: esRoles,
     searchHelp: esSearchHelp,
     selection: esSelection,
     shell: esShell,
@@ -39,6 +42,7 @@ export const resources = {
     suppliers: esSuppliers,
     transactions: esTransactions,
     units: esUnits,
+    users: esUsers,
     warehouses: esWarehouses,
     zones: esZones,
   },

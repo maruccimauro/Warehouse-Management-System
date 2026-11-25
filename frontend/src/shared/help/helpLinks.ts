@@ -47,6 +47,12 @@ const zw08Page = 'administracion/unidades-de-medida';
 const zw81Page = 'administracion/crear-unidad-de-medida';
 const zw82Page = 'administracion/modificar-unidad-de-medida';
 const zw83Page = 'administracion/visualizar-unidad-de-medida';
+const su01Page = 'administracion/usuarios';
+const zw91Page = 'administracion/crear-usuario';
+const zw92Page = 'administracion/modificar-usuario';
+const zw93Page = 'administracion/visualizar-usuario';
+const suimPage = 'administracion/lista-de-usuarios';
+const pfcgPage = 'administracion/visualizar-rol';
 
 // Campos de la ficha de ubicación: la misma ayuda en crear, modificar y visualizar (la wiki la
 // incluye desde un solo archivo en las tres páginas, D6 de E2.12).
@@ -70,6 +76,8 @@ const productFields = [
   'minStock',
 ] as const;
 const supplierFields = ['number', 'taxId', 'name', 'status', 'email', 'phone'] as const;
+// Campos de la ficha de usuario (E2.14), incluidos desde un fragmento en SU01 y ZW91 a ZW93.
+const userFields = ['username', 'name', 'email', 'status', 'passwordStatus', 'password', 'passwordRepeat', 'roles', 'warehouses'] as const;
 
 function fieldLinks<const Code extends string, const Field extends string>(code: Code, page: string, fields: readonly Field[]) {
   return Object.fromEntries(fields.map((field) => [`field.${code}.${field}`, `${page}#${anchor(field)}`])) as Record<
@@ -124,6 +132,8 @@ const documentedMessageCodes = [
   'SUPPLIER_NOT_FOUND',
   'SUPPLIER_PRODUCT_NOT_FOUND',
   'WAREHOUSE_SETTING_NOT_SAVED',
+  'USER_NOT_FOUND',
+  'PASSWORD_MISMATCH',
 ] as const;
 
 const documentedStates = {
@@ -142,6 +152,7 @@ const documentedPermissions = [
   'locations.block',
   'catalog.manage',
   'suppliers.manage',
+  'users.view',
   'users.manage',
 ] as const;
 
@@ -199,6 +210,12 @@ const fixedLinks = {
   'transaction.ZW81': zw81Page,
   'transaction.ZW82': zw82Page,
   'transaction.ZW83': zw83Page,
+  'transaction.SU01': su01Page,
+  'transaction.ZW91': zw91Page,
+  'transaction.ZW92': zw92Page,
+  'transaction.ZW93': zw93Page,
+  'transaction.SUIM': suimPage,
+  'transaction.PFCG': pfcgPage,
   ...fieldLinks('ZW01', zw01Page, ['code', 'name', 'address']),
   ...fieldLinks('ZW02', zw02Page, ['warehouse', 'code', 'name', 'type']),
   ...fieldLinks('LS01N', ls01nPage, locationFields),
@@ -244,6 +261,12 @@ const fixedLinks = {
   ...fieldLinks('ZW81', zw81Page, ['code', 'name']),
   ...fieldLinks('ZW82', zw82Page, ['unit', 'code', 'name']),
   ...fieldLinks('ZW83', zw83Page, ['unit', 'code', 'name']),
+  ...fieldLinks('SU01', su01Page, ['user', ...userFields]),
+  ...fieldLinks('ZW91', zw91Page, userFields),
+  ...fieldLinks('ZW92', zw92Page, ['user', ...userFields]),
+  ...fieldLinks('ZW93', zw93Page, ['user', ...userFields]),
+  ...fieldLinks('SUIM', suimPage, ['username', 'name', 'role', 'warehouse', 'status']),
+  ...fieldLinks('PFCG', pfcgPage, ['role']),
 } as const;
 
 export type HelpKey =

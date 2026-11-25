@@ -24,6 +24,7 @@ enum Permission: string
     case LocationsBlock = 'locations.block';
     case CatalogManage = 'catalog.manage';
     case SuppliersManage = 'suppliers.manage';
+    case UsersView = 'users.view';
     case UsersManage = 'users.manage';
 
     // Inventario (E3).

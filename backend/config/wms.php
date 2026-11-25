@@ -10,6 +10,7 @@
 
 return [
     'dev_admin' => [
+        'username' => env('WMS_DEV_ADMIN_USERNAME', 'ADMIN'),
         'name' => env('WMS_DEV_ADMIN_NAME', 'Administrador de desarrollo'),
         'email' => env('WMS_DEV_ADMIN_EMAIL', 'admin@wms.test'),
         'password' => env('WMS_DEV_ADMIN_PASSWORD', 'admin-dev-1'),

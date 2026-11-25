@@ -36,6 +36,7 @@ export function problemResponse(
 export function testUser(overrides: Partial<AuthenticatedUser> = {}): AuthenticatedUser {
   return {
     id: 1,
+    username: 'OPERADOR',
     name: 'Operador de Prueba',
     email: 'operador@wms.test',
     locale: 'es',

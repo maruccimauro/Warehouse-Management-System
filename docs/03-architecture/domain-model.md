@@ -352,7 +352,7 @@ Un proveedor inactivo no admite órdenes de compra nuevas (REG-018, 422 `SUPPLIE
 
 | Desde | Hacia | Disparador | Permiso | Condiciones y reglas |
 | - | - | - | - | - |
-| (nuevo) | activo, con contraseña inicial | `POST /users` | `users.manage` | Roles y depósitos en la misma transacción, solo roles cuyos permisos tiene quien opera (REG-023). Auditado (`user.created`) |
+| (nuevo) | activo, con contraseña inicial | `POST /users` | `users.manage` | Con código de usuario único que no cambia después (E2.14). Roles y depósitos en la misma transacción, solo roles cuyos permisos tiene quien opera (REG-023). Auditado (`user.created`) |
 | activo | inactivo | `PATCH /users/{id}` con `is_active: false` | `users.manage` | No sobre uno mismo (422 `SELF_DEACTIVATION_NOT_ALLOWED`) ni sobre el último administrador activo (409 `LAST_ADMINISTRATOR`, REG-022). Cierra sus sesiones (REG-020). Auditado (`user.deactivated`) |
 | inactivo | activo | `PATCH /users/{id}` con `is_active: true` | `users.manage` | Sin condiciones. Auditado (`user.activated`) |
 | contraseña vigente | contraseña inicial | `PATCH /users/{id}` con `password` | `users.manage` | Cierra sus sesiones. Auditado sin el valor (`user.password_reset`) |
@@ -404,7 +404,7 @@ Ejemplo: una recepción con 101 × 50 de un producto admite un 102 × 10 sobre e
 
 ## Catálogo de permisos
 
-Permisos que exigen las transiciones de este documento y la administración de datos maestros, con nomenclatura `modulo.accion`. El código los define en `App\Modules\Identity\Authorization\Permission` y el comando `wms:sync-authorization` los lleva a la base en cada entorno (E2.07); un permiso nuevo se agrega en los dos lugares en el mismo cambio. Las consultas de datos maestros no exigen permiso propio: alcanza con la sesión y el alcance de consulta por depósito (REG-005), salvo usuarios y roles, que exigen `users.manage`. Toda operación sobre un recurso de un depósito exige el permiso de la acción y que el depósito esté asignado al usuario, o `warehouses.operate_all`.
+Permisos que exigen las transiciones de este documento y la administración de datos maestros, con nomenclatura `modulo.accion`. El código los define en `App\Modules\Identity\Authorization\Permission` y el comando `wms:sync-authorization` los lleva a la base en cada entorno (E2.07); un permiso nuevo se agrega en los dos lugares en el mismo cambio. Las consultas de datos maestros no exigen permiso propio: alcanza con la sesión y el alcance de consulta por depósito (REG-005), salvo usuarios y roles, que exigen `users.view` para consultar y `users.manage` para administrar. Toda operación sobre un recurso de un depósito exige el permiso de la acción y que el depósito esté asignado al usuario, o `warehouses.operate_all`.
 
 | Permiso | Alcance |
 | - | - |
@@ -446,7 +446,8 @@ Permisos que exigen las transiciones de este documento y la administración de d
 | `stocktake.count` | Registrar conteos y reconteos |
 | `stocktake.approve` | Aprobar inventarios físicos (INV-010) |
 | `stocktake.reverse` | Revertir inventarios físicos aprobados |
-| `users.manage` | Usuarios, roles y asignación de depósitos, y consulta de los roles con sus permisos. Solo sobre usuarios y roles cuyos permisos tiene quien opera (REG-023) |
+| `users.view` | Consulta de usuarios, de sus roles y depósitos, y de los roles con sus permisos (E2.14). Equivale en SAP a la actividad 03 de `S_USER_GRP` |
+| `users.manage` | Usuarios, roles y asignación de depósitos, incluida su consulta. Solo sobre usuarios y roles cuyos permisos tiene quien opera (REG-023) |
 | `audit.view` | Consulta de auditoría |
 
 ### Roles
@@ -459,7 +460,7 @@ Los roles son datos del sistema con identificador estable; la interfaz traduce s
 | Supervisor | `supervisor` | `warehouses.view_all`, `locations.block`, todos los de `inventory`, `procurement.approve`, `procurement.cancel`, `procurement.close`, todos los de `receiving`, `putaway`, `orders`, `picking`, `packing` y `dispatch`, `stocktake.manage`, `stocktake.approve`, `stocktake.reverse` y `audit.view` |
 | Operador | `operator` | `warehouses.view_all`, `inventory.transfer`, `receiving.create`, `receiving.confirm`, `putaway.execute`, `putaway.reverse`, `picking.execute`, `packing.execute`, `dispatch.execute` y `stocktake.count` |
 | Compras | `purchasing` | `warehouses.view_all`, `suppliers.manage`, `procurement.create` y `procurement.cancel` |
-| Auditor | `auditor` | `warehouses.view_all` y `audit.view` |
+| Auditor | `auditor` | `warehouses.view_all`, `users.view` y `audit.view` |
 
 ## Decisiones de modelado
 

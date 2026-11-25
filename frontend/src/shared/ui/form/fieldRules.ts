@@ -16,7 +16,11 @@ type RuleKey =
   | 'gridNumber'
   | 'email'
   | 'printable'
-  | 'taxId';
+  | 'taxId'
+  | 'username'
+  | 'requiredEmail'
+  | 'passwordMin'
+  | 'passwordMismatch';
 
 const message = (key: RuleKey, options?: Record<string, unknown>) => () => i18n.t(`rules.${key}`, { ns: 'form', ...options });
 
@@ -67,6 +71,26 @@ export const gridNumberRule = (max: number) =>
 // Email opcional.
 export const optionalEmail = (max: number) =>
   textRule(max).refine((text) => text === '' || z.email().safeParse(text).success, { error: message('email') });
+
+// Email obligatorio (el de ingreso de un usuario).
+export const requiredEmail = (max: number) =>
+  requiredText(max).refine((text) => z.email().safeParse(text).success, { error: message('requiredEmail') });
+
+// Código de usuario (E2.14, D1): letras y dígitos, hasta 12, comparado en mayúsculas
+// (users_username_format_check del backend).
+export const usernameRule = () =>
+  required().refine((text) => /^[A-Z0-9]{1,12}$/.test(text.trim().toUpperCase()), { error: message('username') });
+
+// Contraseña inicial: el largo de Password::defaults() del backend. Sin trim: los espacios
+// cuentan.
+export const passwordRule = (min: number, max: number) =>
+  z
+    .string()
+    .min(1, { error: message('required') })
+    .min(min, { error: message('passwordMin', { min }) })
+    .max(max, { error: message('maxLength', { max }) });
+
+export const passwordMismatchMessage = () => i18n.t('rules.passwordMismatch', { ns: 'form' });
 
 // Código de barras opcional: caracteres imprimibles sin espacios (Barcode del backend). El
 // dígito verificador de un GTIN lo controla el servidor.

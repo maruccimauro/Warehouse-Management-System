@@ -78,7 +78,7 @@ No admite órdenes de compra nuevas y deja terminar las abiertas. Admite el mant
 
 ## Usuario {#user}
 
-El administrador activa y desactiva usuarios con [`users.manage`](./permisos#users-manage). Un usuario no se borra, no puede desactivarse a sí mismo y siempre queda al menos un administrador activo.
+El administrador activa y desactiva usuarios con [`users.manage`](./permisos#users-manage), en [Modificar usuario](/administracion/modificar-usuario). Un usuario no se borra, no puede desactivarse a sí mismo y siempre queda al menos un administrador activo.
 
 ### Activo {#user-active}
 

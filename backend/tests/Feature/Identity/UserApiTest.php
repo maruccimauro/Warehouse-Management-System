@@ -41,6 +41,7 @@ beforeEach(function () {
 function userPayload(array $overrides = []): array
 {
     return [
+        'username' => 'AOPERARIA',
         'name' => 'Ana Operaria',
         'email' => 'ana@wms.test',
         'password' => 'clave-inicial-segura',
@@ -57,7 +58,12 @@ function userPayload(array $overrides = []): array
 function managedUser(array $roles = [Role::Operator], array $warehouses = [], string $email = 'gestionado@wms.test'): User
 {
     return app(CreateUser::class)(
-        ['name' => 'Usuario Gestionado', 'email' => $email, 'password' => 'clave-inicial-segura'],
+        [
+            'username' => mb_strtoupper(strstr($email, '@', true) ?: $email),
+            'name' => 'Usuario Gestionado',
+            'email' => $email,
+            'password' => 'clave-inicial-segura',
+        ],
         $roles,
         array_map(fn (Warehouse $warehouse): int => $warehouse->id, $warehouses),
     );
@@ -92,11 +98,13 @@ describe('creation', function () {
     it('creates an active user with roles, warehouses and an initial password to change', function () {
         $response = $this->actingAs($this->admin)
             ->postJson('/api/v1/users', userPayload([
+                'username' => ' aoperaria ',
                 'email' => ' Ana@WMS.test ',
                 'roles' => [Role::Supervisor->value, Role::Operator->value],
                 'warehouse_ids' => [$this->north->id, $this->central->id],
             ]))
             ->assertCreated()
+            ->assertJsonPath('data.username', 'AOPERARIA')
             ->assertJsonPath('data.email', 'ana@wms.test')
             ->assertJsonPath('data.locale', 'es')
             ->assertJsonPath('data.is_active', true)
@@ -112,6 +120,7 @@ describe('creation', function () {
         expect($this->audit->records)->toHaveCount(1)
             ->and($this->audit->records[0]['action'])->toBe('user.created')
             ->and($this->audit->records[0]['after'])->toBe([
+                'username' => 'AOPERARIA',
                 'email' => 'ana@wms.test',
                 'roles' => ['operator', 'supervisor'],
                 'warehouse_ids' => [$this->central->id, $this->north->id],
@@ -144,7 +153,19 @@ describe('creation', function () {
         'idioma no admitido' => [['locale' => 'fr'], 'locale'],
         'estado en el alta' => [['is_active' => false], 'is_active'],
         'sin roles' => [['roles' => null], 'roles'],
+        'sin código de usuario' => [['username' => null], 'username'],
+        'código de usuario largo' => [['username' => 'ABCDEFGHIJKLM'], 'username'],
+        'código de usuario con símbolos' => [['username' => 'J.PEREZ'], 'username'],
     ]);
+
+    it('rejects a duplicated username regardless of case', function () {
+        managedUser(email: 'ana@wms.test');
+
+        $this->actingAs($this->admin)
+            ->postJson('/api/v1/users', userPayload(['username' => 'ana', 'email' => 'otra@wms.test']))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['username'], 'errors');
+    });
 
     it('rejects a duplicated email regardless of case', function () {
         managedUser(email: 'ana@wms.test');
@@ -184,6 +205,8 @@ describe('listing and detail', function () {
     })->with([
         'por email' => ['filter[email]=CARLA', ['carla@wms.test']],
         'inactivos' => ['filter[is_active]=0', ['carla@wms.test']],
+        'por nombre con patrón' => ['filter[name][0][sign]=I&filter[name][0][option]=CP&filter[name][0][low]=*gestionado*', ['beto@wms.test', 'carla@wms.test']],
+        'por código de usuario' => ['filter[username][0][sign]=I&filter[username][0][option]=EQ&filter[username][0][low]=BETO', ['beto@wms.test']],
         'por rol' => ['filter[role]=operator', ['beto@wms.test']],
     ]);
 
@@ -217,7 +240,7 @@ describe('listing and detail', function () {
         $roles = collect($response->json('data'))->keyBy('name');
 
         expect($roles->keys()->all())->toBe(array_map(fn (Role $role): string => $role->value, Role::cases()))
-            ->and($roles['auditor']['permissions'])->toBe(['audit.view', 'warehouses.view_all']);
+            ->and($roles['auditor']['permissions'])->toBe(['audit.view', 'users.view', 'warehouses.view_all']);
     });
 });
 
@@ -326,6 +349,15 @@ describe('update', function () {
             ->patchJson("/api/v1/users/{$user->id}", ['email' => 'ocupado@wms.test'])
             ->assertStatus(422)
             ->assertJsonValidationErrors(['email'], 'errors');
+    });
+
+    it('does not change the username after creation', function () {
+        $user = managedUser();
+
+        $this->actingAs($this->admin)
+            ->patchJson("/api/v1/users/{$user->id}", ['username' => 'OTRO'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['username'], 'errors');
     });
 
     it('responds 404 for a non numeric id', function () {
@@ -444,7 +476,8 @@ describe('privilege escalation (REG-023)', function () {
     });
 
     it('only assigns roles whose permissions the acting user holds', function () {
-        $manager = userManager(Role::Supervisor);
+        // users.view es del Auditor: sin él, quien opera no podría asignar ese rol.
+        $manager = userManager(Role::Supervisor, [Permission::UsersView]);
 
         $this->actingAs($manager)
             ->postJson('/api/v1/users', userPayload(['roles' => [Role::Administrator->value]]))
@@ -458,7 +491,7 @@ describe('privilege escalation (REG-023)', function () {
     it('only removes roles whose permissions the acting user holds', function () {
         $buyer = managedUser([Role::Purchasing, Role::Auditor]);
 
-        $this->actingAs(userManager(Role::Supervisor))
+        $this->actingAs(userManager(Role::Supervisor, [Permission::UsersView]))
             ->patchJson("/api/v1/users/{$buyer->id}", ['roles' => [Role::Auditor->value]])
             ->assertForbidden();
     });
@@ -473,7 +506,22 @@ describe('privilege escalation (REG-023)', function () {
 });
 
 describe('authorization', function () {
-    it('requires users.manage on every endpoint', function (string $method, string $uri) {
+    it('lets users.view consult users and roles but not change them', function (string $method, string $uri, int $status) {
+        $target = managedUser();
+        $uri = str_replace('{id}', (string) $target->id, $uri);
+
+        $this->actingAs(userWithAccess(Role::Auditor))
+            ->json($method, $uri, $method === 'GET' ? [] : userPayload(['email' => 'nuevo@wms.test', 'username' => 'NUEVO']))
+            ->assertStatus($status);
+    })->with([
+        'listado' => ['GET', '/api/v1/users', 200],
+        'detalle' => ['GET', '/api/v1/users/{id}', 200],
+        'roles' => ['GET', '/api/v1/roles', 200],
+        'alta' => ['POST', '/api/v1/users', 403],
+        'edición' => ['PATCH', '/api/v1/users/{id}', 403],
+    ]);
+
+    it('requires users.view or users.manage on every endpoint', function (string $method, string $uri) {
         $target = managedUser();
         $uri = str_replace('{id}', (string) $target->id, $uri);
 

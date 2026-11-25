@@ -17,9 +17,9 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Usuarios (transacción SU01) con users.manage: consulta, alta, edición,
- * activación, roles, depósitos y reseteo de contraseña. No se borran: los
- * documentos los referencian.
+ * Usuarios (SU01, ZW91 a ZW93 y SUIM): consulta con users.view; alta, edición,
+ * activación, roles, depósitos y reseteo de contraseña con users.manage. No
+ * se borran: los documentos los referencian.
  */
 final class UserController
 {
@@ -32,8 +32,8 @@ final class UserController
 
     public function store(StoreUserRequest $request, CreateUser $createUser): JsonResponse
     {
-        /** @var array{name: string, email: string, password: string, locale?: string} $attributes */
-        $attributes = $request->safe()->only([...self::ATTRIBUTES, 'password']);
+        /** @var array{username: string, name: string, email: string, password: string, locale?: string} $attributes */
+        $attributes = $request->safe()->only(['username', ...self::ATTRIBUTES, 'password']);
 
         $user = $createUser($attributes, $request->roles() ?? [], $request->warehouseIds() ?? []);
 

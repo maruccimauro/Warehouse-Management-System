@@ -11,6 +11,8 @@ export const warehouseSummarySchema = z.object({
 
 export const authenticatedUserSchema = z.object({
   id: z.number().int(),
+  // Código de usuario (E2.14): el identificador que muestran SU3 y los documentos.
+  username: z.string(),
   name: z.string(),
   email: z.string(),
   // Preferencias guardadas en users (E2.21). locale puede ser un idioma que el backend

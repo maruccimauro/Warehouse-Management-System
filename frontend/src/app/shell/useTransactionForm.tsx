@@ -42,6 +42,9 @@ export interface TransactionFieldControlProps {
   'aria-describedby'?: string | undefined;
   'aria-labelledby'?: string | undefined;
   'aria-invalid'?: boolean | undefined;
+  // id de la etiqueta del campo: un control de grupo (casillas) se nombra con ella, porque
+  // <label for> no nombra a un elemento que no es un control.
+  labelId?: string | undefined;
 }
 
 export interface TransactionFieldOption {
@@ -104,6 +107,9 @@ export interface TransactionForm<TValues> {
   Field: ComponentType<TransactionFieldProps<TransactionFieldName<TValues>>>;
   // Valores en edición, para condiciones y descripciones de la pantalla.
   values: TValues;
+  // Cambia un valor desde fuera de un campo (un diálogo de la pantalla), como un cambio del
+  // usuario: cuenta para los cambios sin grabar y se valida.
+  setValue: (name: TransactionFieldName<TValues>, value: string) => void;
   save: () => Promise<void>;
 }
 
@@ -326,6 +332,7 @@ export function useTransactionForm<TSchema extends FormSchema>(
                   onChange={change}
                   onBlur={field.handleBlur}
                   onMessage={showMessage}
+                  labelId={`${id}-label`}
                 />
               );
             } else if (choices !== undefined) {
@@ -391,6 +398,7 @@ export function useTransactionForm<TSchema extends FormSchema>(
             return (
               <FormFieldLayout
                 htmlFor={id}
+                labelId={`${id}-label`}
                 label={label}
                 required={required}
                 description={description}
@@ -417,6 +425,11 @@ export function useTransactionForm<TSchema extends FormSchema>(
     Section: components.Section,
     Field: components.Field as ComponentType<TransactionFieldProps<TransactionFieldName<z.input<TSchema>>>>,
     values,
+    setValue: (name, value) => {
+      // Adentro el formulario es un registro de valores; el nombre tipado se controla en la firma.
+      const field: string = name;
+      form.setFieldValue(field, value);
+    },
     save,
   };
 }

@@ -12,7 +12,7 @@ Esta página lista los permisos que usan las funciones disponibles hoy. Los de r
 | Supervisor | Supervisa la operación del depósito: aprueba, revierte y bloquea |
 | Operador | Ejecuta las tareas del depósito |
 | Compras | Gestiona proveedores y órdenes de compra |
-| Auditor | Consulta la información y la auditoría |
+| Auditor | Consulta la información, los usuarios, los roles y la auditoría |
 
 ## Depósitos {#depositos}
 
@@ -54,8 +54,12 @@ Crear, modificar, activar y desactivar proveedores, y vincularlos con los artíc
 
 ## Usuarios {#usuarios}
 
+### `users.view` {#users-view}
+
+Consultar usuarios, con sus roles y depósitos, y los roles con sus permisos: [Visualizar usuario](/administracion/visualizar-usuario), [Lista de usuarios](/administracion/lista-de-usuarios) y [Visualizar rol](/administracion/visualizar-rol). No permite cambiar nada. Lo tienen el Administrador y el Auditor.
+
 ### `users.manage` {#users-manage}
 
-Consultar, crear y modificar usuarios, asignar roles y depósitos, resetear contraseñas y activar o desactivar cuentas. Solo lo tiene el Administrador.
+Crear y modificar usuarios, asignar roles, depósitos y contraseñas iniciales, y activar o desactivar cuentas: [Gestionar usuarios](/administracion/usuarios), [Crear usuario](/administracion/crear-usuario) y [Modificar usuario](/administracion/modificar-usuario). Incluye la consulta de usuarios y roles. Solo lo tiene el Administrador.
 
 Nadie modifica sus propios roles, y solo se asignan o quitan roles cuyos permisos tiene quien hace el cambio.

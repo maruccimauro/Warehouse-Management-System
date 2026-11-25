@@ -4,6 +4,8 @@ import { FieldErrorIndicator } from './FieldErrorIndicator';
 interface FormFieldLayoutProps {
   // id del control, para el <label>.
   htmlFor: string;
+  // id de la etiqueta, para los controles de grupo que se nombran con aria-labelledby.
+  labelId?: string;
   label: ReactNode;
   required?: boolean;
   // Texto de ayuda persistente y error, cada uno con su id para aria-describedby del control.
@@ -23,6 +25,7 @@ interface FormFieldLayoutProps {
 // transacción y los formularios de autenticación, que no son transacciones.
 export function FormFieldLayout({
   htmlFor,
+  labelId,
   label,
   required = false,
   description,
@@ -38,7 +41,7 @@ export function FormFieldLayout({
       className="field-row grid gap-1 sm:grid-cols-[minmax(8rem,12rem)_1fr] sm:items-start sm:gap-x-3"
     >
       <div className="flex items-start justify-between gap-1">
-        <label htmlFor={htmlFor} className="text-ink-muted sm:pt-1">
+        <label id={labelId} htmlFor={htmlFor} className="text-ink-muted sm:pt-1">
           {label}
           {required && (
             <span aria-hidden="true" className="ms-0.5 text-error">

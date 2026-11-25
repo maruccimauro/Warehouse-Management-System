@@ -20,7 +20,7 @@ final class CreateUser
     public function __construct(private readonly AuditLogger $audit) {}
 
     /**
-     * @param  array{name: string, email: string, password: string, locale?: string}  $attributes
+     * @param  array{username: string, name: string, email: string, password: string, locale?: string}  $attributes
      * @param  list<Role>  $roles
      * @param  list<int>  $warehouseIds
      *
@@ -30,6 +30,7 @@ final class CreateUser
     {
         return DB::transaction(function () use ($attributes, $roles, $warehouseIds): User {
             $user = new User;
+            $user->username = $attributes['username'];
             $user->name = $attributes['name'];
             $user->email = $attributes['email'];
             $user->password = $attributes['password'];
@@ -42,6 +43,7 @@ final class CreateUser
             $user->warehouses()->sync($warehouseIds);
 
             $this->audit->record('user.created', $user, null, null, [
+                'username' => $user->username,
                 'email' => $user->email,
                 'roles' => UserAssignments::roleNames($roles),
                 'warehouse_ids' => UserAssignments::sortedIds($warehouseIds),

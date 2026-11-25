@@ -11,7 +11,8 @@ use Illuminate\Validation\Rules\Password;
 /**
  * Edición de un usuario (SU01, D6): cada clave ausente queda como está; roles
  * y depósitos, si vienen, reemplazan la asignación completa. password resetea
- * la contraseña, que vuelve a ser inicial (REG-021).
+ * la contraseña, que vuelve a ser inicial (REG-021). El código de usuario no
+ * cambia después del alta (E2.14 D1).
  */
 class UpdateUserRequest extends StoreUserRequest
 {
@@ -28,6 +29,7 @@ class UpdateUserRequest extends StoreUserRequest
     public function rules(): array
     {
         return [
+            'username' => ['prohibited'],
             'name' => ['sometimes', 'required', 'string', 'max:120'],
             'email' => ['sometimes', ...self::emailRules($this->targetUser())],
             'password' => ['sometimes', 'required', 'string', Password::defaults()],

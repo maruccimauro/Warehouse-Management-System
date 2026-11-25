@@ -17,6 +17,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 /**
  * @property int $id
+ * @property string $username
  * @property string $name
  * @property string $email
  * @property string $password
@@ -28,7 +29,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password', 'locale'])]
+#[Fillable(['username', 'name', 'email', 'password', 'locale'])]
 #[Hidden(['password', 'remember_token'])]
 #[UseFactory(UserFactory::class)]
 class User extends Authenticatable
@@ -87,5 +88,16 @@ class User extends Authenticatable
     protected function email(): Attribute
     {
         return Attribute::make(set: fn (string $value): string => mb_strtolower($value));
+    }
+
+    /**
+     * El código de usuario se guarda en mayúsculas (users_username_format_check,
+     * E2.14 D1), como el nombre de usuario de SU01.
+     *
+     * @return Attribute<string, string>
+     */
+    protected function username(): Attribute
+    {
+        return Attribute::make(set: fn (string $value): string => mb_strtoupper($value));
     }
 }

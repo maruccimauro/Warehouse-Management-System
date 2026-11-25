@@ -10,7 +10,9 @@ use App\Modules\Identity\Services\UserAssignments;
 use Illuminate\Auth\Access\Response;
 
 /**
- * Usuarios y roles (SU01 y PFCG): consulta y administración con users.manage.
+ * Usuarios y roles: consulta con users.view (ZW93, SUIM, PFCG, E2.14 D3) y
+ * administración con users.manage (SU01, ZW91, ZW92). users.manage también
+ * consulta, porque modificar exige leer la ficha.
  *
  * Contra la escalada de privilegios (REG-023, D4), como S_USER_GRP y
  * S_USER_AGR en SAP, sin depender del nombre de ningún rol (ADR-009):
@@ -29,12 +31,12 @@ final class UserPolicy
 
     public function viewAny(User $actor): Response
     {
-        return $this->access->authorizePermission($actor, Permission::UsersManage);
+        return $this->authorizeView($actor);
     }
 
     public function view(User $actor): Response
     {
-        return $this->access->authorizePermission($actor, Permission::UsersManage);
+        return $this->authorizeView($actor);
     }
 
     public function create(User $actor): Response
@@ -90,6 +92,13 @@ final class UserPolicy
         }
 
         return Response::allow();
+    }
+
+    private function authorizeView(User $actor): Response
+    {
+        $view = $this->access->authorizePermission($actor, Permission::UsersView);
+
+        return $view->allowed() ? $view : $this->access->authorizePermission($actor, Permission::UsersManage);
     }
 
     /**

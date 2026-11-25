@@ -38,4 +38,10 @@ Cada pantalla del sistema es una transacción con un código, que la abre desde 
 | `ZW62` | Modificar artículo del proveedor | Compras ▸ Proveedores | [`suppliers.manage`](./permisos#suppliers-manage) | [Modificar artículo del proveedor](/compras/modificar-articulo-del-proveedor) |
 | `ZW63` | Visualizar artículo del proveedor | Compras ▸ Proveedores | Ninguno: cualquier usuario con sesión | [Visualizar artículo del proveedor](/compras/visualizar-articulo-del-proveedor) |
 | `SU3` | Gestionar parámetros de usuario | Sistema ▸ Datos de usuario | Ninguno: cualquier usuario con sesión | [Gestionar parámetros de usuario](/primeros-pasos/parametros-de-usuario) |
+| `SU01` | Gestionar usuarios | Sistema ▸ Usuarios | [`users.manage`](./permisos#users-manage) | [Gestionar usuarios](/administracion/usuarios) |
+| `ZW91` | Crear usuario | Sistema ▸ Usuarios | [`users.manage`](./permisos#users-manage) | [Crear usuario](/administracion/crear-usuario) |
+| `ZW92` | Modificar usuario | Sistema ▸ Usuarios | [`users.manage`](./permisos#users-manage) | [Modificar usuario](/administracion/modificar-usuario) |
+| `ZW93` | Visualizar usuario | Sistema ▸ Usuarios | [`users.view`](./permisos#users-view) | [Visualizar usuario](/administracion/visualizar-usuario) |
+| `SUIM` | Lista de usuarios | Sistema ▸ Usuarios | [`users.view`](./permisos#users-view) | [Lista de usuarios](/administracion/lista-de-usuarios) |
+| `PFCG` | Visualizar rol | Sistema ▸ Roles | [`users.view`](./permisos#users-view) | [Visualizar rol](/administracion/visualizar-rol) |
 

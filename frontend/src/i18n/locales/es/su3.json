@@ -1,6 +1,7 @@
 {
   "user": {
     "title": "Datos del usuario",
+    "username": "Usuario",
     "name": "Nombre",
     "email": "Correo electrónico"
   },

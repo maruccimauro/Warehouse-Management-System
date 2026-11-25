@@ -9,7 +9,7 @@ Un mismo objeto y una misma acción se nombran igual en toda la aplicación: tí
   - **Crear**: alta. Para varios registros a la vez, **Crear múltiples <objetos>** (no "Generar").
   - **Modificar**: cambio de un registro existente.
   - **Visualizar**: consulta de un registro sin editar.
-  - **Gestionar <objetos>**: transacción de gestión con lista y ficha para tablas de configuración y vínculos (depósitos, zonas, categorías, unidades, catálogo del proveedor). No reemplaza a las individuales: cada acción tiene además su transacción **Crear**, **Modificar** y **Visualizar** (ADR-016).
+  - **Gestionar <objetos>**: transacción de gestión que reúne crear, modificar y visualizar. Para tablas de configuración y vínculos (depósitos, zonas, categorías, unidades, catálogo del proveedor) lleva lista y ficha; para un maestro con trío (usuarios) lleva pantalla inicial con el registro y **Crear**, **Modificar** y **Visualizar** en la barra de aplicación. No reemplaza a las individuales: cada acción tiene además su transacción **Crear**, **Modificar** y **Visualizar** (ADR-016).
   - **Bloquear**, **Desbloquear**, **Activar**, **Desactivar**: cambio de estado. Las bajas son lógicas: no se usa "Eliminar" para datos maestros con historia.
 - Única excepción: los listados se titulan **Lista de <objetos>** (**Lista de productos**).
 - El objeto se nombra igual que su carpeta del menú y su sección de la wiki.
@@ -22,7 +22,7 @@ Un mismo objeto y una misma acción se nombran igual en toda la aplicación: tí
 
 ## Carpetas del menú
 
-- Nombre del objeto (**Catálogo**, **Proveedores**) o del área funcional (**Logística**, **Compras**, **Sistema**). Una carpeta no lleva el nombre de un concepto distinto del objeto que contiene: debajo de **Catálogo** van **Crear catálogo**, **Modificar catálogo**, y así.
+- Nombre del objeto (**Catálogo**, **Proveedores**, **Usuarios**, **Roles**) o del área funcional (**Logística**, **Compras**, **Sistema**). Una carpeta no lleva el nombre de un concepto distinto del objeto que contiene: debajo de **Catálogo** van **Crear catálogo**, **Modificar catálogo**, y así.
 
 ## Botones de diálogos y pantallas
 

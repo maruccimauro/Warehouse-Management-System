@@ -41,6 +41,7 @@ class IdentityServiceProvider extends ModuleServiceProvider
 
     protected array $uniqueConstraintFields = [
         'users_email_unique' => 'email',
+        'users_username_unique' => 'username',
     ];
 
     public function boot(): void

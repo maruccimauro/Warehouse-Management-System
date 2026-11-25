@@ -12,10 +12,11 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 /**
- * Listado de usuarios (SU01, consulta) con users.manage. name y email por
- * fragmento, sin índice trigram porque la tabla es chica; is_active; role por
- * su identificador y warehouse_id por depósito asignado. Incluye los
- * inactivos, que se conservan.
+ * Listado de usuarios (SUIM y ayudas de búsqueda) con users.view. username y
+ * name como criterios de pantalla de selección (E2.14; un fragmento se busca
+ * con el patrón CP *texto*) y email por fragmento, sin índice trigram porque
+ * la tabla es chica; is_active; role por su identificador y warehouse_id por
+ * depósito asignado. Incluye los inactivos, que se conservan.
  */
 class UserListRequest extends ListRequest
 {
@@ -27,7 +28,8 @@ class UserListRequest extends ListRequest
     protected function filters(): array
     {
         return [
-            'name' => FilterMode::Partial,
+            'username' => FilterMode::Selection,
+            'name' => FilterMode::Selection,
             'email' => FilterMode::Partial,
             'is_active' => FilterMode::Exact,
             'role' => FilterMode::Custom,
@@ -37,12 +39,12 @@ class UserListRequest extends ListRequest
 
     protected function sorts(): array
     {
-        return ['name', 'email'];
+        return ['username', 'name', 'email'];
     }
 
     protected function defaultSort(): string
     {
-        return 'name';
+        return 'username';
     }
 
     protected function filterValueRules(): array

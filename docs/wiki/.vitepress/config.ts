@@ -102,6 +102,12 @@ export default defineConfig({
           { text: 'Crear unidad de medida (ZW81)', link: '/administracion/crear-unidad-de-medida' },
           { text: 'Modificar unidad de medida (ZW82)', link: '/administracion/modificar-unidad-de-medida' },
           { text: 'Visualizar unidad de medida (ZW83)', link: '/administracion/visualizar-unidad-de-medida' },
+          { text: 'Gestionar usuarios (SU01)', link: '/administracion/usuarios' },
+          { text: 'Crear usuario (ZW91)', link: '/administracion/crear-usuario' },
+          { text: 'Modificar usuario (ZW92)', link: '/administracion/modificar-usuario' },
+          { text: 'Visualizar usuario (ZW93)', link: '/administracion/visualizar-usuario' },
+          { text: 'Lista de usuarios (SUIM)', link: '/administracion/lista-de-usuarios' },
+          { text: 'Visualizar rol (PFCG)', link: '/administracion/visualizar-rol' },
         ],
       },
       {

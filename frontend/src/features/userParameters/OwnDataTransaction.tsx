@@ -67,6 +67,8 @@ export function OwnDataTransaction() {
     <div className="grid max-w-4xl gap-4">
       <FormSection title={t('user.title')}>
         <dl className="grid grid-cols-[minmax(8rem,12rem)_1fr] gap-x-4 gap-y-1.5">
+          <dt className="text-ink-muted">{t('user.username')}</dt>
+          <dd>{user.username}</dd>
           <dt className="text-ink-muted">{t('user.name')}</dt>
           <dd>{user.name}</dd>
           <dt className="text-ink-muted">{t('user.email')}</dt>

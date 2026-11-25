@@ -33,7 +33,13 @@
     "ZW06": "Gestionar catálogo del proveedor",
     "ZW61": "Crear artículo del proveedor",
     "ZW62": "Modificar artículo del proveedor",
-    "ZW63": "Visualizar artículo del proveedor"
+    "ZW63": "Visualizar artículo del proveedor",
+    "SU01": "Gestionar usuarios",
+    "ZW91": "Crear usuario",
+    "ZW92": "Modificar usuario",
+    "ZW93": "Visualizar usuario",
+    "SUIM": "Lista de usuarios",
+    "PFCG": "Visualizar rol"
   },
   "folders": {
     "logistics": "Logística",
@@ -42,6 +48,8 @@
     "userData": "Datos de usuario",
     "catalog": "Catálogo",
     "purchasing": "Compras",
-    "suppliers": "Proveedores"
+    "suppliers": "Proveedores",
+    "users": "Usuarios",
+    "roles": "Roles"
   }
 }

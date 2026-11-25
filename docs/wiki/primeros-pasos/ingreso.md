@@ -1,6 +1,6 @@
 # Ingreso al sistema
 
-Para trabajar en el WMS se necesita una cuenta de usuario, que crea el administrador del sistema con uno o más roles y los depósitos en los que el usuario opera.
+Para trabajar en el WMS se necesita una cuenta de usuario, que crea el administrador del sistema en [Crear usuario](/administracion/crear-usuario) con uno o más roles y los depósitos en los que el usuario opera.
 
 ## Iniciar sesión {#iniciar-sesion}
 

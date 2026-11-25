@@ -83,8 +83,10 @@ enum Role: string
                 Permission::ProcurementCreate,
                 Permission::ProcurementCancel,
             ],
+            // Revisa quién tiene qué acceso (SUIM, PFCG) sin poder cambiarlo.
             self::Auditor => [
                 Permission::WarehousesViewAll,
+                Permission::UsersView,
                 Permission::AuditView,
             ],
         };

@@ -21,6 +21,9 @@ class IdentitySeeder extends Seeder
 {
     public const DEMO_EMAIL_PATTERN = 'usuario%02d@wms.test';
 
+    /** Código de cada usuario ficticio (E2.14 D1): USUARIO01 en adelante. */
+    public const DEMO_USERNAME_PATTERN = 'USUARIO%02d';
+
     /**
      * Roles de los usuarios ficticios, en ciclo: usuario01 operador,
      * usuario02 operador, usuario03 supervisor, usuario04 compras,
@@ -43,6 +46,7 @@ class IdentitySeeder extends Seeder
         $admin = User::query()->firstOrCreate(
             ['email' => mb_strtolower(config()->string('wms.dev_admin.email'))],
             [
+                'username' => config()->string('wms.dev_admin.username'),
                 'name' => config()->string('wms.dev_admin.name'),
                 'password' => config()->string('wms.dev_admin.password'),
             ],
@@ -57,7 +61,7 @@ class IdentitySeeder extends Seeder
             $email = sprintf(self::DEMO_EMAIL_PATTERN, $number);
 
             $user = User::query()->where('email', $email)->first()
-                ?? User::factory()->create(['email' => $email]);
+                ?? User::factory()->create(['email' => $email, 'username' => sprintf(self::DEMO_USERNAME_PATTERN, $number)]);
 
             $this->assignRoleIfMissing($user, self::DEMO_ROLE_CYCLE[($number - 1) % count(self::DEMO_ROLE_CYCLE)]);
         }

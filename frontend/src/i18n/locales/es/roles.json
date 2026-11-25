@@ -1,0 +1,92 @@
+{
+  "names": {
+    "administrator": "Administrador",
+    "supervisor": "Supervisor",
+    "operator": "Operador",
+    "purchasing": "Compras",
+    "auditor": "Auditor"
+  },
+  "fields": {
+    "role": "Rol",
+    "permission": "Permiso",
+    "description": "Descripción",
+    "module": "Módulo"
+  },
+  "initial": {
+    "display": "Visualizar rol",
+    "hint": "Ingrese el rol o elíjalo con F4, y continúe con F8."
+  },
+  "roleHelp": {
+    "title": "Roles",
+    "code": "Rol",
+    "name": "Nombre",
+    "invalid": "El rol {{role}} no existe."
+  },
+  "tabs": {
+    "label": "Datos del rol",
+    "permissions": "Permisos",
+    "users": "Usuarios"
+  },
+  "detail": {
+    "permissionCount": "{{count}} permisos.",
+    "noPermissions": "El rol no tiene permisos.",
+    "usersHint": "Usuarios que tienen el rol asignado, activos e inactivos."
+  },
+  "messages": {
+    "notFound": "El rol {{role}} no existe.",
+    "loadFailed": "No se pudieron leer los roles."
+  },
+  "modules": {
+    "warehouses": "Depósitos y ubicaciones",
+    "catalog": "Catálogo y proveedores",
+    "users": "Usuarios",
+    "inventory": "Inventario",
+    "procurement": "Compras y recepción",
+    "orders": "Pedidos y despacho",
+    "stocktake": "Inventario físico",
+    "audit": "Auditoría"
+  },
+  "permissions": {
+    "warehouses.view_all": "Consultar todos los depósitos sin tenerlos asignados.",
+    "warehouses.operate_all": "Operar en todos los depósitos sin tenerlos asignados.",
+    "warehouses.manage": "Crear, modificar, activar y desactivar depósitos.",
+    "locations.manage": "Crear, modificar, activar y desactivar zonas y ubicaciones.",
+    "locations.block": "Bloquear y desbloquear ubicaciones.",
+    "catalog.manage": "Crear y modificar artículos, categorías y unidades de medida.",
+    "suppliers.manage": "Crear, modificar, activar y desactivar proveedores, y mantener su catálogo.",
+    "users.view": "Consultar usuarios y roles.",
+    "users.manage": "Crear y modificar usuarios, asignar roles, depósitos y contraseñas iniciales.",
+    "inventory.transfer": "Transferir stock entre ubicaciones.",
+    "inventory.adjust": "Ajustar stock con un motivo.",
+    "inventory.adjust.approve": "Aprobar ajustes negativos por encima del umbral.",
+    "inventory.block": "Bloquear y liberar cantidades de stock.",
+    "inventory.reverse": "Revertir transferencias y ajustes.",
+    "procurement.create": "Crear, modificar y enviar órdenes de compra.",
+    "procurement.approve": "Aprobar y rechazar órdenes de compra.",
+    "procurement.cancel": "Cancelar órdenes de compra.",
+    "procurement.close": "Cerrar órdenes de compra con saldo pendiente.",
+    "receiving.create": "Crear y modificar recepciones en borrador.",
+    "receiving.blind": "Recibir sin orden de compra.",
+    "receiving.confirm": "Confirmar recepciones.",
+    "receiving.cancel": "Cancelar recepciones en borrador.",
+    "receiving.over_receive": "Recibir por encima de la tolerancia.",
+    "receiving.reverse": "Revertir recepciones confirmadas.",
+    "putaway.execute": "Completar solicitudes de guardado.",
+    "putaway.reverse": "Revertir solicitudes de guardado.",
+    "orders.create": "Crear, modificar y confirmar pedidos.",
+    "orders.reserve": "Reservar y liberar stock para pedidos.",
+    "orders.cancel": "Cancelar pedidos.",
+    "picking.manage": "Generar, asignar y reasignar tareas de picking.",
+    "picking.execute": "Tomar, iniciar y resolver líneas de picking.",
+    "picking.reverse": "Revertir líneas de picking resueltas.",
+    "packing.execute": "Registrar bultos y cerrar el packing.",
+    "packing.reverse": "Reabrir el packing de un pedido no despachado.",
+    "dispatch.execute": "Despachar pedidos.",
+    "dispatch.reverse": "Revertir despachos.",
+    "stocktake.manage": "Crear, iniciar, cerrar y cancelar inventarios físicos.",
+    "stocktake.count": "Registrar conteos y reconteos.",
+    "stocktake.approve": "Aprobar inventarios físicos.",
+    "stocktake.reverse": "Revertir inventarios físicos aprobados.",
+    "audit.view": "Consultar la auditoría."
+  }
+}

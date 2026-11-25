@@ -27,6 +27,8 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
+            // Letras y dígitos en mayúsculas, como exige users_username_format_check.
+            'username' => mb_strtoupper(fake()->unique()->bothify('????####')),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('password'),

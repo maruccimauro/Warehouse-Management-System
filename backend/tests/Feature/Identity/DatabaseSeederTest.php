@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 
 beforeEach(function () {
     config()->set('wms.dev_admin', [
+        'username' => 'ADMIN',
         'name' => 'Administrador de desarrollo',
         'email' => 'Admin@WMS.test',
         'password' => 'admin-dev-1',
@@ -24,7 +25,8 @@ it('creates the development admin who can log in', function () {
 
     $admin = User::query()->where('email', 'admin@wms.test')->sole();
 
-    expect($admin->name)->toBe('Administrador de desarrollo')
+    expect($admin->username)->toBe('ADMIN')
+        ->and($admin->name)->toBe('Administrador de desarrollo')
         ->and($admin->is_active)->toBeTrue()
         ->and(Hash::check('admin-dev-1', $admin->password))->toBeTrue();
 
@@ -39,7 +41,9 @@ it('creates the configured number of fictitious users with predictable emails', 
     $this->seed(DatabaseSeeder::class);
 
     expect(User::query()->where('email', 'like', 'usuario%@wms.test')->orderBy('email')->pluck('email')->all())
-        ->toBe(['usuario01@wms.test', 'usuario02@wms.test', 'usuario03@wms.test']);
+        ->toBe(['usuario01@wms.test', 'usuario02@wms.test', 'usuario03@wms.test'])
+        ->and(User::query()->where('username', 'like', 'USUARIO%')->orderBy('username')->pluck('username')->all())
+        ->toBe(['USUARIO01', 'USUARIO02', 'USUARIO03']);
 });
 
 it('is idempotent and keeps passwords changed after seeding', function () {

@@ -8,7 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Roles y sus permisos (consulta de PFCG, E2.14) con users.manage. Los roles
+ * Roles y sus permisos (consulta de PFCG, E2.14) con users.view. Los roles
  * los define el código (Role) y wms:sync-authorization los lleva a la base,
  * así que la respuesta sale del catálogo y no admite edición. El nombre
  * visible de cada rol lo traduce el frontend.

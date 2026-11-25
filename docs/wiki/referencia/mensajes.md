@@ -64,7 +64,7 @@ Uno o más datos no son válidos. Cada campo con error muestra el motivo debajo 
 
 ### `VALUE_ALREADY_EXISTS` {#value-already-exists}
 
-El valor ya está registrado y debe ser único: el código de un depósito, de una zona o de una ubicación dentro del depósito, el correo de un usuario, el SKU o el código de barras de un artículo, el identificador fiscal de un proveedor o el código del proveedor entre sus artículos. También se informa al vincular a un proveedor un artículo que ya tiene vinculado.
+El valor ya está registrado y debe ser único: el código de un depósito, de una zona o de una ubicación dentro del depósito, el código o el email de un usuario, el SKU o el código de barras de un artículo, el identificador fiscal de un proveedor o el código del proveedor entre sus artículos. También se informa al vincular a un proveedor un artículo que ya tiene vinculado.
 
 **Qué hacer:** use otro valor o busque el registro existente.
 
@@ -174,6 +174,18 @@ No existe un proveedor con el número indicado. La ficha no se abre.
 
 **Qué hacer:** verifique el número o busque el proveedor con <kbd>F4</kbd> por nombre o identificador fiscal.
 
+
+### `USER_NOT_FOUND` {#user-not-found}
+
+No existe un usuario con el código indicado. La ficha no se abre.
+
+**Qué hacer:** verifique el código o busque el usuario con <kbd>F4</kbd> por nombre o email. Para darlo de alta, use [Crear usuario](/administracion/crear-usuario).
+
+### `PASSWORD_MISMATCH` {#password-mismatch}
+
+Al [asignar una contraseña inicial](/administracion/modificar-usuario#contrasena-inicial), la repetición no coincide con la contraseña. El diálogo queda abierto y la contraseña no se asigna.
+
+**Qué hacer:** ingrese la misma contraseña en los dos campos y elija **Aplicar**.
 
 ### `SUPPLIER_PRODUCT_NOT_FOUND` {#supplier-product-not-found}
 

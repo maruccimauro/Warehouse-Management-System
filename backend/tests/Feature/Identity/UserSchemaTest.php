@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Hash;
 function insertUserRow(array $overrides = []): void
 {
     DB::table('users')->insert([
+        'username' => 'USUARIO',
         'name' => 'Usuario',
         'email' => 'usuario@wms.test',
         'password' => Hash::make('secreto'),
@@ -45,6 +46,37 @@ it('rejects an uppercase email at the database level', function () {
 it('rejects a malformed locale at the database level', function () {
     insertUserRow(['locale' => 'español']);
 })->throws(QueryException::class, 'users_locale_format_check');
+
+it('stores the username in uppercase through the model', function () {
+    $user = User::factory()->create(['username' => 'jperez']);
+
+    expect($user->refresh()->username)->toBe('JPEREZ');
+});
+
+it('rejects a malformed username at the database level', function (string $username) {
+    insertUserRow(['username' => $username]);
+})->with(['minúsculas' => 'jperez', 'con punto' => 'J.PEREZ', 'vacío' => ''])
+    ->throws(QueryException::class, 'users_username_format_check');
+
+it('rejects a duplicated username at the database level', function () {
+    insertUserRow();
+    insertUserRow(['email' => 'otro@wms.test']);
+})->throws(QueryException::class, 'users_username_unique');
+
+it('gives the existing users a unique username when adding the column', function () {
+    $migration = require database_path('../app/Modules/Identity/Database/Migrations/2026_11_25_100000_add_username_to_users.php');
+    $migration->down();
+    DB::table('users')->insert([
+        ['name' => 'Uno', 'email' => 'uno@wms.test', 'password' => 'x'],
+        ['name' => 'Dos', 'email' => 'dos@wms.test', 'password' => 'x'],
+    ]);
+
+    $migration->up();
+
+    $ids = DB::table('users')->orderBy('id')->pluck('id')->all();
+    expect(DB::table('users')->orderBy('id')->pluck('username')->all())
+        ->toBe(array_map(fn (int $id): string => 'U'.str_pad((string) $id, 6, '0', STR_PAD_LEFT), $ids));
+});
 
 it('limits the name to 120 characters', function () {
     insertUserRow(['name' => str_repeat('a', 121)]);

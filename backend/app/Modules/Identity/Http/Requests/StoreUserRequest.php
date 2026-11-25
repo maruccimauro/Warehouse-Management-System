@@ -11,13 +11,17 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 /**
- * Alta de usuario con users.manage (SU01, D6): datos, contraseña inicial,
+ * Alta de usuario con users.manage (SU01, D6): código de usuario (E2.14 D1),
+ * datos, contraseña inicial,
  * roles y depósitos en una sola petición. Nace activo y con cambio de
  * contraseña obligatorio (REG-021). Los roles pedidos se autorizan después de
  * validar, contra los permisos de quien opera (REG-023).
  */
 class StoreUserRequest extends FormRequest
 {
+    /** Mayúsculas y dígitos, hasta 12 caracteres (users_username_format_check). */
+    public const USERNAME_PATTERN = '/^[A-Z0-9]{1,12}$/';
+
     public function authorize(): Response
     {
         return Gate::inspect('create', User::class);
@@ -34,6 +38,7 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'username' => ['required', 'string', 'regex:'.self::USERNAME_PATTERN, Rule::unique('users', 'username')],
             'name' => ['required', 'string', 'max:120'],
             'email' => self::emailRules(),
             'password' => ['required', 'string', Password::defaults()],
@@ -118,11 +123,18 @@ class StoreUserRequest extends FormRequest
     }
 
     /**
-     * Email sin espacios y en minúsculas, para que la regla unique compare con
-     * lo que se va a guardar (users_email_lowercase_check).
+     * Email sin espacios y en minúsculas, y código de usuario sin espacios y
+     * en mayúsculas, para que la regla unique compare con lo que se va a
+     * guardar (users_email_lowercase_check, users_username_format_check).
      */
     protected function normalizeUserFields(): void
     {
+        $username = $this->input('username');
+
+        if (is_string($username)) {
+            $this->merge(['username' => mb_strtoupper(trim($username))]);
+        }
+
         $email = $this->input('email');
 
         if (is_string($email)) {

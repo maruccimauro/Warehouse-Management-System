@@ -32,12 +32,13 @@ class AuthenticatedUserResource extends JsonResource
     }
 
     /**
-     * @return array{id: int, name: string, email: string, locale: string, show_technical_names: bool, password_change_required: bool, roles: list<string>, permissions: list<string>, warehouses: list<array{id: int, code: string, name: string}>}
+     * @return array{id: int, username: string, name: string, email: string, locale: string, show_technical_names: bool, password_change_required: bool, roles: list<string>, permissions: list<string>, warehouses: list<array{id: int, code: string, name: string}>}
      */
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->resource->id,
+            'username' => $this->resource->username,
             'name' => $this->resource->name,
             'email' => $this->resource->email,
             // Preferencias que viven en users (E2.21): la SPA aplica el idioma y

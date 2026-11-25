@@ -1,0 +1,80 @@
+{
+  "fields": {
+    "user": "Usuario",
+    "username": "Usuario",
+    "name": "Nombre",
+    "email": "Email",
+    "status": "Estado",
+    "passwordStatus": "Contraseña",
+    "password": "Contraseña inicial",
+    "passwordRepeat": "Repetir contraseña",
+    "roles": "Roles",
+    "warehouses": "Depósitos",
+    "role": "Rol",
+    "warehouse": "Depósito"
+  },
+  "sections": {
+    "general": "Datos del usuario",
+    "logon": "Ingreso",
+    "authorizations": "Roles y depósitos"
+  },
+  "statuses": {
+    "active": "Activo",
+    "inactive": "Inactivo"
+  },
+  "passwordStatuses": {
+    "initial": "Inicial: el usuario debe cambiarla al ingresar",
+    "current": "Vigente"
+  },
+  "initial": {
+    "manage": "Gestionar usuarios",
+    "change": "Modificar usuario",
+    "display": "Visualizar usuario",
+    "hint": "Ingrese el usuario o elíjalo con F4, y continúe con F8.",
+    "manageHint": "Ingrese el usuario o elíjalo con F4, y elija la acción en la barra. Para crear un usuario, ingrese el código nuevo y elija Crear."
+  },
+  "detail": {
+    "createTitle": "Crear usuario",
+    "actions": "Acciones del usuario",
+    "usernameHint": "Hasta 12 letras o números. No se puede cambiar después del alta.",
+    "passwordHint": "El usuario la cambia en su primer ingreso.",
+    "saveHint": "Los cambios se aplican al grabar (Ctrl+S).",
+    "noWarehouses": "No hay depósitos.",
+    "pendingPassword": "Al grabar se asigna la contraseña inicial y se cierran las sesiones abiertas del usuario."
+  },
+  "actions": {
+    "create": "Crear",
+    "change": "Modificar",
+    "display": "Visualizar",
+    "assignPassword": "Asignar contraseña inicial",
+    "manageActions": "Acciones de usuarios"
+  },
+  "passwordDialog": {
+    "title": "Asignar contraseña inicial",
+    "description": "El usuario debe cambiarla en su próximo ingreso. Al grabar la ficha se cierran sus sesiones abiertas.",
+    "apply": "Aplicar",
+    "cancel": "Cancelar"
+  },
+  "userHelp": {
+    "title": "Usuarios"
+  },
+  "list": {
+    "selection": "Lista de usuarios",
+    "title": "Usuarios",
+    "hint": "Acote la lista y ejecútela con F8. Doble clic en una fila abre el usuario.",
+    "passwordChangeRequired": "Contraseña inicial"
+  },
+  "messages": {
+    "created": "Usuario {{username}} creado.",
+    "saved": "Usuario {{username}} grabado.",
+    "saveFailed": "No se pudo grabar el usuario.",
+    "loadFailed": "No se pudo leer el usuario.",
+    "notFound": "El usuario {{username}} no existe.",
+    "alreadyExists": "El usuario {{username}} ya existe.",
+    "passwordMismatch": "Las contraseñas no coinciden.",
+    "passwordApplied": "Contraseña inicial lista para grabar.",
+    "statusInvalid": "El estado {{status}} no existe."
+  },
+  "yes": "Sí",
+  "no": "No"
+}

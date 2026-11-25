@@ -33,6 +33,7 @@ it('logs in with valid credentials and returns the authenticated user', function
         ->assertOk()
         ->assertExactJson(['data' => [
             'id' => $this->user->id,
+            'username' => $this->user->username,
             'name' => 'Operador de Prueba',
             'email' => 'operador@wms.test',
             'locale' => 'es',

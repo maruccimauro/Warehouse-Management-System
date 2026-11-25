@@ -11,6 +11,10 @@
     "integerMax": "El valor máximo es {{max}}.",
     "email": "Ingrese un email válido, como compras@proveedor.com, o deje el campo vacío.",
     "printable": "Use letras, números y signos, sin espacios.",
-    "taxId": "Ingrese de 5 a 20 letras o números; puede separarlos con puntos, guiones o barras."
+    "taxId": "Ingrese de 5 a 20 letras o números; puede separarlos con puntos, guiones o barras.",
+    "username": "Use hasta 12 letras o números, sin espacios ni signos, como JPEREZ.",
+    "requiredEmail": "Ingrese un email válido, como jperez@empresa.com.",
+    "passwordMin": "Use al menos {{min}} caracteres.",
+    "passwordMismatch": "Las contraseñas no coinciden."
   }
 }
