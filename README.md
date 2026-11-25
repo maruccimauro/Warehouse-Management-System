@@ -53,6 +53,8 @@ The first start takes a few minutes: it builds the PHP image and installs the ba
 | Follow the backend start | `docker compose logs -f app` |
 | Backend checks (Pint, PHPStan, Pest) | `docker compose exec app composer check` |
 | Frontend checks (tsc, ESLint, Vitest) | `docker compose exec frontend npm run check` |
+| User wiki (VitePress, in Spanish) | <http://localhost:8080/docs/> |
+| Build the wiki (fails on broken links) | `docker compose exec wiki npm run build` |
 | API documentation (OpenAPI, development only) | <http://localhost:8080/api/docs> |
 | Regenerate the versioned OpenAPI specification | `docker compose exec app composer openapi` |
 | Stop | `docker compose down` |
@@ -113,6 +115,8 @@ El primer arranque tarda unos minutos: construye la imagen de PHP e instala las 
 | Seguir el arranque del backend | `docker compose logs -f app` |
 | Verificación del backend (Pint, PHPStan, Pest) | `docker compose exec app composer check` |
 | Verificación del frontend (tsc, ESLint, Vitest) | `docker compose exec frontend npm run check` |
+| Wiki de usuario (VitePress) | <http://localhost:8080/docs/> |
+| Compilar la wiki (falla con enlaces rotos) | `docker compose exec wiki npm run build` |
 | Documentación de la API (OpenAPI, solo en desarrollo) | <http://localhost:8080/api/docs> |
 | Regenerar la especificación OpenAPI versionada | `docker compose exec app composer openapi` |
 | Detener | `docker compose down` |

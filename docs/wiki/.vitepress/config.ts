@@ -1,0 +1,111 @@
+import { defineConfig } from 'vitepress';
+
+// Wiki de usuario del WMS (DM-11). Se sirve en /docs/ del mismo host que la aplicación:
+// en desarrollo, Nginx reenvía /docs/ al servicio wiki de docker-compose; en producción,
+// Caddy sirve el build estático (E8.12). La arquitectura de la información y el estilo
+// están en la skill generar-wiki-wms.
+//
+// En desarrollo el navegador habla con Nginx (WEB_PORT): el cliente de HMR abre el
+// WebSocket contra ese puerto, como el servidor de Vite del frontend.
+const publicPort = Number(process.env.WEB_PORT ?? 8080);
+
+export default defineConfig({
+  lang: 'es',
+  title: 'WMS',
+  description: 'Manual de usuario del sistema de gestión de depósitos.',
+  base: '/docs/',
+  cleanUrls: true,
+  // Sin lastUpdated: necesita el historial de git, que el contenedor no ve, y con el
+  // checkout superficial del CI daría la misma fecha a todas las páginas.
+  // Los enlaces rotos hacen fallar el build: la ayuda F1 y los enlaces de la aplicación
+  // apuntan a estas páginas.
+  ignoreDeadLinks: false,
+  head: [['meta', { name: 'theme-color', content: '#1f4e79' }]],
+  vite: {
+    server: {
+      host: '0.0.0.0',
+      port: 5174,
+      strictPort: true,
+      allowedHosts: ['localhost'],
+      hmr: { clientPort: publicPort },
+      // Los eventos de archivos no atraviesan el montaje de Windows o macOS hacia el
+      // contenedor: sin polling, VitePress no detecta los cambios.
+      watch: { usePolling: true, interval: 300 },
+    },
+  },
+  themeConfig: {
+    nav: [
+      { text: 'Primeros pasos', link: '/primeros-pasos/ingreso' },
+      { text: 'Referencia', link: '/referencia/transacciones' },
+    ],
+    sidebar: [
+      {
+        text: 'Primeros pasos',
+        items: [
+          { text: 'Ingreso al sistema', link: '/primeros-pasos/ingreso' },
+          { text: 'La pantalla principal', link: '/primeros-pasos/pantalla-principal' },
+          { text: 'Formularios', link: '/primeros-pasos/formularios' },
+          { text: 'Ayuda de búsqueda (F4)', link: '/primeros-pasos/ayuda-de-busqueda' },
+          { text: 'Pantallas de selección', link: '/primeros-pasos/pantallas-de-seleccion' },
+          { text: 'Listas', link: '/primeros-pasos/listas' },
+          { text: 'Parámetros de usuario (SU3)', link: '/primeros-pasos/parametros-de-usuario' },
+        ],
+      },
+      {
+        text: 'Referencia',
+        items: [
+          { text: 'Transacciones', link: '/referencia/transacciones' },
+          { text: 'Teclas', link: '/referencia/teclas' },
+          { text: 'Estados', link: '/referencia/estados' },
+          { text: 'Errores', link: '/referencia/errores' },
+          { text: 'Permisos y roles', link: '/referencia/permisos' },
+        ],
+      },
+    ],
+    outline: { level: 'deep', label: 'En esta página' },
+    editLink: {
+      pattern: 'https://github.com/maruccimauro/Warehouse-Management-System/edit/main/docs/wiki/:path',
+      text: 'Editar esta página en GitHub',
+    },
+    socialLinks: [{ icon: 'github', link: 'https://github.com/maruccimauro/Warehouse-Management-System' }],
+    docFooter: { prev: 'Anterior', next: 'Siguiente' },
+    darkModeSwitchLabel: 'Apariencia',
+    lightModeSwitchTitle: 'Cambiar a modo claro',
+    darkModeSwitchTitle: 'Cambiar a modo oscuro',
+    sidebarMenuLabel: 'Menú',
+    returnToTopLabel: 'Volver arriba',
+    langMenuLabel: 'Idioma',
+    notFound: {
+      title: 'Página no encontrada',
+      quote: 'La dirección no existe o la página fue movida.',
+      linkLabel: 'Ir al inicio',
+      linkText: 'Ir al inicio',
+    },
+    footer: {
+      message: 'Sistema de gestión de depósitos inspirado en SAP.',
+    },
+    search: {
+      provider: 'local',
+      options: {
+        translations: {
+          button: { buttonText: 'Buscar', buttonAriaLabel: 'Buscar' },
+          modal: {
+            displayDetails: 'Mostrar la lista detallada',
+            resetButtonTitle: 'Borrar la búsqueda',
+            backButtonTitle: 'Cerrar la búsqueda',
+            noResultsText: 'Sin resultados para',
+            footer: {
+              selectText: 'para elegir',
+              selectKeyAriaLabel: 'Enter',
+              navigateText: 'para moverse',
+              navigateUpKeyAriaLabel: 'Flecha arriba',
+              navigateDownKeyAriaLabel: 'Flecha abajo',
+              closeText: 'para cerrar',
+              closeKeyAriaLabel: 'Escape',
+            },
+          },
+        },
+      },
+    },
+  },
+});

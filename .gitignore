@@ -12,6 +12,7 @@ node_modules/
 dist/
 build/
 coverage/
+docs/wiki/.vitepress/cache/
 
 # Herramientas
 .claude/settings.local.json

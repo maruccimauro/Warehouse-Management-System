@@ -47,6 +47,7 @@ services:
     depends_on:
       - app
       - frontend
+      - wiki
     restart: unless-stopped
 
   db:
@@ -80,6 +81,7 @@ services:
       # Puerto público de Nginx: el cliente de HMR de Vite abre el WebSocket contra él.
       WEB_PORT: ${WEB_PORT:-8080}
     entrypoint: ["sh", "/entrypoint.sh"]
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
     volumes:
       - ./frontend:/app
       # node_modules fuera del bind mount: binarios nativos de Linux (esbuild, rollup)
@@ -88,6 +90,21 @@ services:
       - ./infrastructure/docker/node/entrypoint.sh:/entrypoint.sh:ro
     restart: unless-stopped
 
+  # Wiki de usuario (E2.15, DM-11): servidor de desarrollo de VitePress detrás de Nginx en /docs/.
+  wiki:
+    image: node:26-alpine
+    working_dir: /app
+    environment:
+      WEB_PORT: ${WEB_PORT:-8080}
+    entrypoint: ["sh", "/entrypoint.sh"]
+    command: ["npm", "run", "dev"]
+    volumes:
+      - ./docs/wiki:/app
+      - wiki_node_modules:/app/node_modules
+      - ./infrastructure/docker/node/entrypoint.sh:/entrypoint.sh:ro
+    restart: unless-stopped
+
 volumes:
   db_data:
   frontend_node_modules:
+  wiki_node_modules:
