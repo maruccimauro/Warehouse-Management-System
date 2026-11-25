@@ -45,5 +45,10 @@
     "saveFailed": "No se pudo grabar el depósito.",
     "activated": "Depósito {{code}} activado.",
     "deactivated": "Depósito {{code}} desactivado."
+  },
+  "initial": {
+    "change": "Modificar depósito",
+    "display": "Visualizar depósito",
+    "hint": "Ingrese el depósito o elíjalo con F4, y continúe con F8."
   }
 }

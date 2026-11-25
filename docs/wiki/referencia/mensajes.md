@@ -174,6 +174,13 @@ No existe un proveedor con el número indicado. La ficha no se abre.
 
 **Qué hacer:** verifique el número o busque el proveedor con <kbd>F4</kbd> por nombre o identificador fiscal.
 
+
+### `SUPPLIER_PRODUCT_NOT_FOUND` {#supplier-product-not-found}
+
+El artículo existe, pero no está vinculado al proveedor indicado. La ficha no se abre.
+
+**Qué hacer:** verifique el proveedor y el artículo, o vincúlelos con [Crear artículo del proveedor](/compras/crear-articulo-del-proveedor).
+
 ### `WAREHOUSE_SETTING_NOT_SAVED` {#warehouse-setting-not-saved}
 
 Mensaje W. Al grabar un artículo con un depósito en la pantalla inicial, los datos generales se grabaron, pero el stock mínimo del depósito no. El mensaje indica el motivo, por ejemplo que el usuario no opera en ese depósito.

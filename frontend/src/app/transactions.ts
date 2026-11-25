@@ -4,7 +4,9 @@ import type { PermissionName } from '@/features/auth/permissions';
 import type { HelpKey } from '@/shared/help/helpLinks';
 
 // Registro de transacciones (ADR-016). Cada etapa agrega las suyas con el código de SAP
-// cuando hay equivalente y el rango ZW para las propias.
+// cuando hay equivalente y el rango ZW para las propias. En el rango ZW, la familia ZW0N es
+// la gestión con lista y ficha y ZWN1, ZWN2 y ZWN3 son sus acciones crear, modificar y
+// visualizar, como el sufijo de actividad de SAP.
 export interface TransactionDefinition {
   code: string;
   titleKey: ParseKeys<'transactions'>;
@@ -35,11 +37,53 @@ export const transactions: readonly TransactionDefinition[] = [
     ),
   },
   {
+    code: 'ZW11',
+    titleKey: 'titles.ZW11',
+    permission: 'warehouses.manage',
+    helpKey: 'transaction.ZW11',
+    component: lazy(() => import('@/features/warehouses/WarehouseActivityTransactions').then((module) => ({ default: module.CreateWarehouseTransaction }))),
+  },
+  {
+    code: 'ZW12',
+    titleKey: 'titles.ZW12',
+    permission: 'warehouses.manage',
+    helpKey: 'transaction.ZW12',
+    component: lazy(() => import('@/features/warehouses/WarehouseActivityTransactions').then((module) => ({ default: module.ChangeWarehouseTransaction }))),
+  },
+  {
+    code: 'ZW13',
+    titleKey: 'titles.ZW13',
+    permission: null,
+    helpKey: 'transaction.ZW13',
+    component: lazy(() => import('@/features/warehouses/WarehouseActivityTransactions').then((module) => ({ default: module.DisplayWarehouseTransaction }))),
+  },
+  {
     code: 'ZW02',
     titleKey: 'titles.ZW02',
     permission: 'locations.manage',
     helpKey: 'transaction.ZW02',
     component: lazy(() => import('@/features/warehouses/ZonesTransaction').then((module) => ({ default: module.ZonesTransaction }))),
+  },
+  {
+    code: 'ZW21',
+    titleKey: 'titles.ZW21',
+    permission: 'locations.manage',
+    helpKey: 'transaction.ZW21',
+    component: lazy(() => import('@/features/warehouses/ZoneActivityTransactions').then((module) => ({ default: module.CreateZoneTransaction }))),
+  },
+  {
+    code: 'ZW22',
+    titleKey: 'titles.ZW22',
+    permission: 'locations.manage',
+    helpKey: 'transaction.ZW22',
+    component: lazy(() => import('@/features/warehouses/ZoneActivityTransactions').then((module) => ({ default: module.ChangeZoneTransaction }))),
+  },
+  {
+    code: 'ZW23',
+    titleKey: 'titles.ZW23',
+    permission: null,
+    helpKey: 'transaction.ZW23',
+    component: lazy(() => import('@/features/warehouses/ZoneActivityTransactions').then((module) => ({ default: module.DisplayZoneTransaction }))),
   },
   {
     code: 'LS01N',
@@ -156,6 +200,27 @@ export const transactions: readonly TransactionDefinition[] = [
     component: lazy(() => import('@/features/catalog/SupplierProductsTransaction').then((module) => ({ default: module.SupplierProductsTransaction }))),
   },
   {
+    code: 'ZW61',
+    titleKey: 'titles.ZW61',
+    permission: 'suppliers.manage',
+    helpKey: 'transaction.ZW61',
+    component: lazy(() => import('@/features/catalog/SupplierProductActivityTransactions').then((module) => ({ default: module.CreateSupplierProductTransaction }))),
+  },
+  {
+    code: 'ZW62',
+    titleKey: 'titles.ZW62',
+    permission: 'suppliers.manage',
+    helpKey: 'transaction.ZW62',
+    component: lazy(() => import('@/features/catalog/SupplierProductActivityTransactions').then((module) => ({ default: module.ChangeSupplierProductTransaction }))),
+  },
+  {
+    code: 'ZW63',
+    titleKey: 'titles.ZW63',
+    permission: null,
+    helpKey: 'transaction.ZW63',
+    component: lazy(() => import('@/features/catalog/SupplierProductActivityTransactions').then((module) => ({ default: module.DisplaySupplierProductTransaction }))),
+  },
+  {
     code: 'SU3',
     titleKey: 'titles.SU3',
     permission: null,
@@ -179,7 +244,13 @@ export const menuTree: readonly MenuNode[] = [
         labelKey: 'folders.warehouseStructure',
         children: [
           { kind: 'transaction', code: 'ZW01' },
+          { kind: 'transaction', code: 'ZW11' },
+          { kind: 'transaction', code: 'ZW12' },
+          { kind: 'transaction', code: 'ZW13' },
           { kind: 'transaction', code: 'ZW02' },
+          { kind: 'transaction', code: 'ZW21' },
+          { kind: 'transaction', code: 'ZW22' },
+          { kind: 'transaction', code: 'ZW23' },
           { kind: 'transaction', code: 'LS01N' },
           { kind: 'transaction', code: 'LS02N' },
           { kind: 'transaction', code: 'LS03N' },
@@ -215,6 +286,9 @@ export const menuTree: readonly MenuNode[] = [
           { kind: 'transaction', code: 'XK02' },
           { kind: 'transaction', code: 'XK03' },
           { kind: 'transaction', code: 'ZW06' },
+          { kind: 'transaction', code: 'ZW61' },
+          { kind: 'transaction', code: 'ZW62' },
+          { kind: 'transaction', code: 'ZW63' },
         ],
       },
     ],

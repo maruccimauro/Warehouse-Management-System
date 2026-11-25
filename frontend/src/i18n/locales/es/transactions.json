@@ -2,7 +2,13 @@
   "titles": {
     "SU3": "Gestionar parámetros de usuario",
     "ZW01": "Gestionar depósitos",
+    "ZW11": "Crear depósito",
+    "ZW12": "Modificar depósito",
+    "ZW13": "Visualizar depósito",
     "ZW02": "Gestionar zonas",
+    "ZW21": "Crear zona",
+    "ZW22": "Modificar zona",
+    "ZW23": "Visualizar zona",
     "LS01N": "Crear ubicación",
     "LS02N": "Modificar ubicación",
     "LS03N": "Visualizar ubicación",
@@ -16,7 +22,10 @@
     "XK01": "Crear proveedor",
     "XK02": "Modificar proveedor",
     "XK03": "Visualizar proveedor",
-    "ZW06": "Gestionar catálogo del proveedor"
+    "ZW06": "Gestionar catálogo del proveedor",
+    "ZW61": "Crear artículo del proveedor",
+    "ZW62": "Modificar artículo del proveedor",
+    "ZW63": "Visualizar artículo del proveedor"
   },
   "folders": {
     "logistics": "Logística",

@@ -30,6 +30,15 @@ const xk01Page = 'compras/crear-proveedor';
 const xk02Page = 'compras/modificar-proveedor';
 const xk03Page = 'compras/visualizar-proveedor';
 const zw06Page = 'compras/catalogo-del-proveedor';
+const zw11Page = 'administracion/crear-deposito';
+const zw12Page = 'administracion/modificar-deposito';
+const zw13Page = 'administracion/visualizar-deposito';
+const zw21Page = 'administracion/crear-zona';
+const zw22Page = 'administracion/modificar-zona';
+const zw23Page = 'administracion/visualizar-zona';
+const zw61Page = 'compras/crear-articulo-del-proveedor';
+const zw62Page = 'compras/modificar-articulo-del-proveedor';
+const zw63Page = 'compras/visualizar-articulo-del-proveedor';
 
 // Campos de la ficha de ubicación: la misma ayuda en crear, modificar y visualizar (la wiki la
 // incluye desde un solo archivo en las tres páginas, D6 de E2.12).
@@ -105,6 +114,7 @@ const documentedMessageCodes = [
   'LOCATION_BATCH_TOO_LARGE',
   'PRODUCT_NOT_FOUND',
   'SUPPLIER_NOT_FOUND',
+  'SUPPLIER_PRODUCT_NOT_FOUND',
   'WAREHOUSE_SETTING_NOT_SAVED',
 ] as const;
 
@@ -164,6 +174,15 @@ const fixedLinks = {
   'transaction.XK02': xk02Page,
   'transaction.XK03': xk03Page,
   'transaction.ZW06': zw06Page,
+  'transaction.ZW11': zw11Page,
+  'transaction.ZW12': zw12Page,
+  'transaction.ZW13': zw13Page,
+  'transaction.ZW21': zw21Page,
+  'transaction.ZW22': zw22Page,
+  'transaction.ZW23': zw23Page,
+  'transaction.ZW61': zw61Page,
+  'transaction.ZW62': zw62Page,
+  'transaction.ZW63': zw63Page,
   ...fieldLinks('ZW01', zw01Page, ['code', 'name', 'address']),
   ...fieldLinks('ZW02', zw02Page, ['warehouse', 'code', 'name', 'type']),
   ...fieldLinks('LS01N', ls01nPage, locationFields),
@@ -192,6 +211,15 @@ const fixedLinks = {
   ...fieldLinks('XK02', xk02Page, ['supplier', ...supplierFields]),
   ...fieldLinks('XK03', xk03Page, ['supplier', ...supplierFields]),
   ...fieldLinks('ZW06', zw06Page, ['supplier', 'product', 'supplierSku', 'leadTimeDays']),
+  ...fieldLinks('ZW11', zw11Page, ['code', 'name', 'address']),
+  ...fieldLinks('ZW12', zw12Page, ['warehouse', 'code', 'name', 'address']),
+  ...fieldLinks('ZW13', zw13Page, ['warehouse', 'code', 'name', 'address']),
+  ...fieldLinks('ZW21', zw21Page, ['warehouse', 'code', 'name', 'type']),
+  ...fieldLinks('ZW22', zw22Page, ['warehouse', 'zone', 'code', 'name', 'type']),
+  ...fieldLinks('ZW23', zw23Page, ['warehouse', 'zone', 'code', 'name', 'type']),
+  ...fieldLinks('ZW61', zw61Page, ['supplier', 'product', 'supplierSku', 'leadTimeDays']),
+  ...fieldLinks('ZW62', zw62Page, ['supplier', 'product', 'supplierSku', 'leadTimeDays']),
+  ...fieldLinks('ZW63', zw63Page, ['supplier', 'product', 'supplierSku', 'leadTimeDays']),
 } as const;
 
 export type HelpKey =

@@ -297,3 +297,44 @@ describe('ZW06: artículos del proveedor', () => {
     expect(api.requestsTo('PUT', '/api/v1/suppliers/3/products/7')).toHaveLength(0);
   });
 });
+
+describe('ZW61 a ZW63: transacciones individuales del artículo del proveedor', () => {
+  it('ZW62 informa SUPPLIER_PRODUCT_NOT_FOUND si el artículo no está vinculado', async () => {
+    stubApi({
+      ...catalogHandlers,
+      'GET /api/v1/suppliers': () => page([acme]),
+      'GET /api/v1/products': () => page([product()]),
+      'GET /api/v1/products/7/suppliers': () => jsonResponse(200, { data: [] }),
+    });
+
+    renderRoute('/t/ZW62');
+    await fill('Proveedor', '3');
+    await fill('Artículo', 'tor-m6-30');
+    await userEvent.keyboard('{F8}');
+
+    expect(await statusBar().findByRole('alert')).toHaveTextContent('El artículo TOR-M6-30 no está vinculado al proveedor 000003.');
+    expect(statusBar().getByRole('link', { name: /SUPPLIER_PRODUCT_NOT_FOUND/ })).toHaveAttribute(
+      'href',
+      '/docs/referencia/mensajes#supplier-product-not-found',
+    );
+  });
+
+  it('ZW63 muestra el vínculo en solo lectura, sin modificar ni quitar', async () => {
+    stubApi({
+      ...catalogHandlers,
+      'GET /api/v1/suppliers': () => page([acme]),
+      'GET /api/v1/products': () => page([product()]),
+      'GET /api/v1/products/7/suppliers': () =>
+        jsonResponse(200, { data: [{ product_id: 7, supplier_id: 3, supplier_sku: 'A-100', lead_time_days: 5 }] }),
+    });
+
+    renderRoute('/t/ZW63');
+    await fill('Proveedor', '000003');
+    await fill('Artículo', 'tor-m6-30');
+    await userEvent.keyboard('{F8}');
+
+    expect(await screen.findByRole('textbox', { name: 'Código del proveedor' })).toHaveValue('A-100');
+    expect(screen.queryByRole('button', { name: 'Modificar' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Quitar vínculo' })).not.toBeInTheDocument();
+  });
+});

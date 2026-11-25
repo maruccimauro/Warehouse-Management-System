@@ -4,6 +4,8 @@ La transacción `ZW06` mantiene los artículos que provee cada proveedor. Exige 
 
 El **vínculo** entre un artículo y un proveedor indica que ese proveedor lo vende. Una orden de compra a un proveedor solo admite artículos vinculados a él. El vínculo guarda además el código con que el proveedor identifica el artículo y su plazo de entrega.
 
+Cada acción tiene además su transacción propia: [Crear artículo del proveedor](./crear-articulo-del-proveedor) (`ZW61`), [Modificar artículo del proveedor](./modificar-articulo-del-proveedor) (`ZW62`) y [Visualizar artículo del proveedor](./visualizar-articulo-del-proveedor) (`ZW63`).
+
 ## Elegir el proveedor {#seleccion}
 
 Ingrese el **Proveedor** y ejecute con <kbd>F8</kbd>. Si no existe, la barra de estado lo informa con [`SUPPLIER_NOT_FOUND`](/referencia/mensajes#supplier-not-found).
@@ -12,7 +14,7 @@ Ingrese el **Proveedor** y ejecute con <kbd>F8</kbd>. Si no existe, la barra de 
 
 [Número](./visualizar-proveedor#number) del proveedor, con o sin los ceros a la izquierda: `12` y `000012` son el mismo. Si no lo conoce, <kbd>F4</kbd> busca por número, por fragmento del nombre o por el identificador fiscal completo.
 
-## Lista del catálogo vinculados {#lista}
+## Artículos vinculados {#lista}
 
 La [lista](/primeros-pasos/listas) muestra los artículos del proveedor, ordenados por artículo, con su nombre, su estado, el código del proveedor y el plazo de entrega.
 
@@ -30,14 +32,4 @@ Un artículo sin vínculo no se puede incluir en órdenes de compra nuevas a ese
 
 Se pueden vincular artículos discontinuados o bloqueados y proveedores inactivos: el vínculo es un dato maestro y su uso lo controlan las órdenes de compra.
 
-### Artículo {#product}
-
-SKU del artículo, con <kbd>F4</kbd> para buscarlo en el catálogo. Se elige al vincular y no cambia después: para reemplazarlo, se quita el vínculo y se crea otro. Si el artículo no existe, la barra de estado lo informa con [`PRODUCT_NOT_FOUND`](/referencia/mensajes#product-not-found); si ya está vinculado al proveedor, con [`VALUE_ALREADY_EXISTS`](/referencia/mensajes#value-already-exists).
-
-### Código del proveedor {#supplier-sku}
-
-Opcional, de hasta 60 caracteres. Código con que el proveedor identifica el artículo en sus listas y facturas. Se guarda tal como se escribe, con mayúsculas y minúsculas, y no se repite entre artículos del mismo proveedor ([`VALUE_ALREADY_EXISTS`](/referencia/mensajes#value-already-exists)); otro proveedor puede usar el mismo código.
-
-### Plazo de entrega (días) {#lead-time-days}
-
-Opcional. Días corridos desde el pedido hasta la entrega, de 0 a 365.
+<!--@include: ./partes/articulo-del-proveedor-campos.md-->

@@ -65,6 +65,14 @@
     "cancel": "Cancelar",
     "alreadyLinked": "El artículo {{sku}} ya está vinculado a este proveedor.",
     "hint": "Doble clic o Enter sobre una fila abre el vínculo. F3 vuelve a la pantalla inicial.",
-    "productNotFound": "El artículo {{sku}} no existe."
+    "productNotFound": "El artículo {{sku}} no existe.",
+    "notLinked": "El artículo {{sku}} no está vinculado al proveedor {{number}}."
+  },
+  "linkInitial": {
+    "create": "Crear artículo del proveedor",
+    "change": "Modificar artículo del proveedor",
+    "display": "Visualizar artículo del proveedor",
+    "createHint": "Ingrese el proveedor y continúe con F8. El artículo se elige en la ficha.",
+    "hint": "Ingrese el proveedor y el artículo, o búsquelos con F4, y continúe con F8."
   }
 }

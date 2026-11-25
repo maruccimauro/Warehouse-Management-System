@@ -58,7 +58,8 @@ Desde E2.20 cada transacción del registro (`frontend/src/app/transactions.ts`) 
 Criterio decidido el 25/11/2026 (E2.24, opción 1 del usuario), escrito para que cada objeto nuevo siga el mismo patrón:
 
 - Los datos maestros con volumen y con permisos distintos para consultar y editar (catálogo, proveedores, ubicaciones, usuarios) llevan el trío **Crear**, **Modificar** y **Visualizar** (las actividades 01, 02 y 03 de SAP), con pantalla inicial y ficha (`useInitialScreenFlow`), más su **Lista**. Visualizar no exige permiso de edición.
-- Las tablas de configuración chicas (depósitos, zonas, categorías, unidades de medida) llevan un mantenimiento único **Gestionar <objetos>**, con lista y ficha en visualizar, el botón Modificar y Crear en la barra de aplicación, como las vistas de tabla de SAP (SM30).
+- Las tablas de configuración chicas (depósitos, zonas, categorías, unidades de medida) y los vínculos (catálogo del proveedor) llevan una transacción de gestión **Gestionar <objetos>**, con lista y ficha en visualizar, el botón Modificar y Crear en la barra de aplicación, como las vistas de tabla de SAP (SM30), y además, como en SAP, una transacción propia para cada acción: crear, modificar y visualizar (corrección del usuario del 25/11/2026: la gestión puede reunir varias acciones, pero cada acción tiene su transacción). Las individuales usan la misma ficha que la gestión, sin el paso de visualizar a modificar, y al grabar vuelven a su pantalla inicial.
+- Códigos del rango `ZW` para esas familias: `ZW0N` es la gestión y `ZWN1`, `ZWN2` y `ZWN3` son crear, modificar y visualizar, como el sufijo de actividad 01, 02 y 03 de SAP (`ZW01` y `ZW11` a `ZW13` para depósitos, `ZW02` y `ZW21` a `ZW23` para zonas, `ZW06` y `ZW61` a `ZW63` para el catálogo del proveedor).
 - Las bajas son lógicas: un registro con historia se desactiva (o se discontinúa) desde Modificar o desde la ficha, con confirmación, y no se borra. Un bloqueo operativo que maneja otro permiso tiene transacción propia (`ZW05`, `locations.block`).
 - El identificador de negocio de cada maestro es propio y estable, nunca el `id` técnico: código en depósitos, zonas y ubicaciones, SKU en el catálogo, número interno asignado por una secuencia en proveedores (`suppliers_number_seq`, mostrado con seis dígitos).
 
@@ -149,16 +150,16 @@ Se usa el código de SAP donde la transacción tiene equivalente y el rango `ZW`
 | E1 | `SU3` | Parámetros de usuario | SU3 |
 | E2 | `SU01` | Usuarios | SU01 |
 | E2 | `PFCG` | Roles y permisos | PFCG |
-| E2 | `ZW01` | Depósitos | Configuración (sin transacción de usuario) |
-| E2 | `ZW02` | Zonas | Tipos de almacén en configuración |
+| E2 | `ZW01`; `ZW11`, `ZW12`, `ZW13` | Gestionar depósitos; crear, modificar y visualizar depósito | Configuración (sin transacción de usuario) |
+| E2 | `ZW02`; `ZW21`, `ZW22`, `ZW23` | Gestionar zonas; crear, modificar y visualizar zona | Tipos de almacén en configuración |
 | E2 | `LS01N`, `LS02N`, `LS03N` | Crear, modificar y visualizar ubicación | LS01N, LS02N, LS03N |
-| E2 | `LS10` | Generar ubicaciones | LS10 |
+| E2 | `LS10` | Crear múltiples ubicaciones | LS10 |
 | E2 | `LX03` | Lista de ubicaciones | LX03 (informe de estado de ubicaciones) |
 | E2 | `ZW05` | Bloquear o desbloquear ubicación | Indicadores de bloqueo de LS02N; transacción propia por permiso (D2 de E2.12) |
-| E2 | `MM01`, `MM02`, `MM03` | Crear, modificar y visualizar producto | MM01, MM02, MM03. El depósito opcional de la pantalla inicial suma el stock mínimo, como el nivel de organización centro (D4 de E2.13) |
-| E2 | `MM60` | Lista de productos | MM60 (lista de materiales) |
+| E2 | `MM01`, `MM02`, `MM03` | Crear, modificar y visualizar catálogo | MM01, MM02, MM03. El depósito opcional de la pantalla inicial suma el stock mínimo, como el nivel de organización centro (D4 de E2.13) |
+| E2 | `MM60` | Lista del catálogo | MM60 (lista de materiales) |
 | E2 | `XK01`, `XK02`, `XK03` | Crear, modificar y visualizar proveedor | XK01 a XK03 (BP en S/4HANA). `XK01` sin pantalla inicial: el proveedor no tiene un código propio que verificar antes, como la numeración interna (D1 de E2.13) |
-| E2 | `ZW06` | Productos del proveedor | Registro info (ME11 a ME13) con lista de fuentes obligatoria; transacción propia para no mezclar grabaciones por fila con la ficha del proveedor (D5 de E2.13) |
+| E2 | `ZW06`; `ZW61`, `ZW62`, `ZW63` | Gestionar catálogo del proveedor; crear, modificar y visualizar artículo del proveedor | Registro info (ME11 a ME13) con lista de fuentes obligatoria; transacción propia para no mezclar grabaciones por fila con la ficha del proveedor (D5 de E2.13) |
 | E3 | `MMBE` | Resumen de stock | MMBE |
 | E3 | `MB51` | Lista de documentos de material | MB51 |
 | E3 | `LT10` | Transferencia entre ubicaciones | LT10 |

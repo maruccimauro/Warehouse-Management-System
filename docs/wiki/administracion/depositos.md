@@ -4,6 +4,8 @@ La transacción `ZW01` da de alta los depósitos, modifica sus datos y los activ
 
 Un **depósito** es un establecimiento físico con su propio stock, sus zonas y sus ubicaciones.
 
+Cada acción tiene además su transacción propia: [Crear depósito](./crear-deposito) (`ZW11`), [Modificar depósito](./modificar-deposito) (`ZW12`) y [Visualizar depósito](./visualizar-deposito) (`ZW13`).
+
 ## Lista de depósitos {#lista}
 
 Al abrir la transacción se ve la [lista](/primeros-pasos/listas) de los depósitos, activos e inactivos, con su código, nombre, dirección y estado. Se ordena por código o nombre y se filtra por código, nombre o estado.
@@ -29,14 +31,4 @@ Un depósito nuevo nace activo y con sus zonas y ubicaciones de sistema de recep
 Un depósito inactivo no admite operaciones, como bloquear o desbloquear ubicaciones ([`WAREHOUSE_INACTIVE`](/referencia/mensajes#warehouse-inactive)). Sigue visible para consultas y admite el mantenimiento de sus zonas y ubicaciones. Ver [estados del depósito](/referencia/estados#warehouse).
 :::
 
-### Depósito {#code}
-
-Código del depósito, de hasta 20 caracteres: letras y números, separados por un guion o un guion bajo. Se guarda en mayúsculas, tiene que ser único ([`VALUE_ALREADY_EXISTS`](/referencia/mensajes#value-already-exists)) y no cambia después del alta.
-
-### Nombre {#name}
-
-Nombre del depósito, obligatorio, de hasta 120 caracteres.
-
-### Dirección {#address}
-
-Dirección del depósito, opcional, de hasta 500 caracteres.
+<!--@include: ./partes/deposito-campos.md-->

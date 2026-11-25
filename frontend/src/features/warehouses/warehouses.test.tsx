@@ -218,3 +218,67 @@ describe('ZW05 y LS02N: pantalla inicial y bloqueo', () => {
     expect(await screen.findByRole('heading', { name: 'Modificar ubicación', level: 2 })).toBeInTheDocument();
   });
 });
+
+describe('ZW11 a ZW23: transacciones individuales de depósitos y zonas', () => {
+  const manager = testUser({ permissions: ['warehouses.manage', 'locations.manage'], warehouses: [central] });
+  const centralDetail = { ...central, address: null, is_active: true };
+
+  it('ZW12 modifica un depósito desde su pantalla inicial y vuelve a ella al grabar', async () => {
+    const api = stubApi({
+      'GET /api/v1/auth/me': () => userResponse(manager),
+      'GET /api/v1/warehouses': () => page([centralDetail]),
+      'PATCH /api/v1/warehouses/1': () => jsonResponse(200, { data: { ...centralDetail, name: 'Central norte' } }),
+    });
+
+    renderRoute('/t/ZW12');
+    await fill('Depósito', 'central');
+    await userEvent.keyboard('{F8}');
+
+    // Sin el paso de visualizar a modificar: la ficha ya se edita y ofrece desactivar.
+    expect(await screen.findByRole('button', { name: 'Desactivar' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Modificar' })).not.toBeInTheDocument();
+
+    await fill('Nombre', 'Central norte');
+    await userEvent.click(screen.getByRole('button', { name: 'Grabar' }));
+
+    await waitFor(() => {
+      expect(statusBar().getByRole('status')).toHaveTextContent('Depósito grabado.');
+    });
+    expect(api.requestsTo('PATCH', '/api/v1/warehouses/1')[0]?.body).toEqual({ name: 'Central norte', address: null });
+    // De vuelta en la pantalla inicial, con el depósito cargado.
+    await waitFor(() => {
+      expect(screen.queryByRole('textbox', { name: 'Nombre' })).not.toBeInTheDocument();
+    });
+    expect(screen.getByRole('textbox', { name: 'Depósito' })).toHaveValue('CENTRAL');
+  });
+
+  it('ZW13 muestra el depósito en solo lectura, sin modificar ni cambiar el estado', async () => {
+    stubApi({
+      'GET /api/v1/auth/me': () => userResponse(manager),
+      'GET /api/v1/warehouses': () => page([centralDetail]),
+    });
+
+    renderRoute('/t/ZW13');
+    await fill('Depósito', 'central');
+    await userEvent.keyboard('{F8}');
+
+    expect(await screen.findByRole('textbox', { name: 'Nombre' })).toHaveAttribute('readonly');
+    expect(screen.queryByRole('button', { name: 'Modificar' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Desactivar' })).not.toBeInTheDocument();
+  });
+
+  it('ZW22 abre la zona del depósito elegido', async () => {
+    stubApi({
+      'GET /api/v1/auth/me': () => userResponse(manager),
+      'GET /api/v1/warehouses/1/zones': () => page(zones),
+    });
+
+    renderRoute('/t/ZW22');
+    await fill('Depósito', 'central');
+    await fill('Zona', 'alm');
+    await userEvent.keyboard('{F8}');
+
+    expect(await screen.findByRole('textbox', { name: 'Nombre' })).toHaveValue('Almacenamiento');
+    expect(screen.getByRole('textbox', { name: 'Zona' })).toHaveAttribute('readonly');
+  });
+});

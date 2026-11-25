@@ -113,11 +113,14 @@ const warehouseSchema = z.object({
 interface WarehouseDetailProps {
   mode: 'create' | 'display' | 'change';
   warehouse: Warehouse | undefined;
+  // Transacción individual (crear, modificar o visualizar): sin el paso de visualizar a
+  // modificar, que es de la transacción de gestión; las acciones de estado quedan en modificar.
+  standalone?: boolean;
   onModeChange: (mode: 'display' | 'change', warehouse: Warehouse) => void;
   onBack: () => void;
 }
 
-function WarehouseDetail({ mode, warehouse, onModeChange, onBack }: WarehouseDetailProps) {
+export function WarehouseDetail({ mode, warehouse, standalone = false, onModeChange, onBack }: WarehouseDetailProps) {
   const { t } = useTranslation('warehouses');
   const { show } = useStatusBar();
   const queryClient = useQueryClient();
@@ -176,7 +179,7 @@ function WarehouseDetail({ mode, warehouse, onModeChange, onBack }: WarehouseDet
 
   const actions: ApplicationAction[] = [];
 
-  if (mode === 'display' && current !== undefined) {
+  if (mode === 'display' && !standalone && current !== undefined) {
     actions.push({
       id: 'change',
       label: t('actions.change'),
@@ -187,7 +190,7 @@ function WarehouseDetail({ mode, warehouse, onModeChange, onBack }: WarehouseDet
     });
   }
 
-  if (mode !== 'create' && current !== undefined) {
+  if ((mode === 'change' || (mode === 'display' && !standalone)) && current !== undefined) {
     actions.push({
       id: 'toggle',
       label: current.is_active ? t('actions.deactivate') : t('actions.activate'),

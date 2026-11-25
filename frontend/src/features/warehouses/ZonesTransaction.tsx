@@ -184,11 +184,14 @@ interface ZoneDetailProps {
   warehouse: WarehouseSummary;
   mode: 'create' | 'display' | 'change';
   zone: Zone | undefined;
+  // Transacción individual (crear, modificar o visualizar): sin el paso de visualizar a
+  // modificar, que es de la transacción de gestión; las acciones de estado quedan en modificar.
+  standalone?: boolean;
   onModeChange: (mode: 'display' | 'change', zone: Zone) => void;
   onBack: () => void;
 }
 
-function ZoneDetail({ warehouse, mode, zone, onModeChange, onBack }: ZoneDetailProps) {
+export function ZoneDetail({ warehouse, mode, zone, standalone = false, onModeChange, onBack }: ZoneDetailProps) {
   const { t } = useTranslation('zones');
   const queryClient = useQueryClient();
 
@@ -218,7 +221,7 @@ function ZoneDetail({ warehouse, mode, zone, onModeChange, onBack }: ZoneDetailP
 
   const typeOptions = zoneTypes.map((type) => ({ value: type, label: t(`types.${type}`) }));
   const actions: ApplicationAction[] =
-    mode === 'display' && zone !== undefined
+    mode === 'display' && !standalone && zone !== undefined
       ? [
           {
             id: 'change',

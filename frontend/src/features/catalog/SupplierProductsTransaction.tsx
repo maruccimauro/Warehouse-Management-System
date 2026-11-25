@@ -141,11 +141,14 @@ interface LinkDetailProps {
   supplier: Supplier;
   mode: 'create' | 'display' | 'change';
   link: ProductSupplier | undefined;
+  // Transacción individual (crear, modificar o visualizar): sin el paso de visualizar a
+  // modificar, que es de la transacción de gestión; las acciones de estado quedan en modificar.
+  standalone?: boolean;
   onModeChange: (mode: 'display' | 'change', link: ProductSupplier) => void;
   onBack: () => void;
 }
 
-function LinkDetail({ supplier, mode, link, onModeChange, onBack }: LinkDetailProps) {
+export function LinkDetail({ supplier, mode, link, standalone = false, onModeChange, onBack }: LinkDetailProps) {
   const { t } = useTranslation('suppliers');
   const { show } = useStatusBar();
   const queryClient = useQueryClient();
@@ -231,26 +234,30 @@ function LinkDetail({ supplier, mode, link, onModeChange, onBack }: LinkDetailPr
     }
   };
 
-  const actions: ApplicationAction[] =
-    mode === 'display' && link !== undefined
-      ? [
-          {
-            id: 'change',
-            label: t('links.change'),
-            primary: true,
-            onClick: () => {
-              onModeChange('change', link);
-            },
-          },
-          {
-            id: 'remove',
-            label: t('links.remove'),
-            onClick: () => {
-              setConfirmingRemoval(true);
-            },
-          },
-        ]
-      : [];
+  const actions: ApplicationAction[] = [];
+
+  if (mode === 'display' && !standalone && link !== undefined) {
+    actions.push({
+      id: 'change',
+      label: t('links.change'),
+      primary: true,
+      onClick: () => {
+        onModeChange('change', link);
+      },
+    });
+  }
+
+  // Quitar el vínculo es una modificación: en la gestión se ofrece desde la ficha y en las
+  // transacciones individuales, solo en modificar.
+  if ((mode === 'change' || (mode === 'display' && !standalone)) && link !== undefined) {
+    actions.push({
+      id: 'remove',
+      label: t('links.remove'),
+      onClick: () => {
+        setConfirmingRemoval(true);
+      },
+    });
+  }
 
   return (
     <div className="grid gap-3">

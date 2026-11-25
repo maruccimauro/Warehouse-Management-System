@@ -40,5 +40,12 @@
     "created": "Zona creada.",
     "saved": "Zona grabada.",
     "saveFailed": "No se pudo grabar la zona."
+  },
+  "initial": {
+    "create": "Crear zona",
+    "change": "Modificar zona",
+    "display": "Visualizar zona",
+    "createHint": "Ingrese el depósito donde se crea la zona y continúe con F8.",
+    "hint": "Ingrese el depósito y la zona, o elíjala con F4, y continúe con F8."
   }
 }
