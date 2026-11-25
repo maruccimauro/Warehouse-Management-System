@@ -133,7 +133,7 @@ const { Form, Section, Field } = useTransactionForm({ schema, defaultValues, nam
 
 ### Códigos de transacción
 
-Se usa el código de SAP donde la transacción tiene equivalente y el rango `ZW` para las propias, con la misma regla que ADR-014 aplica a los movimientos (`Z` es el espacio de nombres de cliente en SAP). La tabla es indicativa: cada etapa confirma sus códigos al implementar la pantalla y la página de referencia de la wiki documenta en qué se aparta cada una de su par de SAP.
+Se usa el código de SAP donde la transacción tiene equivalente y el rango `ZW` para las propias, con la misma regla que ADR-014 aplica a los movimientos (`Z` es el espacio de nombres de cliente en SAP). La tabla es indicativa: cada etapa confirma sus códigos al implementar la pantalla. En qué se aparta cada transacción de su par de SAP se registra en este ADR o en la planificación, no en la wiki ni en la interfaz, que describen el sistema por sí mismo sin mencionar SAP.
 
 | Etapa | Código | Transacción | Equivalente SAP |
 | - | - | - | - |

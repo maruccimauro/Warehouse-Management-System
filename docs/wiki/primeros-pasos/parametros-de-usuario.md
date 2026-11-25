@@ -1,6 +1,6 @@
 # Parámetros de usuario (SU3)
 
-La transacción `SU3` reúne los datos propios del usuario: el idioma, los parámetros que completan campos de otras pantallas y el cambio de contraseña. Equivale a la SU3 de SAP. Cualquier usuario con sesión la puede abrir; está en el menú en **Sistema ▸ Datos de usuario**.
+La transacción `SU3` reúne los datos propios del usuario: el idioma, los parámetros que completan campos de otras pantallas y el cambio de contraseña. Cualquier usuario con sesión la puede abrir; está en el menú en **Sistema ▸ Datos de usuario**.
 
 Los cambios de idioma y de parámetros se aplican al grabar con <kbd>Ctrl</kbd>+<kbd>S</kbd>; se guardan en el servidor y acompañan al usuario en cualquier equipo.
 
@@ -16,7 +16,7 @@ Idioma de la interfaz y de los mensajes del sistema. La lista ofrece los idiomas
 
 ## Parámetros {#parametros}
 
-Un **parámetro de usuario** es un valor que el sistema usa para completar un campo en las pantallas que lo tienen, como los ID de parámetro de SAP. La tabla muestra el **ID de parámetro**, el **Valor** y su **Descripción**.
+Un **parámetro de usuario** es un valor que el sistema usa para completar un campo en las pantallas que lo tienen. La tabla muestra el **ID de parámetro**, el **Valor** y su **Descripción**.
 
 ### LGN: depósito por defecto {#lgn}
 

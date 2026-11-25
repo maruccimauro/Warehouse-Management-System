@@ -19,7 +19,7 @@ La wiki es el manual de usuario. La aplicación enlaza a ella con claves de ayud
 | Referencia | `referencia/` | Transacciones, teclas, estados, movimientos, errores y permisos |
 
 - Una sección se publica (carpeta, `sidebar` y `nav` en `.vitepress/config.ts`) cuando tiene su primera página real. No hay páginas "en construcción".
-- Cada transacción tiene una página propia en la sección del puesto que la usa y una fila en `referencia/transacciones.md`, con lo que la distingue de su par de SAP en "Diferencias con SAP".
+- Cada transacción tiene una página propia en la sección del puesto que la usa y una fila en `referencia/transacciones.md`.
 - Las rutas y los nombres de archivo van en español, en minúsculas y con guiones: `primeros-pasos/parametros-de-usuario.md`.
 
 ## 2. Anclas y claves de ayuda
@@ -42,7 +42,7 @@ La ayuda de un campo se documenta en la página de cada transacción que lo usa,
 ```md
 # Título de la página
 
-Párrafo inicial: qué es, para qué sirve, quién la usa y su equivalente de SAP si lo hay.
+Párrafo inicial: qué es, para qué sirve y quién la usa.
 
 ## Tarea o bloque {#ancla}
 
@@ -65,7 +65,8 @@ Atajo o buena práctica.
 - Códigos de transacción, de error, de estado y de permiso en `código`.
 - Definir cada término la primera vez que aparece en la página.
 - Sin guion doble (`--`) en el texto. Registro profesional.
-- Avisos con contenedores de VitePress: `::: tip` (atajo), `::: info` (contexto o diferencia con SAP), `::: warning` (riesgo de pérdida de datos o de un efecto no evidente).
+- La wiki describe el sistema por sí mismo. No menciona SAP ni ningún otro sistema de referencia ("como en SAP", "equivale a", "los códigos siguen los de SAP"): la orientación en SAP es un criterio interno de diseño y vive en los ADR y la planificación, no en la documentación de usuario. Tampoco menciona etapas, tareas, decisiones (DM, REG, ADR) ni el MVP: lo que no existe todavía no se describe.
+- Avisos con contenedores de VitePress: `::: tip` (atajo), `::: info` (contexto), `::: warning` (riesgo de pérdida de datos o de un efecto no evidente).
 
 ## 5. Verificar antes de documentar
 

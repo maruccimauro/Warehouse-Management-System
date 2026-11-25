@@ -12,7 +12,7 @@ El correo electrónico o la contraseña no son correctos. El mensaje es el mismo
 
 ### `USER_INACTIVE` {#user-inactive}
 
-La cuenta está desactivada. El mensaje aparece solo con la contraseña correcta, como el aviso de usuario bloqueado de SAP.
+La cuenta está desactivada. El mensaje aparece solo con la contraseña correcta.
 
 **Qué hacer:** contacte al administrador para que reactive la cuenta.
 
@@ -74,7 +74,7 @@ El cambio de estado no está permitido desde el estado actual. Por ejemplo, una 
 
 ### `WAREHOUSE_INACTIVE` {#warehouse-inactive}
 
-El depósito está inactivo y no admite operaciones: bloquear o desbloquear ubicaciones, y, en etapas posteriores, movimientos, recepciones, pedidos e inventarios físicos. Sí admite la consulta y el mantenimiento de sus zonas y ubicaciones.
+El depósito está inactivo y no admite operaciones, como bloquear o desbloquear ubicaciones. Sí admite la consulta y el mantenimiento de sus zonas y ubicaciones.
 
 **Qué hacer:** opere sobre otro depósito o pida su reactivación a quien administra los depósitos.
 

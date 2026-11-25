@@ -1,6 +1,6 @@
 # Teclas
 
-El sistema usa las teclas de función de SAP GUI. Las teclas de la tabla actúan en toda la aplicación; las de cada componente están en su página.
+Las teclas de la tabla actúan en toda la aplicación; las de cada componente están en su página.
 
 | Tecla | Acción | Dónde |
 | - | - | - |
@@ -17,7 +17,7 @@ El sistema usa las teclas de función de SAP GUI. Las teclas de la tabla actúan
 Con un diálogo abierto (ayuda de búsqueda, filtro de una lista, aviso de datos sin grabar), <kbd>F3</kbd>, <kbd>Mayús</kbd>+<kbd>F3</kbd>, <kbd>F8</kbd> y <kbd>Ctrl</kbd>+<kbd>S</kbd> no actúan sobre la pantalla de abajo.
 
 ::: info
-<kbd>F1</kbd> reemplaza la ayuda del navegador. <kbd>F5</kbd>, <kbd>F11</kbd> y <kbd>F12</kbd> quedan para el navegador: recargar, pantalla completa y herramientas de desarrollo. Cancelar, que en SAP es <kbd>F12</kbd>, está disponible como botón en cada diálogo.
+<kbd>F1</kbd> reemplaza la ayuda del navegador. <kbd>F5</kbd>, <kbd>F11</kbd> y <kbd>F12</kbd> quedan para el navegador: recargar, pantalla completa y herramientas de desarrollo. Para cancelar un diálogo se usa <kbd>Esc</kbd> o su botón **Cancelar**.
 :::
 
 Las teclas dentro del menú de transacciones están en [La pantalla principal](/primeros-pasos/pantalla-principal#menu) y las de las listas en [Listas](/primeros-pasos/listas#teclado).

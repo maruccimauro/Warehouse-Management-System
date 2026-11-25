@@ -1,6 +1,6 @@
 # Ayuda de búsqueda (F4)
 
-La **ayuda de búsqueda** ofrece los valores posibles de un campo, como la tecla F4 de SAP. Un campo que la tiene muestra un botón a la derecha y, al lado del valor, su texto descriptivo (`CEN  Depósito central`).
+La **ayuda de búsqueda** ofrece los valores posibles de un campo con la tecla <kbd>F4</kbd>. Un campo que la tiene muestra un botón a la derecha y, al lado del valor, su texto descriptivo (`CEN  Depósito central`).
 
 ## Buscar un valor {#buscar}
 
@@ -17,7 +17,7 @@ Si el campo tiene un valor válido, la ayuda abre con el foco sobre esa fila. Si
 :::
 
 ::: info
-El botón de la ayuda no recibe el foco con <kbd>Tab</kbd>, como en SAP: con el teclado se usa <kbd>F4</kbd>, y <kbd>Tab</kbd> pasa directamente al campo siguiente.
+El botón de la ayuda no recibe el foco con <kbd>Tab</kbd>: con el teclado se usa <kbd>F4</kbd>, y <kbd>Tab</kbd> pasa directamente al campo siguiente.
 :::
 
 ## Verificación del valor {#verificacion}

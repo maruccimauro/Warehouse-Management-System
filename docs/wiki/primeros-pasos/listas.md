@@ -1,6 +1,6 @@
 # Listas
 
-Los resultados se muestran en **listas** con las funciones de la grilla ALV de SAP: ordenar, filtrar, totalizar, elegir columnas y exportar. La barra arriba de la lista reúne las funciones, que actúan sobre la columna de la celda con foco.
+Los resultados se muestran en **listas** que permiten ordenar, filtrar, totalizar, elegir columnas y exportar. La barra arriba de la lista reúne las funciones, que actúan sobre la columna de la celda con foco.
 
 ## Ordenar y filtrar {#ordenar-y-filtrar}
 

@@ -82,7 +82,7 @@ export default defineConfig({
       linkText: 'Ir al inicio',
     },
     footer: {
-      message: 'Sistema de gestión de depósitos inspirado en SAP.',
+      message: 'Sistema de gestión de depósitos.',
     },
     search: {
       provider: 'local',

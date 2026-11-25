@@ -1,16 +1,16 @@
 # La pantalla principal
 
-La pantalla principal sigue la disposición de SAP GUI: un encabezado con el campo de comando y la barra de herramientas, el menú de transacciones a la izquierda, el área de trabajo en el centro y la barra de estado abajo.
+La pantalla principal tiene un encabezado con el campo de comando y la barra de herramientas, el menú de transacciones a la izquierda, el área de trabajo en el centro y la barra de estado abajo.
 
 ## Transacción {#transaccion}
 
-Una **transacción** es una pantalla con un código fijo. `SU3` abre los parámetros de usuario; los códigos siguen los de SAP cuando existe un equivalente y usan el rango `ZW` para las transacciones propias. Cada transacción tiene su propia dirección (`/t/SU3`), así que el botón Atrás del navegador, los marcadores y las pestañas funcionan como en cualquier sitio.
+Una **transacción** es una pantalla con un código fijo. `SU3` abre los parámetros de usuario. Cada transacción tiene su propia dirección (`/t/SU3`), así que el botón Atrás del navegador, los marcadores y las pestañas funcionan como en cualquier sitio.
 
 La lista completa está en la [referencia de transacciones](/referencia/transacciones).
 
 ## Menú de transacciones {#menu}
 
-El menú agrupa las transacciones en carpetas por área funcional, como el menú SAP Easy Access. Solo muestra las transacciones que los roles del usuario permiten abrir; una carpeta sin transacciones permitidas no aparece.
+El menú agrupa las transacciones en carpetas por área funcional. Solo muestra las transacciones que los roles del usuario permiten abrir; una carpeta sin transacciones permitidas no aparece.
 
 - **Abrir una transacción**: clic en ella, o <kbd>Enter</kbd> con el foco sobre ella.
 - **Moverse con el teclado**: <kbd>↑</kbd> y <kbd>↓</kbd> recorren los ítems visibles, <kbd>→</kbd> expande una carpeta o entra en ella, <kbd>←</kbd> la contrae o sube a la carpeta superior, <kbd>Inicio</kbd> y <kbd>Fin</kbd> van al primero y al último.
@@ -24,7 +24,7 @@ La carpeta **Favoritos**, arriba del menú, reúne las transacciones de uso frec
 
 ### Mostrar códigos {#mostrar-codigos}
 
-La casilla **Mostrar códigos de transacción**, al pie del menú y también en su menú contextual, agrega el código delante del título de cada transacción (`SU3 Parámetros de usuario`), como la opción de nombres técnicos de SAP. La preferencia se guarda con el usuario.
+La casilla **Mostrar códigos de transacción**, al pie del menú y también en su menú contextual, agrega el código delante del título de cada transacción (`SU3 Parámetros de usuario`). La preferencia se guarda con el usuario.
 
 ## Campo de comando {#campo-de-comando}
 
@@ -39,10 +39,6 @@ El campo a la izquierda del encabezado abre transacciones por su código. Se esc
 | `/o` | Abre el menú en una ventana nueva |
 
 Mayúsculas y minúsculas son indistintas. Al escribir, el campo sugiere las transacciones usadas antes y luego las demás permitidas.
-
-::: info
-En SAP, pasar de una transacción a otra exige `/n`. En el WMS alcanza con el código; `/n` sigue funcionando igual.
-:::
 
 Una transacción inexistente y una sin autorización dan mensajes distintos en la barra de estado: **La transacción ZZ01 no existe.** o **No tiene autorización para la transacción ZZ01.**
 
@@ -61,7 +57,7 @@ Cada transacción habilita solo los botones que admite: una pantalla sin nada qu
 
 ## Barra de estado {#barra-de-estado}
 
-La barra inferior informa el resultado de cada acción con un mensaje de uno de cuatro tipos, como en SAP:
+La barra inferior informa el resultado de cada acción con un mensaje de uno de cuatro tipos:
 
 | Tipo | Significado |
 | - | - |
@@ -70,13 +66,13 @@ La barra inferior informa el resultado de cada acción con un mensaje de uno de 
 | E | Error: la acción no se realizó |
 | I | Información |
 
-Los errores muestran su código entre paréntesis, por ejemplo `(WAREHOUSE_INACTIVE)`. El código es un enlace a su explicación en la [referencia de errores](/referencia/errores), como el texto largo del mensaje en SAP.
+Los errores muestran su código entre paréntesis, por ejemplo `(WAREHOUSE_INACTIVE)`. El código es un enlace a su explicación en la [referencia de errores](/referencia/errores).
 
 A la derecha, la barra muestra la transacción abierta, el **Depósito por defecto** (el parámetro [`LGN`](./parametros-de-usuario#lgn)), el usuario y el idioma.
 
 ## Ayuda {#ayuda}
 
-<kbd>F1</kbd> abre esta wiki en la página que explica lo que tiene el foco, como la ayuda F1 de SAP:
+<kbd>F1</kbd> abre esta wiki en la página que explica lo que tiene el foco:
 
 1. Con el foco en un campo, la explicación de ese campo en la página de la transacción.
 2. Si el campo no tiene una explicación propia, la página de la transacción.

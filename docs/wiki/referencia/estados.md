@@ -17,7 +17,7 @@ Admite todas las operaciones. Un depósito nuevo nace activo, con sus ubicacione
 
 ### Inactivo {#warehouse-inactive}
 
-No admite operaciones: bloquear o desbloquear ubicaciones y, en etapas posteriores, movimientos, recepciones, pedidos e inventarios físicos ([`WAREHOUSE_INACTIVE`](./errores#warehouse-inactive)). Se consulta con su historial y admite el mantenimiento de zonas y ubicaciones. Equivale a la marca para borrado de SAP.
+No admite operaciones, como bloquear o desbloquear ubicaciones ([`WAREHOUSE_INACTIVE`](./errores#warehouse-inactive)). Se consulta con su historial y admite el mantenimiento de zonas y ubicaciones.
 
 ## Ubicación {#location}
 
@@ -50,7 +50,7 @@ La ubicación dejó de usarse. No admite movimientos y no se ofrece para operar.
 
 ## Producto {#product}
 
-Los cambios entre los tres estados son libres y los hace quien tiene [`catalog.manage`](./permisos#catalog-manage); quedan auditados. Equivalen al estado de material de SAP.
+Los cambios entre los tres estados son libres y los hace quien tiene [`catalog.manage`](./permisos#catalog-manage); quedan auditados.
 
 ### Activo {#product-active}
 
@@ -74,7 +74,7 @@ Admite órdenes de compra nuevas.
 
 ### Inactivo {#supplier-inactive}
 
-No admite órdenes de compra nuevas y deja terminar las abiertas. Admite el mantenimiento de sus datos y de sus productos. Equivale al bloqueo de compras del proveedor en SAP.
+No admite órdenes de compra nuevas y deja terminar las abiertas. Admite el mantenimiento de sus datos y de sus productos.
 
 ## Usuario {#user}
 

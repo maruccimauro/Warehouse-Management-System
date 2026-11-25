@@ -4,6 +4,7 @@ La página de wiki de una funcionalidad se escribe o se actualiza en el mismo lo
 
 - Lo que se reemplaza se quita de la wiki: no queda contenido obsoleto al lado del nuevo.
 - Se documenta solo lo que existe y se verificó en el código o en la aplicación. Lo planificado para etapas posteriores no se describe como disponible.
+- La wiki y los textos de la aplicación no mencionan SAP ni equivalencias con SAP: esa referencia es interna (ADR, planificación, comentarios de código).
 - Toda clave de ayuda nueva (transacción, campo, estado, error, permiso) tiene su ancla explícita `{#...}` en la página que corresponde, en el mismo lote.
 
 ## Dónde y cómo

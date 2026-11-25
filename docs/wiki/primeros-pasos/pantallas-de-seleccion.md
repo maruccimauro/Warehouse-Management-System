@@ -1,6 +1,6 @@
 # Pantallas de selección
 
-Las consultas y los informes empiezan con una **pantalla de selección**: se indican los criterios y se ejecuta con <kbd>F8</kbd>, como en SAP. El resultado aparece en la misma transacción y <kbd>F3</kbd> vuelve a la selección con los criterios cargados.
+Las consultas y los informes empiezan con una **pantalla de selección**: se indican los criterios y se ejecuta con <kbd>F8</kbd>. El resultado aparece en la misma transacción y <kbd>F3</kbd> vuelve a la selección con los criterios cargados.
 
 Hay dos clases de campos:
 
