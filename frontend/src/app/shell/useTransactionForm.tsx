@@ -336,7 +336,7 @@ export function useTransactionForm<TSchema extends FormSchema>(
 
             if (labelledBy !== undefined) {
               return (
-                <div className="grid gap-1">
+                <div className="grid gap-1" data-help-field={name}>
                   {control}
                   {error !== undefined && (
                     <p id={errorId} className="text-xs text-error">
@@ -356,6 +356,7 @@ export function useTransactionForm<TSchema extends FormSchema>(
                 descriptionId={descriptionId}
                 error={error}
                 errorId={errorId}
+                helpField={name}
               >
                 {control}
               </FormFieldLayout>

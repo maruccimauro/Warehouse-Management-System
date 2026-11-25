@@ -6,10 +6,12 @@ interface ShellKeyboardOptions {
   back: () => void;
   exit: () => void;
   run: (action: ShellAction) => boolean;
+  help: () => void;
 }
 
-// Teclas de función de SAP GUI (ADR-016): F3 atrás, Mayús+F3 finalizar, F8 ejecutar y
-// Ctrl+S grabar. F3 y Ctrl+S se interceptan siempre para que el navegador no abra la
+// Teclas de función de SAP GUI (ADR-016): F1 ayuda, F3 atrás, Mayús+F3 finalizar, F8
+// ejecutar y Ctrl+S grabar. F1 se intercepta siempre para que el navegador no abra su propia
+// ayuda. F3 y Ctrl+S se interceptan siempre para que el navegador no abra la
 // búsqueda ni el guardado de página; F8 solo cuando la transacción ejecuta algo.
 export function useShellKeyboard(options: ShellKeyboardOptions): void {
   const latest = useRef(options);
@@ -24,7 +26,17 @@ export function useShellKeyboard(options: ShellKeyboardOptions): void {
         return;
       }
 
-      const { inTransaction, back, exit, run } = latest.current;
+      const { inTransaction, back, exit, run, help } = latest.current;
+
+      // F1 también con un popup abierto: es la ayuda del campo con foco, no una acción sobre
+      // la pantalla de abajo.
+      if (event.key === 'F1' && !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey) {
+        event.preventDefault();
+        help();
+
+        return;
+      }
+
       // Con un popup modal abierto (F4, filtro de la grilla, datos sin grabar) las teclas de
       // la transacción no actúan sobre la pantalla de abajo; F3 y Ctrl+S igual se cancelan.
       // La aplicación abre todo <dialog> con showModal(), así que [open] equivale a :modal.

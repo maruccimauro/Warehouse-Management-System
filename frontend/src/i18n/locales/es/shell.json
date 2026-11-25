@@ -22,6 +22,7 @@
     "exit": "Finalizar",
     "execute": "Ejecutar",
     "favorite": "Favorito",
+    "help": "Ayuda",
     "favoriteAdded": "La transacción {{code}} se agregó a favoritos.",
     "favoriteRemoved": "La transacción {{code}} se quitó de favoritos."
   },
@@ -44,6 +45,7 @@
     "transaction": "Transacción",
     "defaultWarehouse": "Depósito por defecto",
     "none": "ninguno",
+    "messageHelp": "Ayuda sobre el mensaje {{id}}",
     "language": "Idioma"
   },
   "contextMenu": {

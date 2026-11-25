@@ -26,7 +26,7 @@ La interfaz necesita una dirección visual y de interacción común antes de que
 | F4 | Ayuda de búsqueda con criterios y lista de resultados | Componente genérico de campo con ayuda de búsqueda (E2.17): depósito, producto, ubicación, código de movimiento; ver "Ayuda de búsqueda (F4)" |
 | ALV | Grilla con orden, filtro, totales, subtotales, selección de columnas, layouts y exportación | Grilla sobre TanStack Table 9 (E2.00), con modo servidor y modo local; ver "Grilla ALV". Los layouts guardados quedan para después del MVP |
 | Pantalla de selección | Campos con desde/hasta, selección múltiple, exclusiones y variantes | Parámetros y criterios con rango y selección múltiple (E2.18); ver "Pantalla de selección". El modelo y la API ya admiten exclusiones; su edición en pantalla y las variantes, después del MVP |
-| F1 | Ayuda del campo | Enlace a la wiki con claves de ayuda (E2.16) |
+| F1 | Ayuda del campo (Performance Assistant), en una ventana que se reutiliza | La wiki de usuario en una pestaña con nombre fijo que se reutiliza, en la explicación del campo con foco, de la transacción o en el inicio (E2.16); ver "Ayuda F1" |
 | Menú contextual | Clic secundario en el árbol (ejecutar, agregar a favoritos) y en la pantalla (funciones disponibles con su tecla) | Igual en el árbol (ejecutar, abrir en ventana nueva, favoritos, expandir y contraer, mostrar códigos) y en el área de trabajo (grabar, atrás, finalizar, ejecutar y favorito, con la disponibilidad de la barra). Se abre también con Mayús+F10 o la tecla de menú. Los campos editables, los enlaces del área de trabajo y el texto seleccionado conservan el menú del navegador. Toda acción del menú existe también en otro control, así que no hace falta un botón visible para pantallas táctiles. Desde E2.00 la grilla suma el suyo (ordenar, filtrar, columnas) |
 
 ### Teclas
@@ -34,7 +34,7 @@ La interfaz necesita una dirección visual y de interacción común antes de que
 | Tecla | Acción | Nota |
 | - | - | - |
 | Enter | Confirmar | En el campo de comando ejecuta el código |
-| F1 | Ayuda | Desde E2.16 |
+| F1 | Ayuda | También con un popup abierto. Se intercepta: el navegador no abre su propia ayuda |
 | F3 | Atrás | El navegador usa F3 para buscar; se intercepta |
 | Mayús+F3 | Finalizar: vuelve al menú | |
 | F4 | Ayuda de búsqueda del campo | Desde E2.17 |
@@ -56,6 +56,16 @@ Desde E2.20 cada transacción del registro (`frontend/src/app/transactions.ts`) 
 ### Datos sin grabar
 
 Equivale a `POPUP_TO_CONFIRM_LOSS_OF_DATA` de SAP. La transacción declara si tiene cambios (`useUnsavedChanges`) y el armazón intercepta toda salida: F3, Mayús+F3, `/n`, el árbol, el botón Atrás del navegador (`useBlocker` del router), el cierre de sesión y el cierre o la recarga de la pestaña (`beforeunload`, con el aviso propio del navegador). El diálogo es un `<dialog>` modal nativo con dos acciones, "Salir sin grabar" y "Seguir editando"; el foco inicial va a la segunda, que es la acción segura. No se ofrece "Grabar y salir" como tercer botón: grabar puede fallar por validación y encadenar grabación y salida suma estados de error sin un formulario que lo necesite todavía. `/o` abre otra ventana y no pasa por el aviso.
+
+### Ayuda F1
+
+La wiki de usuario (`docs/wiki/`, VitePress, servida en `/docs/` del mismo host) es la única fuente de las explicaciones (DM-11, E2.15 y E2.16). `frontend/src/shared/help/helpLinks.ts` declara las claves tipadas (`HelpKey`) y su destino `página#ancla`; las anclas son explícitas (`{#...}`) para que no cambien con el título.
+
+- F1, el botón Ayuda de la barra estándar y el menú contextual del área de trabajo resuelven la clave desde un elemento, de lo más específico a lo más general: el `data-help-key` explícito más cercano, el campo de la transacción (`data-help-field`, que ponen `Field` de los bloques de formulario y las filas de la pantalla de selección, con la clave `field.<código>.<campo>`), el `helpKey` de la transacción en el registro y el inicio de la wiki. El botón usa el último elemento enfocado del área de trabajo y el menú, el del clic secundario.
+- Como el elemento de datos de SAP no existe acá, la ayuda de un campo se escribe en la página de cada transacción que lo usa, con un ancla por campo, aunque el campo se repita en otras pantallas.
+- La ayuda abre en la pestaña con nombre `wms-help`, que se reutiliza como la ventana del Performance Assistant; la transacción conserva su estado. No se usa `noopener`: el nombre de la ventana es lo que permite reutilizarla y la wiki es propia y del mismo origen.
+- El código de un mensaje de la barra de estado es un enlace a `referencia/errores#<code>` cuando la wiki lo documenta, como el texto largo del mensaje que SAP abre con doble clic. `HelpLink` es el mismo enlace para estados y permisos en las pantallas.
+- `docs/wiki/scripts/check-help-links.ts` importa `helpLinks.ts` con Node 26, sin compilar, y falla si una clave no tiene su página o su ancla; corre en el job Wiki del CI junto con el build, que falla con enlaces rotos entre páginas.
 
 ### Grilla ALV
 

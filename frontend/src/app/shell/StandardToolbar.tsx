@@ -5,7 +5,7 @@ import { Icon, type IconName } from '@/shared/ui/icons';
 import { useRovingToolbar } from '@/shared/ui/useRovingToolbar';
 import { shellShortcuts } from './shortcuts';
 
-type ToolbarCommand = 'save' | 'back' | 'exit' | 'execute' | 'favorite';
+type ToolbarCommand = 'save' | 'back' | 'exit' | 'execute' | 'favorite' | 'help';
 
 interface ButtonConfig {
   icon: IconName;
@@ -20,6 +20,7 @@ const buttons: Record<ToolbarCommand, ButtonConfig> = {
   exit: { icon: 'exit', shortcut: shellShortcuts.exit, tone: 'text-warning' },
   execute: { icon: 'execute', shortcut: shellShortcuts.execute, tone: 'text-success' },
   favorite: { icon: 'star', tone: 'text-ink' },
+  help: { icon: 'help', shortcut: shellShortcuts.help, tone: 'text-info' },
 };
 
 // focusgroup aún no está en los tipos de React: se pasa como atributo sin tipar.
@@ -73,6 +74,7 @@ interface StandardToolbarProps {
   onExit: () => void;
   onExecute: () => void;
   onToggleFavorite: () => void;
+  onHelp: () => void;
 }
 
 // Barra de herramientas estándar. Todos los botones se renderizan siempre: el conjunto
@@ -97,6 +99,8 @@ export function StandardToolbar(props: StandardToolbarProps) {
         pressed={props.isFavorite}
         onClick={props.onToggleFavorite}
       />
+      <Separator />
+      <ToolbarButton command="help" disabled={false} onClick={props.onHelp} />
     </div>
   );
 }

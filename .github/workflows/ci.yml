@@ -167,9 +167,15 @@ jobs:
           cache-dependency-path: docs/wiki/package-lock.json
 
       - name: Instalar dependencias
+        id: deps
         run: npm ci --no-audit --no-fund
+
+      # Cada clave de frontend/src/shared/help/helpLinks.ts con su página y su ancla (DM-11).
+      - name: Claves de ayuda
+        run: npm run check:help-links
 
       # Falla con enlaces rotos entre páginas (ignoreDeadLinks: false). La publicación
       # en producción llega con E8.12.
       - name: Build de la wiki
+        if: ${{ !cancelled() && steps.deps.conclusion == 'success' }}
         run: npm run build

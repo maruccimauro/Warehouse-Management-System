@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "vitepress dev",
     "build": "vitepress build",
-    "preview": "vitepress preview"
+    "preview": "vitepress preview",
+    "check:help-links": "node scripts/check-help-links.ts"
   },
   "devDependencies": {
     "vitepress": "~1.6.4"

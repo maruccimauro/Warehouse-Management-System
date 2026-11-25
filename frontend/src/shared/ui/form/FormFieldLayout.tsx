@@ -10,6 +10,8 @@ interface FormFieldLayoutProps {
   descriptionId?: string;
   error?: string | undefined;
   errorId?: string;
+  // Nombre del campo para la ayuda F1 (data-help-field, E2.16).
+  helpField?: string;
   children: ReactNode;
 }
 
@@ -25,10 +27,14 @@ export function FormFieldLayout({
   descriptionId,
   error,
   errorId,
+  helpField,
   children,
 }: FormFieldLayoutProps) {
   return (
-    <div className="grid gap-1 sm:grid-cols-[minmax(8rem,12rem)_1fr] sm:items-start sm:gap-x-4 sm:[&>label]:pt-1">
+    <div
+      data-help-field={helpField}
+      className="grid gap-1 sm:grid-cols-[minmax(8rem,12rem)_1fr] sm:items-start sm:gap-x-4 sm:[&>label]:pt-1"
+    >
       <label htmlFor={htmlFor} className="text-ink-muted">
         {label}
         {required && (

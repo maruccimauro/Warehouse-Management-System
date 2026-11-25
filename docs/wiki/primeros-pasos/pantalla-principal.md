@@ -55,6 +55,7 @@ Una transacción inexistente y una sin autorización dan mensajes distintos en l
 | **Finalizar** | <kbd>Mayús</kbd>+<kbd>F3</kbd> | Sale de la transacción y vuelve al menú |
 | **Ejecutar** | <kbd>F8</kbd> | Ejecuta una pantalla de selección |
 | **Favorito** | | Agrega o quita la transacción abierta de los favoritos |
+| **Ayuda** | <kbd>F1</kbd> | Abre la ayuda del campo con foco en esta wiki ([ayuda](#ayuda)) |
 
 Cada transacción habilita solo los botones que admite: una pantalla sin nada que grabar deja **Grabar** deshabilitado. El menú contextual del área de trabajo (clic secundario, o <kbd>Mayús</kbd>+<kbd>F10</kbd>) ofrece las mismas funciones.
 
@@ -69,9 +70,21 @@ La barra inferior informa el resultado de cada acción con un mensaje de uno de 
 | E | Error: la acción no se realizó |
 | I | Información |
 
-Los errores del servidor muestran su código entre paréntesis, por ejemplo `(WAREHOUSE_INACTIVE)`; la [referencia de errores](/referencia/errores) explica cada uno.
+Los errores muestran su código entre paréntesis, por ejemplo `(WAREHOUSE_INACTIVE)`. El código es un enlace a su explicación en la [referencia de errores](/referencia/errores), como el texto largo del mensaje en SAP.
 
 A la derecha, la barra muestra la transacción abierta, el **Depósito por defecto** (el parámetro [`LGN`](./parametros-de-usuario#lgn)), el usuario y el idioma.
+
+## Ayuda {#ayuda}
+
+<kbd>F1</kbd> abre esta wiki en la página que explica lo que tiene el foco, como la ayuda F1 de SAP:
+
+1. Con el foco en un campo, la explicación de ese campo en la página de la transacción.
+2. Si el campo no tiene una explicación propia, la página de la transacción.
+3. En el menú, la página de inicio de la wiki.
+
+La ayuda se abre en una pestaña aparte, que se reutiliza en cada consulta: la transacción queda como estaba, sin perder lo escrito. <kbd>F1</kbd> también funciona dentro de un diálogo, como la ayuda de búsqueda.
+
+El botón **Ayuda** de la barra de herramientas y la opción **Ayuda** del menú contextual del área de trabajo hacen lo mismo: el botón usa el último campo que tuvo el foco y el menú contextual, el lugar donde se hizo el clic secundario.
 
 ## Datos sin grabar {#datos-sin-grabar}
 

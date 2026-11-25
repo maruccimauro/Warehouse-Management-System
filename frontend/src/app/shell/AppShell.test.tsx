@@ -436,3 +436,93 @@ describe('armazón: menús contextuales', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });
+
+describe('armazón: ayuda F1', () => {
+  function stubOpen() {
+    return vi.spyOn(window, 'open').mockReturnValue(null);
+  }
+
+  it('F1 abre la ayuda del campo con foco en la pestaña de ayuda', async () => {
+    const open = stubOpen();
+    await renderShell('/t/SU3', testUser({ warehouses }));
+    const lgn = await screen.findByLabelText('LGN');
+
+    lgn.focus();
+
+    // false: la tecla se cancela y el navegador no abre su propia ayuda.
+    expect(fireEvent.keyDown(lgn, { key: 'F1' })).toBe(false);
+    expect(open).toHaveBeenCalledWith('/docs/primeros-pasos/parametros-de-usuario#lgn', 'wms-help');
+  });
+
+  it('sin un campo con ayuda propia abre la página de la transacción', async () => {
+    const open = stubOpen();
+    await renderShell('/t/SU3', testUser({ warehouses }));
+
+    heading().focus();
+    fireEvent.keyDown(heading(), { key: 'F1' });
+
+    expect(open).toHaveBeenCalledWith('/docs/primeros-pasos/parametros-de-usuario', 'wms-help');
+  });
+
+  it('en el menú abre el inicio de la wiki', async () => {
+    const open = stubOpen();
+    await renderShell();
+
+    fireEvent.keyDown(document.body, { key: 'F1' });
+
+    expect(open).toHaveBeenCalledWith('/docs/', 'wms-help');
+  });
+
+  it('el botón Ayuda usa el último campo enfocado del área de trabajo', async () => {
+    const open = stubOpen();
+    await renderShell('/t/SU3', testUser({ warehouses }));
+    const help = screen.getByRole('button', { name: 'Ayuda' });
+
+    expect(help).toHaveAttribute('aria-keyshortcuts', 'F1');
+
+    screen.getByLabelText('Idioma').focus();
+    await userEvent.click(help);
+
+    expect(open).toHaveBeenCalledWith('/docs/primeros-pasos/parametros-de-usuario#locale', 'wms-help');
+  });
+
+  it('el menú contextual del área de trabajo ofrece la ayuda', async () => {
+    const open = stubOpen();
+    await renderShell('/t/SU3', testUser({ warehouses }));
+
+    fireEvent.contextMenu(heading());
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Ayuda' }));
+
+    expect(open).toHaveBeenCalledWith('/docs/primeros-pasos/parametros-de-usuario', 'wms-help');
+  });
+
+  it('el código de un error documentado enlaza a su explicación', async () => {
+    stubApi({
+      'GET /api/v1/auth/me': () => userResponse(testUser({ warehouses })),
+      'PUT /api/v1/me/parameters': () => problemResponse(500, 'INTERNAL_ERROR'),
+    });
+    renderRoute('/t/SU3');
+
+    await userEvent.type(await screen.findByLabelText('LGN'), 'NOR');
+    await userEvent.keyboard('{Control>}s{/Control}');
+
+    const link = await statusBar().findByRole('link', { name: 'Ayuda sobre el mensaje INTERNAL_ERROR' });
+
+    expect(link).toHaveAttribute('href', '/docs/referencia/errores#internal-error');
+    expect(link).toHaveAttribute('target', 'wms-help');
+  });
+
+  it('un código sin entrada en la wiki se muestra sin enlace', async () => {
+    stubApi({
+      'GET /api/v1/auth/me': () => userResponse(testUser({ warehouses })),
+      'PUT /api/v1/me/parameters': () => problemResponse(409, 'SOMETHING_NEW'),
+    });
+    renderRoute('/t/SU3');
+
+    await userEvent.type(await screen.findByLabelText('LGN'), 'NOR');
+    await userEvent.keyboard('{Control>}s{/Control}');
+
+    expect(await statusBar().findByText('(SOMETHING_NEW)')).toBeInTheDocument();
+    expect(statusBar().queryByRole('link')).not.toBeInTheDocument();
+  });
+});

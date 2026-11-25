@@ -7,4 +7,5 @@ export const shellShortcuts = {
   back: { display: 'F3', aria: 'F3' },
   exit: { display: 'Mayús+F3', aria: 'Shift+F3' },
   execute: { display: 'F8', aria: 'F8' },
+  help: { display: 'F1', aria: 'F1' },
 } as const satisfies Record<string, KeyShortcut>;

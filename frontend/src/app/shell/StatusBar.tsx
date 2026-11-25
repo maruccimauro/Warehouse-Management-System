@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { HelpLink } from '@/shared/help/HelpLink';
+import { isHelpKey } from '@/shared/help/helpLinks';
 import { Icon, type IconName } from '@/shared/ui/icons';
 import { useStatusBar, type MessageType, type StatusMessage } from './statusMessages';
 
@@ -8,6 +10,28 @@ const appearance: Record<MessageType, { icon: IconName; className: string }> = {
   E: { icon: 'error', className: 'text-error' },
   I: { icon: 'info', className: 'text-info' },
 };
+
+// Código del mensaje: si la wiki lo explica, es un enlace a su entrada, como el texto largo
+// del mensaje que SAP abre con doble clic en la barra de estado (D8 de E2.16).
+function MessageId({ id }: { id: string }) {
+  const { t } = useTranslation('shell');
+  const helpKey = `error.${id}`;
+  const className = 'shrink-0 font-mono text-xs text-ink-muted';
+
+  if (!isHelpKey(helpKey)) {
+    return <span className={className}>({id})</span>;
+  }
+
+  return (
+    <span className={className}>
+      (
+      <HelpLink helpKey={helpKey} label={t('statusBar.messageHelp', { id })}>
+        {id}
+      </HelpLink>
+      )
+    </span>
+  );
+}
 
 function MessageContent({ message }: { message: StatusMessage }) {
   const { t } = useTranslation('shell');
@@ -20,7 +44,7 @@ function MessageContent({ message }: { message: StatusMessage }) {
       </span>
       <span className="visually-hidden">{t(`statusBar.types.${message.type}`)}: </span>
       <span className="truncate">{message.text}</span>
-      {message.id !== undefined && <span className="shrink-0 font-mono text-xs text-ink-muted">({message.id})</span>}
+      {message.id !== undefined && <MessageId id={message.id} />}
     </span>
   );
 }

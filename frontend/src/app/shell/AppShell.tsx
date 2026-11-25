@@ -6,6 +6,7 @@ import { useAuthenticatedUser } from '@/features/auth/useAuthenticatedUser';
 import { useUserPreferences } from '@/features/preferences/userPreferences';
 import { UserPreferencesProvider } from '@/features/preferences/UserPreferencesProvider';
 import { useDefaultWarehouse } from '@/features/warehouses/useDefaultWarehouse';
+import { openHelp, resolveHelpKey } from '@/shared/help/help';
 import { ContextMenu } from '@/shared/ui/ContextMenu';
 import { keepsNativeContextMenu, type ContextMenuItem } from '@/shared/ui/contextMenuItems';
 import { Icon } from '@/shared/ui/icons';
@@ -71,7 +72,7 @@ function ShellLayout() {
   const { preferences } = useUserPreferences();
   const { allowed } = useTransactionAccess();
   const toggleFavorite = useFavoriteToggle();
-  const workAreaMenu = useContextMenu<true>();
+  const workAreaMenu = useContextMenu<Element | null>();
   const [menuOpen, setMenuOpen] = useState(false);
   const navId = useId();
   const mainRef = useRef<HTMLElement>(null);
@@ -94,7 +95,25 @@ function ShellLayout() {
     void navigate('/');
   };
 
-  useShellKeyboard({ inTransaction, back, exit, run });
+  // Ayuda F1 (E2.16): la del elemento indicado, con la transacción abierta como respaldo. El
+  // botón de la barra y el menú contextual no tienen el foco en el campo, así que usan el
+  // último elemento enfocado del área de trabajo y el elemento del clic secundario.
+  const lastWorkAreaFocus = useRef<Element | null>(null);
+  const showHelp = (from: Element | null) => {
+    const context = transaction === undefined ? undefined : { code: transaction.code, helpKey: transaction.helpKey };
+
+    openHelp(resolveHelpKey(from?.isConnected === true ? from : null, context));
+  };
+
+  useShellKeyboard({
+    inTransaction,
+    back,
+    exit,
+    run,
+    help: () => {
+      showHelp(document.activeElement);
+    },
+  });
 
   // Un menú abierto pierde sentido al cambiar de pantalla (por ejemplo, con F3).
   const closeWorkAreaMenu = workAreaMenu.close;
@@ -141,7 +160,7 @@ function ShellLayout() {
     onSelect,
   });
 
-  const workAreaItems = (): ContextMenuItem[] => {
+  const workAreaItems = (target: Element | null): ContextMenuItem[] => {
     const items: ContextMenuItem[] = [
       standardItem('save', available.save, () => run('save')),
       { kind: 'separator', id: 'separator-navigation' },
@@ -149,6 +168,10 @@ function ShellLayout() {
       standardItem('exit', inTransaction, exit),
       { kind: 'separator', id: 'separator-execute' },
       standardItem('execute', available.execute, () => run('execute')),
+      { kind: 'separator', id: 'separator-help' },
+      standardItem('help', true, () => {
+        showHelp(target);
+      }),
     ];
 
     if (code !== undefined) {
@@ -218,6 +241,9 @@ function ShellLayout() {
                 toggleFavorite(code);
               }
             }}
+            onHelp={() => {
+              showHelp(lastWorkAreaFocus.current);
+            }}
           />
         </div>
       </header>
@@ -240,9 +266,12 @@ function ShellLayout() {
         <main
           ref={mainRef}
           className="min-h-0 overflow-auto"
+          onFocus={(event) => {
+            lastWorkAreaFocus.current = event.target;
+          }}
           onContextMenu={(event) => {
             if (!keepsNativeContextMenu(event, { allowLinks: false })) {
-              workAreaMenu.open(event, true);
+              workAreaMenu.open(event, event.target instanceof Element ? event.target : null);
             }
           }}
         >
@@ -257,7 +286,7 @@ function ShellLayout() {
           <ContextMenu
             label={t('contextMenu.workAreaLabel')}
             state={workAreaMenu.state}
-            items={workAreaMenu.state === null ? [] : workAreaItems()}
+            items={workAreaMenu.state === null ? [] : workAreaItems(workAreaMenu.state.target)}
             onClose={workAreaMenu.close}
           />
         </main>

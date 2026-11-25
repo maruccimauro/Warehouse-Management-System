@@ -62,7 +62,7 @@ function ParameterRow({ field, selection, onMessage }: RowProps<ParameterField>)
   const required = field.required === true;
 
   return (
-    <div className={rowClass}>
+    <div className={rowClass} data-help-field={field.id}>
       <label htmlFor={inputId} className={labelClass}>
         {field.label}
         {required && (
@@ -104,7 +104,7 @@ function SelectOptionsRow({ field, selection, onMessage }: RowProps<SelectOption
   const multipleLabel = t('multiple', { label: field.label });
 
   return (
-    <div className={rowClass}>
+    <div className={rowClass} data-help-field={field.id}>
       <label id={labelId} htmlFor={controlId(baseId, field.id, 'low')} className={labelClass}>
         {field.label}
       </label>
