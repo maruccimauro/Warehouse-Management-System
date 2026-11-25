@@ -6,8 +6,8 @@ use App\Modules\Catalog\Models\Supplier;
 use App\Shared\Exceptions\ValueAlreadyExists;
 
 /**
- * Alta de un proveedor. Nace activo; el identificador fiscal se normaliza en
- * el modelo.
+ * Alta de un proveedor. Nace activo, con el número interno siguiente de su
+ * secuencia; el identificador fiscal se normaliza en el modelo.
  */
 final class CreateSupplier
 {
@@ -20,6 +20,7 @@ final class CreateSupplier
     {
         $supplier = new Supplier($attributes);
         $supplier->is_active = true;
+        $supplier->number = Supplier::nextNumber();
         $supplier->save();
 
         return $supplier->refresh();

@@ -14,9 +14,9 @@ use Illuminate\Support\Facades\DB;
  * existentes reciben su número en el orden de alta.
  *
  * La columna no tiene DEFAULT nextval: la convención del esquema reserva las
- * secuencias implícitas para nadie (las claves son IDENTITY). El número lo toma
- * el modelo al crear el proveedor (Supplier::booted), como un rango de
- * numeración que asigna la aplicación.
+ * secuencias implícitas para nadie (las claves son IDENTITY). El número lo
+ * asigna CreateSupplier con Supplier::nextNumber(), como un rango de
+ * numeración que administra la aplicación.
  */
 return new class extends Migration
 {

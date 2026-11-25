@@ -56,15 +56,25 @@ class Supplier extends Model
     }
 
     /**
-     * El número interno sale de su secuencia al crear el proveedor, sea por la
-     * Action o por cualquier otro camino (seeders, pruebas).
+     * Próximo número interno de la secuencia de proveedores.
+     */
+    public static function nextNumber(): int
+    {
+        $next = DB::scalar("SELECT nextval('suppliers_number_seq')");
+
+        return is_numeric($next) ? (int) $next : throw new \LogicException('suppliers_number_seq no devolvió un número.');
+    }
+
+    /**
+     * Respaldo para los caminos que crean sin la Action (pruebas). CreateSupplier
+     * asigna el número de forma explícita, porque los seeders corren sin eventos
+     * de modelo (WithoutModelEvents).
      */
     protected static function booted(): void
     {
         static::creating(function (Supplier $supplier): void {
             if (! isset($supplier->attributes['number'])) {
-                $next = DB::scalar("SELECT nextval('suppliers_number_seq')");
-                $supplier->number = is_numeric($next) ? (int) $next : throw new \LogicException('suppliers_number_seq no devolvió un número.');
+                $supplier->number = self::nextNumber();
             }
         });
     }
