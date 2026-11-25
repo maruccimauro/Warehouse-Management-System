@@ -14,6 +14,7 @@ import { WarehouseScopeProvider, ZoneField } from './LocationFields';
 import { useZones } from './warehouseQueries';
 import { useDefaultWarehouse } from './useDefaultWarehouse';
 import { WarehouseField } from './WarehouseField';
+import { InfoNotice } from '@/shared/ui/InfoNotice';
 import {
   generateLocations,
   locationsQueryKey,
@@ -255,9 +256,9 @@ export function GenerateLocationsTransaction() {
           </Section>
         </Form>
 
-        <section aria-live="polite" className="grid max-w-4xl gap-1 rounded-sm border border-border bg-surface px-3 py-2">
+        <InfoNotice live>
           {count === undefined || preview === undefined ? (
-            <p className="text-ink-muted">{t('generate.previewEmpty')}</p>
+            <p>{t('generate.previewEmpty')}</p>
           ) : (
             <>
               <p>{t('generate.preview', { count: formatNumber(count), first: preview[0], last: preview[1] })}</p>
@@ -269,8 +270,8 @@ export function GenerateLocationsTransaction() {
               )}
             </>
           )}
-        </section>
-        <p className="text-xs text-ink-muted">{t('generate.hint')}</p>
+        </InfoNotice>
+        <InfoNotice>{t('generate.hint')}</InfoNotice>
       </div>
 
       <ConfirmDialog
@@ -294,12 +295,13 @@ export function GenerateLocationsTransaction() {
   );
 }
 
-// Desde y hasta de una coordenada en una fila, con el rótulo de la coordenada como grupo.
+// Desde y hasta de una coordenada en una fila, con el rótulo de la coordenada como grupo. Dos
+// columnas iguales: los "hasta" quedan alineados entre filas.
 function RangeRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <fieldset className="grid gap-1">
       <legend className="text-xs font-semibold text-ink-muted">{label}</legend>
-      <div className="flex flex-wrap gap-x-6 gap-y-1">{children}</div>
+      <div className="grid gap-x-6 gap-y-1 md:grid-cols-2">{children}</div>
     </fieldset>
   );
 }

@@ -30,11 +30,13 @@ Los límites ofrecen la [ayuda de búsqueda](./ayuda-de-busqueda) con <kbd>F4</k
 
 El botón al lado de **hasta** abre **Selección múltiple**, que admite varios valores y rangos para el mismo criterio. Se unen con O: una fila entra si cumple cualquiera de ellos.
 
-1. En la pestaña **Valores individuales**, escriba cada valor en la fila vacía del final: al escribir se agrega otra.
-2. En la pestaña **Rangos**, complete **Desde** y **Hasta** de cada rango.
-3. Elija **Copiar (F8)** o presione <kbd>F8</kbd>.
+1. En la pestaña **Valores individuales**, elija la **Condición** de cada fila (**igual a**, **distinto de**, **mayor que**, **mayor o igual que**, **menor que** o **menor o igual que**) y escriba el valor en la fila vacía del final: al escribir se agrega otra.
+2. En la pestaña **Rangos**, complete **Desde** y **Hasta** de cada rango: la fila se lee "entre … y …".
+3. Elija **Aplicar** o presione <kbd>F8</kbd>.
 
-Cuando el criterio tiene más entradas de las que se ven en desde y hasta, el botón aparece relleno e indica la cantidad (**3 entradas**).
+El botón de la papelera, al final de cada fila, borra esa fila; la fila bajo el puntero se resalta. **Borrar pestaña** vacía la pestaña visible y **Borrar todo** vacía todas.
+
+Cuando el criterio tiene más entradas de las que se ven en desde y hasta, o una condición distinta de **igual a**, el botón aparece relleno e indica la cantidad (**3 entradas**). Mientras tanto, desde y hasta quedan bloqueados: la selección se modifica en **Selección múltiple**, y vuelven a habilitarse cuando queda una sola entrada simple.
 
 ::: info
 Las pestañas **Excluir valores individuales** y **Excluir rangos** todavía no están disponibles.

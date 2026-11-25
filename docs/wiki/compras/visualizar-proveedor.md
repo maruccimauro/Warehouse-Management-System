@@ -10,7 +10,7 @@ La transacción `XK03` muestra los datos de un proveedor y sus productos sin mod
 
 ## Productos del proveedor {#productos}
 
-Debajo de la ficha, la [lista](/primeros-pasos/listas) **Productos del proveedor** muestra los productos vinculados, ordenados por producto, con su estado, el código con que el proveedor los identifica y el plazo de entrega. Los vínculos se mantienen en [Productos del proveedor](./productos-del-proveedor).
+Debajo de la ficha, la [lista](/primeros-pasos/listas) **Productos del proveedor** muestra los productos vinculados, ordenados por producto, con su estado, el código con que el proveedor los identifica y el plazo de entrega. Los vínculos se mantienen en [Gestionar productos del proveedor](./productos-del-proveedor).
 
 ## Pantalla inicial {#pantalla-inicial}
 

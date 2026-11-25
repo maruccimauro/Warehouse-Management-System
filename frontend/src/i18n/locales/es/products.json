@@ -1,7 +1,7 @@
 {
   "fields": {
     "sku": "SKU",
-    "warehouse": "Depósito",
+    "warehouse": "Depósito (stock mínimo)",
     "name": "Nombre",
     "description": "Descripción",
     "barcode": "Código de barras",

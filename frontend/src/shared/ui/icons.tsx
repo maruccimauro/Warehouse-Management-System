@@ -29,6 +29,7 @@ const paths = {
   previous: 'M10 4L6 8l4 4',
   arrowUp: 'M8 13V3 M4 7l4-4 4 4',
   arrowDown: 'M8 3v10 M4 9l4 4 4-4',
+  grip: 'M5.5 3.5h1 M9.5 3.5h1 M5.5 8h1 M9.5 8h1 M5.5 12.5h1 M9.5 12.5h1',
   searchHelp: 'M7 2.5a4.5 4.5 0 1 0 0 9a4.5 4.5 0 1 0 0-9z M10.3 10.3l3.2 3.2',
   // Selección múltiple: la flecha de SAP, rellena cuando el criterio tiene más entradas.
   multipleSelection: 'M2.5 6h6V3l5 5-5 5v-3h-6z',

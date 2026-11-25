@@ -1,4 +1,4 @@
-# Productos del proveedor (ZW06)
+# Gestionar productos del proveedor (ZW06)
 
 La transacción `ZW06` mantiene los productos que provee cada proveedor. Exige el permiso [`suppliers.manage`](/referencia/permisos#suppliers-manage) y está en el menú en **Compras ▸ Proveedores**.
 

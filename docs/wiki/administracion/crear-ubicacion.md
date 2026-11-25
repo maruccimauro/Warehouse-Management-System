@@ -1,6 +1,6 @@
 # Crear ubicación (LS01N)
 
-La transacción `LS01N` da de alta una ubicación en un depósito, una por vez. Exige el permiso [`locations.manage`](/referencia/permisos#locations-manage) y está en el menú en **Logística ▸ Estructura del depósito**. Para crear muchas ubicaciones con una misma estructura, use [Generar ubicaciones](./generar-ubicaciones).
+La transacción `LS01N` da de alta una ubicación en un depósito, una por vez. Exige el permiso [`locations.manage`](/referencia/permisos#locations-manage) y está en el menú en **Logística ▸ Estructura del depósito**. Para crear muchas ubicaciones con una misma estructura, use [Crear múltiples ubicaciones](./crear-multiples-ubicaciones).
 
 Una **ubicación** es el lugar físico donde se guarda la mercadería, identificado por un código único dentro del depósito.
 

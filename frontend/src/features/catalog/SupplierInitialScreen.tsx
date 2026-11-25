@@ -9,6 +9,7 @@ import type { SelectionField, SelectionInputProps } from '@/shared/ui/selection/
 import { useSelectionScreen } from '@/shared/ui/selection/useSelectionScreen';
 import { findSupplier, type Supplier } from './catalogApi';
 import { SupplierField } from './CatalogFields';
+import { InfoNotice } from '@/shared/ui/InfoNotice';
 
 interface SupplierInitialScreenProps {
   // Título de la pantalla: modificar, visualizar o los productos del proveedor.
@@ -67,7 +68,7 @@ export function SupplierInitialScreen({ title, onContinue, initial }: SupplierIn
   return (
     <div className="grid gap-3">
       <SelectionScreen selection={selection} title={t(`initial.${title}`)} onMessage={show} />
-      <p className="text-xs text-ink-muted">{t('initial.hint')}</p>
+      <InfoNotice>{t('initial.hint')}</InfoNotice>
     </div>
   );
 }

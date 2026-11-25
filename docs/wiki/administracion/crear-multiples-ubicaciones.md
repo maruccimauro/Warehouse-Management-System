@@ -1,13 +1,13 @@
-# Generar ubicaciones (LS10)
+# Crear múltiples ubicaciones (LS10)
 
 La transacción `LS10` crea de una vez todas las ubicaciones de una estructura de pasillos, estanterías y niveles. Exige el permiso [`locations.manage`](/referencia/permisos#locations-manage) y está en el menú en **Logística ▸ Estructura del depósito**. Para una ubicación suelta, use [Crear ubicación](./crear-ubicacion).
 
-## Generar un lote {#generar}
+## Crear un lote {#generar}
 
 1. Complete el **Depósito**, la **Zona** y la plantilla.
 2. Debajo de la plantilla, la pantalla muestra cuántas ubicaciones se crean y el primer y el último código, por ejemplo **Se crean 160 ubicaciones, de A-01-01 a D-10-04.**
 3. Ejecute con <kbd>F8</kbd> o **Ejecutar**. El sistema pide confirmación con la cantidad, la zona y los códigos.
-4. Elija **Generar**. El sistema informa **Se crearon … ubicaciones en la zona …** y deja la plantilla vacía para el lote siguiente.
+4. Elija **Crear**. El sistema informa **Se crearon … ubicaciones en la zona …** y deja la plantilla vacía para el lote siguiente.
 
 Las ubicaciones nuevas nacen activas, en la zona elegida, con sus coordenadas completas.
 

@@ -61,7 +61,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('LS10: generar ubicaciones', () => {
+describe('LS10: crear múltiples ubicaciones', () => {
   async function fillTemplate(aisleTo: string, levelTo: string) {
     await fill('Depósito', 'central');
     await fill('Zona', 'alm');
@@ -87,11 +87,11 @@ describe('LS10: generar ubicaciones', () => {
 
     await userEvent.keyboard('{F8}');
 
-    const dialog = await screen.findByRole('dialog', { name: 'Generar ubicaciones' });
+    const dialog = await screen.findByRole('dialog', { name: 'Crear múltiples ubicaciones' });
 
     expect(dialog).toHaveTextContent('Se van a crear 160 ubicaciones en la zona ALM, de A-01-01 a D-10-04.');
 
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Generar' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Crear' }));
 
     await waitFor(() => {
       expect(statusBar().getByRole('status')).toHaveTextContent('Se crearon 160 ubicaciones en la zona ALM.');

@@ -1,4 +1,4 @@
-# Depósitos (ZW01)
+# Gestionar depósitos (ZW01)
 
 La transacción `ZW01` da de alta los depósitos, modifica sus datos y los activa o desactiva. Exige el permiso [`warehouses.manage`](/referencia/permisos#warehouses-manage) y está en el menú en **Logística ▸ Estructura del depósito**.
 

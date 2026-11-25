@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { useStatusBar } from '@/app/shell/statusMessages';
+import { useInitialScreenFlow, type MaintenanceActivity } from '@/app/shell/useInitialScreenFlow';
 import { useTransactionForm } from '@/app/shell/useTransactionForm';
 import { HelpLink } from '@/shared/help/HelpLink';
 import { normalizeTaxId, optionalEmail, requiredText, taxIdRule, textRule } from '@/shared/ui/form/fieldRules';
@@ -23,16 +24,16 @@ import {
 } from './catalogApi';
 import { SupplierInitialScreen } from './SupplierInitialScreen';
 import { useSupplierProductColumns } from './supplierProductColumns';
+import { InfoNotice } from '@/shared/ui/InfoNotice';
 
-type SupplierActivity = 'create' | 'change' | 'display';
+type SupplierActivity = MaintenanceActivity;
 
 // XK01, XK02 y XK03: crear, modificar y visualizar un proveedor (E2.13, D1). Modificar y
 // visualizar parten de la pantalla inicial con el identificador fiscal; crear abre la ficha
 // directamente, porque el proveedor no tiene un código propio que verificar antes: el
 // identificador fiscal repetido se informa al grabar (VALUE_ALREADY_EXISTS).
 export function SupplierTransaction({ activity }: { activity: SupplierActivity }) {
-  const [supplier, setSupplier] = useState<Supplier>();
-  const [last, setLast] = useState<string>();
+  const flow = useInitialScreenFlow((next: Supplier) => next.tax_id);
   // Crear: cada grabación vuelve a una ficha vacía para el alta siguiente.
   const [round, setRound] = useState(0);
 
@@ -49,28 +50,11 @@ export function SupplierTransaction({ activity }: { activity: SupplierActivity }
     );
   }
 
-  if (supplier === undefined) {
-    return (
-      <SupplierInitialScreen
-        title={activity}
-        initial={last}
-        onContinue={(next) => {
-          setLast(next.tax_id);
-          setSupplier(next);
-        }}
-      />
-    );
+  if (flow.target === undefined) {
+    return <SupplierInitialScreen title={activity} initial={flow.last} onContinue={flow.open} />;
   }
 
-  return (
-    <SupplierDetail
-      activity={activity}
-      supplier={supplier}
-      onDone={() => {
-        setSupplier(undefined);
-      }}
-    />
-  );
+  return <SupplierDetail activity={activity} supplier={flow.target} onDone={flow.close} />;
 }
 
 export function CreateSupplierTransaction() {
@@ -169,7 +153,7 @@ function SupplierDetail({ activity, supplier, onDone }: SupplierDetailProps) {
           {t('fields.status')}: <HelpLink helpKey={`state.supplier.${values.status}`}>{t(`statuses.${values.status}`)}</HelpLink>
         </p>
       )}
-      {activity !== 'display' && <p className="text-xs text-ink-muted">{t('detail.saveHint')}</p>}
+      {activity !== 'display' && <InfoNotice>{t('detail.saveHint')}</InfoNotice>}
       {activity === 'display' && supplier !== undefined && <SupplierProductsReadOnly supplier={supplier} />}
     </div>
   );

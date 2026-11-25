@@ -46,7 +46,7 @@ describe('cambio de contraseña obligatorio (REG-021)', () => {
       password: newPassword,
       password_confirmation: newPassword,
     });
-    expect(await screen.findByRole('heading', { level: 1, name: 'Parámetros de usuario' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Gestionar parámetros de usuario' })).toBeInTheDocument();
   });
 
   it('valida en el cliente la confirmación y que la nueva sea distinta', async () => {

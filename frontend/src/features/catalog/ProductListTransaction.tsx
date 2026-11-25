@@ -14,6 +14,7 @@ import { fetchProducts, normalizeSku, productsQueryKey, productStatuses, type Pr
 import { CategoryField } from './CatalogFields';
 import { categoryPaths, useCategories, useUnits } from './catalogQueries';
 import { productLink } from './productLinks';
+import { InfoNotice } from '@/shared/ui/InfoNotice';
 
 const bySku: GridSort = { columnId: 'sku', desc: false };
 
@@ -87,7 +88,7 @@ function ListSelection({ selection, onExecute }: { selection: ReturnType<typeof 
   return (
     <div className="grid gap-3">
       <SelectionScreen selection={selection} title={t('list.selection')} onMessage={show} />
-      <p className="text-xs text-ink-muted">{t('list.hint')}</p>
+      <InfoNotice>{t('list.hint')}</InfoNotice>
     </div>
   );
 }

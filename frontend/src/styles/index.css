@@ -20,6 +20,11 @@
   --color-toolbar: #e3e8ed;
   --color-selected: #dcebfa;
   --color-hover: #ebf3fb;
+  /* Fondo de un campo que no se edita (visualizar, código ya grabado): un tono apenas más
+     oscuro que surface, para distinguirlo de un vistazo sin competir con el contenido. */
+  --color-readonly: #eef2f6;
+  /* Globo del error de campo: fondo amarillo de nota con borde punteado. */
+  --color-tooltip: #fff6cc;
 
   --color-border: #c5ced7;
   --color-border-strong: #6c7a88;
@@ -89,6 +94,13 @@
     @apply aria-invalid:border-error aria-invalid:bg-error-soft;
   }
 
+  /* Solo lectura: mismo tono que un campo F4 inhabilitado en visualizar, con el borde suave y
+     el texto con contraste pleno, porque el valor se lee. */
+  .field-input:is(input, textarea)[readonly],
+  .field-input:is(select):disabled {
+    @apply cursor-default border-border bg-readonly text-ink;
+  }
+
   @media (pointer: coarse) {
     .field-input {
       @apply min-h-11;
@@ -111,7 +123,7 @@
   }
 
   .field-group:has(input:disabled) {
-    @apply cursor-not-allowed bg-surface-alt text-ink-muted;
+    @apply cursor-default border-border bg-readonly text-ink;
   }
 
   .field-group > input {
@@ -130,6 +142,62 @@
     .field-group > button {
       @apply min-w-11;
     }
+  }
+
+  /* Aviso informativo (InfoNotice): barra superior fina con ícono y rótulo, y el texto. */
+  .info-notice {
+    @apply max-w-4xl overflow-hidden rounded-sm border border-info/40 bg-surface;
+  }
+
+  .info-notice-bar {
+    @apply flex items-center gap-1.5 border-b border-info/30 bg-info-soft px-2 py-0.5 text-xs font-semibold text-info;
+  }
+
+  /* Ícono de error de campo (FieldErrorIndicator): ancho fijo aunque no haya error, y el globo
+     con el texto al pasar el puntero por el ícono o con el foco en el campo de su renglón. */
+  .field-error {
+    @apply relative inline-flex min-h-7 w-4 flex-none items-center justify-center text-error pointer-coarse:min-h-11;
+  }
+
+  .field-error-tip {
+    @apply absolute start-0 top-full z-30 hidden w-max max-w-72 rounded-sm border border-dashed border-warning bg-tooltip px-2 py-1 text-xs font-normal text-ink shadow-md;
+  }
+
+  .field-error:hover .field-error-tip,
+  .field-row:focus-within .field-error-tip {
+    @apply block;
+  }
+
+  /* Fila de "Modificar disposición": resaltada bajo el puntero, atenuada mientras se arrastra y
+     con una línea de acento donde va a caer (arriba de la fila, o abajo en la última). */
+  .layout-row {
+    @apply relative flex min-h-7 items-center gap-2 rounded-sm px-1 hover:bg-hover pointer-coarse:min-h-11;
+  }
+
+  .layout-row[data-dragging] {
+    @apply bg-selected opacity-60;
+  }
+
+  .layout-row[data-drop]::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    border-block-start: 2px solid var(--color-accent);
+    pointer-events: none;
+  }
+
+  .layout-row[data-drop='before']::before {
+    inset-block-start: -1px;
+  }
+
+  .layout-row[data-drop='after']::before {
+    inset-block-end: -1px;
+  }
+
+  /* Fila de entrada de la selección múltiple: resaltada bajo el puntero o con el foco adentro,
+     para que se vea a qué fila corresponde el botón de borrar. */
+  .selection-entry-row {
+    @apply border-b border-border hover:bg-hover focus-within:bg-hover;
   }
 
   /* Pestañas del diálogo de selección múltiple. La pestaña elegida se marca con una línea

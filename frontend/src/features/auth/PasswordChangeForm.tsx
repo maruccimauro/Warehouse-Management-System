@@ -108,7 +108,7 @@ export function PasswordChangeForm({ onSuccess, secondaryAction }: PasswordChang
             const fieldId = inputId(name);
             const errorId = `${fieldId}-error`;
             const hintId = `${fieldId}-hint`;
-            const error = visibleFieldError(field.state.meta, submitted);
+            const error = visibleFieldError(field.state.meta, submitted, field.state.value.trim() === '');
             const describedBy = [name === 'password' ? hintId : undefined, error === undefined ? undefined : errorId]
               .filter((value) => value !== undefined)
               .join(' ');

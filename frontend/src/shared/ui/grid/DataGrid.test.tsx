@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ListPage, ListParams } from '@/shared/api/listing';
 import { DataGrid, type DataGridProps } from './DataGrid';
@@ -268,6 +268,35 @@ describe('DataGrid en modo local', () => {
       'Stock',
       'Categoría',
       'Estado',
+    ]);
+  });
+
+  it('reordena columnas arrastrando la fila y marca dónde cae', async () => {
+    const user = userEvent.setup();
+    const { grid } = renderGrid();
+
+    await user.click(screen.getByRole('button', { name: 'Modificar disposición' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Modificar disposición' });
+    const row = (name: string) => within(dialog).getByRole('checkbox', { name }).closest('li') as HTMLElement;
+    const dataTransfer = { setData: vi.fn(), effectAllowed: '', dropEffect: '' };
+
+    fireEvent.dragStart(row('SKU'), { dataTransfer });
+    // jsdom no da posición del puntero en los eventos de arrastre: sobre la última fila cuenta
+    // como la mitad inferior y la columna va al final.
+    fireEvent.dragOver(row('Estado'), { dataTransfer });
+    expect(row('Estado')).toHaveAttribute('data-drop', 'after');
+    expect(row('SKU')).toHaveAttribute('data-dragging');
+
+    fireEvent.drop(row('Estado'), { dataTransfer });
+    await user.click(within(dialog).getByRole('button', { name: 'Aplicar' }));
+
+    expect(within(grid).getAllByRole('columnheader').map((header) => header.textContent)).toEqual([
+      'Nombre',
+      'Categoría',
+      'Stock',
+      'Estado',
+      'SKU',
     ]);
   });
 

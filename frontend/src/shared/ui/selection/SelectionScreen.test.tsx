@@ -250,7 +250,7 @@ describe('SelectionScreen (pantalla de selección)', () => {
 
     await userEvent.click(within(popup).getByRole('tab', { name: 'Rangos' }));
     await userEvent.type(within(popup).getByRole('textbox', { name: 'Hasta 1' }), 'm');
-    await userEvent.click(within(popup).getByRole('button', { name: 'Copiar (F8)' }));
+    await userEvent.click(within(popup).getByRole('button', { name: 'Aplicar' }));
 
     expect(onMessage).toHaveBeenLastCalledWith({ type: 'E', text: 'Código: un rango necesita el valor desde.', id: 'RANGE_LOW_MISSING' });
     expect(dialog('Código')).toBeInTheDocument();
@@ -260,5 +260,40 @@ describe('SelectionScreen (pantalla de selección)', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
     expect(screen.getByRole('textbox', { name: 'Código' })).toHaveValue('');
+  });
+
+  it('selección múltiple: condición en palabras, desde y hasta bloqueados y borrar todo los libera', async () => {
+    const { onExecute } = renderScreen();
+
+    await userEvent.type(screen.getByRole('textbox', { name: 'Depósito' }), 'cen');
+    await userEvent.click(screen.getByRole('button', { name: 'Selección múltiple: Nivel' }));
+
+    let popup = dialog('Nivel');
+
+    await userEvent.selectOptions(within(popup).getByRole('combobox', { name: 'Condición 1' }), 'mayor que');
+    await userEvent.type(within(popup).getByRole('textbox', { name: 'Valor 1' }), '3');
+    await userEvent.type(within(popup).getByRole('textbox', { name: 'Valor 2' }), '9');
+    await userEvent.click(within(popup).getByRole('button', { name: 'Aplicar' }));
+
+    // Dos entradas, una con una condición que desde y hasta no muestran: quedan bloqueados.
+    expect(screen.getByRole('textbox', { name: 'Nivel' })).toBeDisabled();
+    expect(screen.getByRole('textbox', { name: 'Nivel hasta' })).toBeDisabled();
+
+    await execute();
+    expect(onExecute).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        rank: [
+          { sign: 'I', option: 'GT', low: '3' },
+          { sign: 'I', option: 'EQ', low: '9' },
+        ],
+      }),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Selección múltiple: Nivel' }));
+    popup = dialog('Nivel');
+    await userEvent.click(within(popup).getByRole('button', { name: 'Borrar todo' }));
+    await userEvent.click(within(popup).getByRole('button', { name: 'Aplicar' }));
+
+    expect(screen.getByRole('textbox', { name: 'Nivel' })).toBeEnabled();
   });
 });

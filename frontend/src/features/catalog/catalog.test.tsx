@@ -87,7 +87,7 @@ describe('MM01 a MM03: productos', () => {
 
     renderRoute('/t/MM01');
     await fill('SKU', 'tor-m8-40');
-    await fill('Depósito', 'central');
+    await fill('Depósito (stock mínimo)', 'central');
     await userEvent.keyboard('{F8}');
 
     await fill('Nombre', 'Tornillo M8');
@@ -145,7 +145,7 @@ describe('MM01 a MM03: productos', () => {
 
     renderRoute('/t/MM02');
     await fill('SKU', 'tor-m6-30');
-    await fill('Depósito', 'central');
+    await fill('Depósito (stock mínimo)', 'central');
     await userEvent.keyboard('{F8}');
 
     expect(await screen.findByRole('textbox', { name: 'Categoría' })).toHaveValue('Ferretería / Tornillería');

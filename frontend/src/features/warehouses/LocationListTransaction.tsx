@@ -17,6 +17,7 @@ import { useDefaultWarehouse } from './useDefaultWarehouse';
 import { VisibleWarehouseField } from './WarehouseField';
 import { useVisibleWarehouses } from './warehouseQueries';
 import { fetchLocations, locationsQueryKey, locationStatuses, normalizeCode, type Location, type Zone } from './warehousesApi';
+import { InfoNotice } from '@/shared/ui/InfoNotice';
 
 const byCode: GridSort = { columnId: 'code', desc: false };
 
@@ -73,7 +74,7 @@ function ListSelection({ selection, onExecute }: { selection: ReturnType<typeof 
   return (
     <div className="grid gap-3">
       <SelectionScreen selection={selection} title={t('list.selection')} onMessage={show} />
-      <p className="text-xs text-ink-muted">{t('list.hint')}</p>
+      <InfoNotice>{t('list.hint')}</InfoNotice>
     </div>
   );
 }

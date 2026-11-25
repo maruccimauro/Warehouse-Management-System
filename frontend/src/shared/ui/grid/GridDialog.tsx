@@ -45,7 +45,13 @@ export function GridDialog({ open, title, onCancel, size = 'default', initialFoc
       ref={dialogRef}
       className={size === 'wide' ? 'confirm-dialog confirm-dialog-wide' : 'confirm-dialog'}
       aria-labelledby={titleId}
-      onClose={() => {
+      onClose={(event) => {
+        // React propaga el close de un diálogo anidado (la disposición abierta desde la grilla
+        // de un F4) a los diálogos que lo contienen: solo cuenta el cierre de este.
+        if (event.target !== event.currentTarget) {
+          return;
+        }
+
         // Esc o el gesto de volver cuentan como cancelar. Cerrar desde el padre también pasa
         // por acá y no cambia nada: el padre ya lo dio por cerrado.
         latestCancel.current();
@@ -75,6 +81,9 @@ export function GridDialogForm({ onSubmit, footer, children }: GridDialogFormPro
     <form
       onSubmit={(event: SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
+        // El submit no sigue a los formularios que contienen el diálogo en el árbol de React
+        // (el del F4 o el de la transacción).
+        event.stopPropagation();
         onSubmit();
       }}
     >

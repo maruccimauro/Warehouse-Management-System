@@ -1,6 +1,6 @@
 import { useId, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { SelectOption } from '@/shared/api/listing';
+import type { SelectionOptionCode, SelectOption } from '@/shared/api/listing';
 import { Button } from '../Button';
 import { GridDialog } from '../grid/GridDialog';
 import type { GridMessage } from '../grid/gridTypes';
@@ -70,8 +70,27 @@ const tabs: readonly { id: TabId; enabled: boolean }[] = [
 
 interface DraftRow {
   key: string;
+  // Condición de un valor individual; los rangos son siempre "entre" (BT).
+  option: SingleOption;
   low: string;
   high: string;
+}
+
+// Condiciones de un valor individual, en palabras en el diálogo. Con * en el valor, igual a y
+// distinto de pasan a patrón (normalizeEntries).
+const singleOptions = ['EQ', 'NE', 'GT', 'GE', 'LT', 'LE'] as const;
+type SingleOption = (typeof singleOptions)[number];
+
+function singleOptionOf(option: SelectionOptionCode): SingleOption | undefined {
+  if (option === 'CP') {
+    return 'EQ';
+  }
+
+  if (option === 'NP') {
+    return 'NE';
+  }
+
+  return (singleOptions as readonly string[]).includes(option) ? (option as SingleOption) : undefined;
 }
 
 // focusgroup aún no está en los tipos de React: se pasa como atributo sin tipar.
@@ -93,21 +112,21 @@ function MultipleSelectionForm({
 
   const [selected, setSelected] = useState<TabId>('single');
   const [singles, setSingles] = useState<DraftRow[]>(() =>
-    entries
-      .filter((entry) => entry.sign === 'I' && (entry.option === 'EQ' || entry.option === 'CP'))
-      .map((entry, index) => ({ key: `entry-${String(index)}`, low: entry.low, high: '' })),
+    entries.flatMap((entry, index) => {
+      const option = entry.sign === 'I' ? singleOptionOf(entry.option) : undefined;
+
+      return option === undefined ? [] : [{ key: `entry-${String(index)}`, option, low: entry.low, high: '' }];
+    }),
   );
   const [ranges, setRanges] = useState<DraftRow[]>(() =>
     entries
       .filter((entry) => entry.sign === 'I' && entry.option === 'BT')
-      .map((entry, index) => ({ key: `entry-${String(index)}`, low: entry.low, high: entry.high ?? '' })),
+      .map((entry, index) => ({ key: `entry-${String(index)}`, option: 'EQ' as const, low: entry.low, high: entry.high ?? '' })),
   );
-  // Entradas que estas pestañas no editan (exclusiones u otros operadores armados por la
-  // pantalla): se conservan tal cual.
-  const [others] = useState(() =>
-    entries.filter(
-      (entry) => !(entry.sign === 'I' && (entry.option === 'EQ' || entry.option === 'CP' || entry.option === 'BT')),
-    ),
+  // Entradas que estas pestañas no editan (las exclusiones): se conservan tal cual, salvo que
+  // se borre todo.
+  const [others, setOthers] = useState(() =>
+    entries.filter((entry) => !(entry.sign === 'I' && (entry.option === 'BT' || singleOptionOf(entry.option) !== undefined))),
   );
 
   const counts: Record<TabId, number> = {
@@ -139,7 +158,7 @@ function MultipleSelectionForm({
     }
 
     for (const [index, row] of singles.entries()) {
-      const [normalized] = normalizeEntries(field, [{ sign: 'I', option: 'EQ', low: row.low }]);
+      const [normalized] = normalizeEntries(field, [{ sign: 'I', option: row.option, low: row.low }]);
       const error = normalized === undefined ? undefined : entryError(field, normalized);
 
       if (error !== undefined) {
@@ -156,7 +175,7 @@ function MultipleSelectionForm({
     onAccept([
       ...normalizeEntries(
         field,
-        singles.map((row) => ({ sign: 'I', option: 'EQ', low: row.low })),
+        singles.map((row) => ({ sign: 'I', option: row.option, low: row.low })),
       ),
       ...normalizeEntries(
         field,
@@ -166,7 +185,7 @@ function MultipleSelectionForm({
     ]);
   };
 
-  // F8 copia las entradas, como en el popup de SAP. El armazón no ejecuta F8 con un popup
+  // F8 aplica las entradas, como en el popup de SAP. El armazón no ejecuta F8 con un popup
   // abierto; una ayuda F4 abierta encima la maneja ella.
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== 'F8' || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
@@ -279,7 +298,7 @@ function MultipleSelectionForm({
         />
       </div>
       <div className="flex flex-wrap justify-end gap-2 border-t border-border px-4 py-2">
-        <Button variant="primary" aria-keyshortcuts="F8" onClick={accept}>
+        <Button variant="primary" aria-keyshortcuts="F8" title={`${t('dialog.accept')} (F8)`} onClick={accept}>
           {t('dialog.accept')}
         </Button>
         <Button
@@ -289,6 +308,15 @@ function MultipleSelectionForm({
             } else {
               setRanges([]);
             }
+          }}
+        >
+          {t('dialog.deleteTab')}
+        </Button>
+        <Button
+          onClick={() => {
+            setSingles([]);
+            setRanges([]);
+            setOthers([]);
           }}
         >
           {t('dialog.deleteAll')}
@@ -311,46 +339,60 @@ interface EntriesPanelProps {
 }
 
 // Tabla de entradas de una pestaña. Siempre hay una fila vacía al final: escribir en ella
-// agrega la entrada, sin un botón de agregar.
+// agrega la entrada, sin un botón de agregar. Cada fila lleva su condición en palabras (en los
+// rangos, "entre ... y ...") y el botón de borrar pegado a los campos; la fila bajo el puntero
+// se resalta para que quede claro cuál se borra.
 function EntriesPanel({ id, tab, hidden, field, rows, withHigh, onRowsChange, onMessage }: EntriesPanelProps) {
   const { t } = useTranslation('selection');
   // La fila vacía conserva su clave al recibir lo escrito, así el campo no se vuelve a montar
   // y no pierde el foco; la nueva fila vacía toma otra.
   const nextKey = useRef(0);
   const [trailingKey, setTrailingKey] = useState('new');
-  const shown: DraftRow[] = [...rows, { key: trailingKey, low: '', high: '' }];
+  const shown: DraftRow[] = [...rows, { key: trailingKey, option: 'EQ', low: '', high: '' }];
+  const operatorHeaderId = `${id}-${tab}-operator-header`;
   const lowHeaderId = `${id}-${tab}-low-header`;
   const highHeaderId = `${id}-${tab}-high-header`;
 
-  const update = (index: number, part: 'low' | 'high', value: string) => {
+  const update = (index: number, patch: Partial<Pick<DraftRow, 'option' | 'low' | 'high'>>) => {
     if (index === rows.length) {
-      onRowsChange([...rows, { key: trailingKey, low: '', high: '', [part]: value }]);
+      // Elegir la condición en la fila vacía también la agrega; si queda sin valor, aplicar la
+      // descarta (normalizeEntries).
+      onRowsChange([...rows, { key: trailingKey, option: 'EQ', low: '', high: '', ...patch }]);
+
       nextKey.current += 1;
       setTrailingKey(`new-${String(nextKey.current)}`);
 
       return;
     }
 
-    onRowsChange(rows.map((row, position) => (position === index ? { ...row, [part]: value } : row)));
+    onRowsChange(rows.map((row, position) => (position === index ? { ...row, ...patch } : row)));
   };
 
   return (
     <div role="tabpanel" aria-labelledby={`${id}-tab-${tab}`} hidden={hidden}>
-      <table className="w-full border-collapse">
+      <table className="border-collapse">
         <thead className="bg-toolbar text-xs text-ink-muted">
           <tr>
             <th scope="col" className="w-10 px-2 py-1 text-end">
               <span className="visually-hidden">{t('dialog.rowHeader')}</span>
             </th>
+            <th scope="col" id={operatorHeaderId} className="px-2 py-1 text-start">
+              {t('dialog.operator')}
+            </th>
             <th scope="col" id={lowHeaderId} className="px-2 py-1 text-start">
               {withHigh ? t('dialog.low') : t('dialog.value')}
             </th>
             {withHigh && (
-              <th scope="col" id={highHeaderId} className="px-2 py-1 text-start">
-                {t('dialog.high')}
-              </th>
+              <>
+                <th scope="col" className="px-1 py-1">
+                  <span className="visually-hidden">{t('dialog.and')}</span>
+                </th>
+                <th scope="col" id={highHeaderId} className="px-2 py-1 text-start">
+                  {t('dialog.high')}
+                </th>
+              </>
             )}
-            <th scope="col" className="w-10 px-2 py-1">
+            <th scope="col" className="w-10 px-1 py-1">
               <span className="visually-hidden">{t('dialog.actions')}</span>
             </th>
           </tr>
@@ -361,10 +403,30 @@ function EntriesPanel({ id, tab, hidden, field, rows, withHigh, onRowsChange, on
             const isTrailing = index === rows.length;
 
             return (
-              <tr key={row.key} className="border-b border-border">
+              <tr key={row.key} className="selection-entry-row">
                 <th scope="row" id={rowHeaderId} className="px-2 py-1 text-end font-normal text-ink-muted">
                   {index + 1}
                 </th>
+                <td className="px-2 py-1">
+                  {withHigh ? (
+                    <span className="text-ink-muted">{t('dialog.between')}</span>
+                  ) : (
+                    <select
+                      className="field-input w-40"
+                      aria-labelledby={`${operatorHeaderId} ${rowHeaderId}`}
+                      value={row.option}
+                      onChange={(event) => {
+                        update(index, { option: event.target.value as SingleOption });
+                      }}
+                    >
+                      {singleOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {t(`operators.${option}`)}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </td>
                 <td className="px-2 py-1">
                   <SelectionInput
                     field={field}
@@ -373,31 +435,34 @@ function EntriesPanel({ id, tab, hidden, field, rows, withHigh, onRowsChange, on
                     check={false}
                     aria-labelledby={`${lowHeaderId} ${rowHeaderId}`}
                     onChange={(value) => {
-                      update(index, 'low', value);
+                      update(index, { low: value });
                     }}
                     onMessage={onMessage}
                   />
                 </td>
                 {withHigh && (
-                  <td className="px-2 py-1">
-                    <SelectionInput
-                      field={field}
-                      id={`${id}-${tab}-${String(index)}-high`}
-                      value={row.high}
-                      check={false}
-                      aria-labelledby={`${highHeaderId} ${rowHeaderId}`}
-                      onChange={(value) => {
-                        update(index, 'high', value);
-                      }}
-                      onMessage={onMessage}
-                    />
-                  </td>
+                  <>
+                    <td className="px-1 py-1 text-ink-muted">{t('dialog.and')}</td>
+                    <td className="px-2 py-1">
+                      <SelectionInput
+                        field={field}
+                        id={`${id}-${tab}-${String(index)}-high`}
+                        value={row.high}
+                        check={false}
+                        aria-labelledby={`${highHeaderId} ${rowHeaderId}`}
+                        onChange={(value) => {
+                          update(index, { high: value });
+                        }}
+                        onMessage={onMessage}
+                      />
+                    </td>
+                  </>
                 )}
-                <td className="px-2 py-1 text-center">
+                <td className="px-1 py-1 text-center">
                   {!isTrailing && (
                     <button
                       type="button"
-                      className="inline-flex min-h-7 min-w-7 items-center justify-center rounded-sm hover:bg-hover pointer-coarse:min-h-11 pointer-coarse:min-w-11"
+                      className="inline-flex min-h-7 min-w-7 items-center justify-center rounded-sm text-ink-muted hover:bg-error-soft hover:text-error pointer-coarse:min-h-11 pointer-coarse:min-w-11"
                       aria-label={t('dialog.deleteRow', { row: index + 1 })}
                       title={t('dialog.deleteRow', { row: index + 1 })}
                       onClick={() => {

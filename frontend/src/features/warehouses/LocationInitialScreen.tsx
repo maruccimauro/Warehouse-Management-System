@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 import { useTransactionActions } from '@/app/shell/shellActions';
+import type { MaintenanceActivity } from '@/app/shell/useInitialScreenFlow';
 import { errorMessage, useStatusBar } from '@/app/shell/statusMessages';
 import type { WarehouseSummary } from '@/features/auth/authApi';
 import { useAuthenticatedUser } from '@/features/auth/useAuthenticatedUser';
@@ -15,8 +16,9 @@ import { useDefaultWarehouse } from './useDefaultWarehouse';
 import { VisibleWarehouseField, WarehouseField } from './WarehouseField';
 import { useVisibleWarehouses, useZones } from './warehouseQueries';
 import { findLocation, normalizeCode, type Location } from './warehousesApi';
+import { InfoNotice } from '@/shared/ui/InfoNotice';
 
-export type LocationActivity = 'create' | 'change' | 'display' | 'block';
+export type LocationActivity = MaintenanceActivity | 'block';
 
 export interface LocationTarget {
   warehouse: WarehouseSummary;
@@ -134,7 +136,7 @@ export function LocationInitialScreen({ activity, onContinue, initial }: Locatio
     <WarehouseScopeProvider scope={{ warehouseId: warehouse?.id, zones: zones.data ?? [] }}>
       <div className="grid gap-3">
         <SelectionScreen selection={selection} title={t(`initial.${activity}`)} onMessage={show} />
-        <p className="text-xs text-ink-muted">{t('initial.hint')}</p>
+        <InfoNotice>{t('initial.hint')}</InfoNotice>
       </div>
     </WarehouseScopeProvider>
   );

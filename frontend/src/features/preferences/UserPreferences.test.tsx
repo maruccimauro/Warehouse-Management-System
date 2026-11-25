@@ -25,7 +25,7 @@ describe('preferencias en el servidor (E2.21)', () => {
 
     const favorites = screen.getByRole('treeitem', { name: /^Favoritos/ });
 
-    expect(within(favorites).getByRole('treeitem', { name: 'Parámetros de usuario' })).toBeInTheDocument();
+    expect(within(favorites).getByRole('treeitem', { name: 'Gestionar parámetros de usuario' })).toBeInTheDocument();
   });
 
   it('graba un favorito como lista completa', async () => {
@@ -63,7 +63,7 @@ describe('preferencias en el servidor (E2.21)', () => {
 
     await userEvent.click(screen.getByLabelText('Mostrar códigos de transacción'));
 
-    expect(screen.getByRole('treeitem', { name: 'SU3 Parámetros de usuario' })).toBeInTheDocument();
+    expect(screen.getByRole('treeitem', { name: 'SU3 Gestionar parámetros de usuario' })).toBeInTheDocument();
     await waitFor(() => {
       expect(api.requestsTo('PATCH', '/api/v1/me')[0]?.body).toEqual({ show_technical_names: true });
     });
@@ -75,7 +75,7 @@ describe('preferencias en el servidor (E2.21)', () => {
     await waitForShell();
 
     expect(screen.getByLabelText('Mostrar códigos de transacción')).toBeChecked();
-    expect(screen.getByRole('treeitem', { name: 'SU3 Parámetros de usuario' })).toBeInTheDocument();
+    expect(screen.getByRole('treeitem', { name: 'SU3 Gestionar parámetros de usuario' })).toBeInTheDocument();
   });
 });
 

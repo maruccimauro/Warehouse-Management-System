@@ -18,6 +18,8 @@ export interface SelectionInputProps {
   onMessage: (message: GridMessage) => void;
   check?: boolean;
   required?: boolean;
+  // Límite bloqueado mientras la selección múltiple tiene varias entradas.
+  disabled?: boolean;
   className?: string;
   'aria-describedby'?: string;
   'aria-labelledby'?: string;

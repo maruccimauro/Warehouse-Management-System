@@ -1,6 +1,6 @@
 # Lista de productos (MM60)
 
-La transacción `MM60` lista los productos del catálogo con su categoría, unidad base y estado. Cualquier usuario con sesión la puede abrir y está en el menú en **Logística ▸ Catálogo**.
+La transacción `MM60` lista los productos del catálogo con su categoría, unidad base y estado. Cualquier usuario con sesión la puede abrir y está en el menú en **Logística ▸ Productos**.
 
 ## Selección {#seleccion}
 

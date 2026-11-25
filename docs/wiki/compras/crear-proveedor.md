@@ -12,6 +12,6 @@ Un **proveedor** es la empresa a la que se le compra mercadería. Los proveedore
 
 <kbd>F3</kbd> sale de la transacción; si hay datos sin grabar, el sistema pide confirmación.
 
-El proveedor nuevo nace en estado [Activo](/referencia/estados#supplier-active). Para vincularle los productos que provee, use [Productos del proveedor](./productos-del-proveedor).
+El proveedor nuevo nace en estado [Activo](/referencia/estados#supplier-active). Para vincularle los productos que provee, use [Gestionar productos del proveedor](./productos-del-proveedor).
 
 <!--@include: ./partes/proveedor-campos.md-->

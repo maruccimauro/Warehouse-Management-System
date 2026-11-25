@@ -1,4 +1,4 @@
-# Parámetros de usuario (SU3)
+# Gestionar parámetros de usuario (SU3)
 
 La transacción `SU3` reúne los datos propios del usuario: el idioma, los parámetros que completan campos de otras pantallas y el cambio de contraseña. Cualquier usuario con sesión la puede abrir; está en el menú en **Sistema ▸ Datos de usuario**.
 

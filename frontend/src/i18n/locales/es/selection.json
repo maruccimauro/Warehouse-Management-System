@@ -11,6 +11,15 @@
     "lowGreater": "{{label}}: el límite inferior es mayor que el superior.",
     "patternInRange": "{{label}}: un rango no admite el comodín *. Use un valor individual con * o quite el comodín."
   },
+  "locked": "{{label}} tiene varias entradas o condiciones: modifíquelas en la selección múltiple.",
+  "operators": {
+    "EQ": "igual a",
+    "NE": "distinto de",
+    "GT": "mayor que",
+    "GE": "mayor o igual que",
+    "LT": "menor que",
+    "LE": "menor o igual que"
+  },
   "dialog": {
     "title": "Selección múltiple: {{label}}",
     "tabs": "Tipo de entrada",
@@ -22,12 +31,16 @@
     "count": "({{count}})",
     "rowHeader": "Fila",
     "value": "Valor",
+    "operator": "Condición",
+    "between": "entre",
+    "and": "y",
     "low": "Desde",
     "high": "Hasta",
     "actions": "Acciones",
     "deleteRow": "Borrar la fila {{row}}",
+    "deleteTab": "Borrar pestaña",
     "deleteAll": "Borrar todo",
-    "accept": "Copiar (F8)",
+    "accept": "Aplicar",
     "cancel": "Cancelar"
   }
 }

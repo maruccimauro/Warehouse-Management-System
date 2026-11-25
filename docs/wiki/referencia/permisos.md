@@ -34,13 +34,13 @@ Crear, modificar, activar y desactivar depósitos. Solo lo tiene el Administrado
 
 ### `locations.manage` {#locations-manage}
 
-Crear, modificar, activar y desactivar zonas y ubicaciones, incluida la generación de ubicaciones por rango. Solo lo tiene el Administrador.
+Crear, modificar, activar y desactivar zonas y ubicaciones, incluida la creación de múltiples ubicaciones por rango. Solo lo tiene el Administrador.
 
 ### `locations.block` {#locations-block}
 
 Bloquear y desbloquear ubicaciones, con un motivo. Lo tienen el Administrador y el Supervisor.
 
-## Catálogo y proveedores {#catalogo}
+## Productos y proveedores {#catalogo}
 
 Consultar el catálogo no exige permiso: alcanza con la sesión.
 

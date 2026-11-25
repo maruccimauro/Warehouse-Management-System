@@ -22,7 +22,7 @@ async function renderSu3WithChanges() {
 }
 
 function heading() {
-  return screen.getByRole('heading', { level: 1, name: /Parámetros de usuario|Menú de acceso al sistema/ });
+  return screen.getByRole('heading', { level: 1, name: /Gestionar parámetros de usuario|Menú de acceso al sistema/ });
 }
 
 function confirmation() {
@@ -44,7 +44,7 @@ describe('armazón: aviso de datos sin grabar', () => {
     await waitFor(() => {
       expect(confirmation()).not.toBeInTheDocument();
     });
-    expect(heading()).toHaveTextContent('Parámetros de usuario');
+    expect(heading()).toHaveTextContent('Gestionar parámetros de usuario');
     expect(screen.getByLabelText('LGN')).toHaveValue('NOR');
   });
 

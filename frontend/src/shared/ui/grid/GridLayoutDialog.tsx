@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type DragEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../Button';
 import { Icon } from '../icons';
@@ -14,8 +14,9 @@ interface GridLayoutDialogProps {
   onClose: () => void;
 }
 
-// "Modificar disposición" de la ALV: qué columnas se ven y en qué orden. Subir y bajar con
-// botones en lugar de arrastrar: funciona igual con teclado, puntero y lector de pantalla.
+// "Modificar disposición" de la ALV: qué columnas se ven y en qué orden. El orden se cambia
+// arrastrando la fila o con los botones subir y bajar, que funcionan igual con teclado, pantalla
+// táctil y lector de pantalla.
 export function GridLayoutDialog({ open, columns, layout, initialLayout, onApply, onClose }: GridLayoutDialogProps) {
   const { t } = useTranslation('grid');
 
@@ -50,6 +51,44 @@ function LayoutForm({ columns, layout, initialLayout, onApply, onCancel }: Layou
   const [draft, setDraft] = useState<GridLayout>(layout);
   const headers = new Map(columns.map((column) => [column.id, column.header]));
   const visibleCount = draft.order.filter((id) => !draft.hidden.includes(id)).length;
+
+  // Arrastrar y soltar: la columna que se arrastra y la posición de inserción (0 a n), que la
+  // lista marca con una línea entre las filas.
+  const [dragged, setDragged] = useState<string>();
+  const [dropIndex, setDropIndex] = useState<number>();
+
+  const endDrag = () => {
+    setDragged(undefined);
+    setDropIndex(undefined);
+  };
+
+  const dragOver = (event: DragEvent<HTMLLIElement>, index: number) => {
+    if (dragged === undefined) {
+      return;
+    }
+
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    const box = event.currentTarget.getBoundingClientRect();
+    setDropIndex(event.clientY < box.top + box.height / 2 ? index : index + 1);
+  };
+
+  const drop = (event: DragEvent<HTMLLIElement>) => {
+    event.preventDefault();
+
+    if (dragged !== undefined && dropIndex !== undefined) {
+      setDraft((previous) => {
+        const from = previous.order.indexOf(dragged);
+        const order = previous.order.filter((id) => id !== dragged);
+        // Al sacar la fila de arriba del destino, la posición de inserción sube una.
+        order.splice(from < dropIndex ? dropIndex - 1 : dropIndex, 0, dragged);
+
+        return { ...previous, order };
+      });
+    }
+
+    endDrag();
+  };
 
   // aria-disabled y no disabled en los extremos: el botón conserva el foco después de mover la
   // columna al principio o al final, en lugar de perderlo en el cuerpo del diálogo.
@@ -101,7 +140,27 @@ function LayoutForm({ columns, layout, initialLayout, onApply, onCancel }: Layou
             const header = headers.get(id) ?? id;
 
             return (
-              <li key={id} className="flex min-h-7 items-center gap-2 pointer-coarse:min-h-11">
+              <li
+                key={id}
+                className="layout-row"
+                draggable
+                data-dragging={dragged === id || undefined}
+                data-drop={dropIndex === index ? 'before' : dropIndex === index + 1 && index === draft.order.length - 1 ? 'after' : undefined}
+                onDragStart={(event) => {
+                  event.dataTransfer.effectAllowed = 'move';
+                  // Firefox no inicia el arrastre sin datos.
+                  event.dataTransfer.setData('text/plain', id);
+                  setDragged(id);
+                }}
+                onDragOver={(event) => {
+                  dragOver(event, index);
+                }}
+                onDrop={drop}
+                onDragEnd={endDrag}
+              >
+                <span className="cursor-grab text-ink-muted" aria-hidden="true" title={t('columnsDialog.drag')}>
+                  <Icon name="grip" />
+                </span>
                 <label className="flex grow items-center gap-2">
                   <input
                     type="checkbox"

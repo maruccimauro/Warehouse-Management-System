@@ -4,6 +4,7 @@ import type { Namespace } from 'i18next';
 import { useId, useLayoutEffect, useMemo, useRef, type ComponentType, type ReactNode, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError } from '@/shared/api/ApiError';
+import { FieldErrorIndicator } from '@/shared/ui/form/FieldErrorIndicator';
 import { FormFieldLayout } from '@/shared/ui/form/FormFieldLayout';
 import { FormSection } from '@/shared/ui/form/FormSection';
 import {
@@ -288,7 +289,7 @@ export function useTransactionForm<TSchema extends FormSchema>(
       return (
         <form.Field name={name}>
           {(field) => {
-            const error = visibleFieldError(field.state.meta, submitted);
+            const error = visibleFieldError(field.state.meta, submitted, toText(field.state.value).trim() === '');
             const describedBy = [
               extraDescribedBy,
               description === undefined ? undefined : descriptionId,
@@ -380,13 +381,9 @@ export function useTransactionForm<TSchema extends FormSchema>(
 
             if (labelledBy !== undefined) {
               return (
-                <div className="grid gap-1" data-help-field={name}>
+                <div className="field-row flex items-center gap-1" data-help-field={name}>
                   {control}
-                  {error !== undefined && (
-                    <p id={errorId} className="text-xs text-error">
-                      {error}
-                    </p>
-                  )}
+                  <FieldErrorIndicator id={errorId} error={error} />
                 </div>
               );
             }

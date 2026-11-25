@@ -89,14 +89,14 @@
     "tooMany": "La plantilla genera {{count}} ubicaciones y el máximo por lote es {{max}}.",
     "whatToDo": "Qué hacer",
     "hint": "Ejecute con F8. Antes de crear las ubicaciones se pide confirmación.",
-    "confirmTitle": "Generar ubicaciones",
+    "confirmTitle": "Crear múltiples ubicaciones",
     "confirm": "Se van a crear {{count}} ubicaciones en la zona {{zone}}, de {{first}} a {{last}}. Si alguna ya existe, no se crea ninguna. ¿Continuar?",
-    "confirmAction": "Generar",
+    "confirmAction": "Crear",
     "confirmCancel": "Cancelar",
-    "cancelled": "Generación cancelada: no se creó ninguna ubicación.",
+    "cancelled": "Creación cancelada: no se creó ninguna ubicación.",
     "done_one": "Se creó {{count}} ubicación en la zona {{zone}}.",
     "done_other": "Se crearon {{count}} ubicaciones en la zona {{zone}}.",
-    "failed": "No se pudieron generar las ubicaciones."
+    "failed": "No se pudieron crear las ubicaciones."
   },
   "list": {
     "selection": "Lista de ubicaciones",

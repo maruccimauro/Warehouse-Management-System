@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { useInitialScreenFlow } from '@/app/shell/useInitialScreenFlow';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import type { StatusMessage } from '@/app/shell/statusMessages';
@@ -39,36 +40,19 @@ import {
 import { CategoryField, UnitField } from './CatalogFields';
 import { categoryPaths, useCategories, useUnits } from './catalogQueries';
 import { ProductInitialScreen, type ProductActivity, type ProductEntry, type ProductTarget } from './ProductInitialScreen';
+import { InfoNotice } from '@/shared/ui/InfoNotice';
 
 // MM01, MM02 y MM03: crear, modificar y visualizar un producto (E2.13). La misma pantalla en
 // tres modos, como LS01N a LS03N: inicial con SKU y depósito opcional (F8) y la ficha. Al grabar
 // vuelve a la pantalla inicial con lo ingresado.
 export function ProductTransaction({ activity }: { activity: ProductActivity }) {
-  const [target, setTarget] = useState<ProductTarget>();
-  const [last, setLast] = useState<ProductEntry>();
+  const flow = useInitialScreenFlow((next: ProductTarget): ProductEntry => ({ sku: next.sku, warehouse: next.warehouse?.code ?? '' }));
 
-  if (target === undefined) {
-    return (
-      <ProductInitialScreen
-        activity={activity}
-        initial={last}
-        onContinue={(next) => {
-          setLast({ sku: next.sku, warehouse: next.warehouse?.code ?? '' });
-          setTarget(next);
-        }}
-      />
-    );
+  if (flow.target === undefined) {
+    return <ProductInitialScreen activity={activity} initial={flow.last} onContinue={flow.open} />;
   }
 
-  return (
-    <ProductDetail
-      activity={activity}
-      target={target}
-      onDone={() => {
-        setTarget(undefined);
-      }}
-    />
-  );
+  return <ProductDetail activity={activity} target={flow.target} onDone={flow.close} />;
 }
 
 export function CreateProductTransaction() {
@@ -297,7 +281,7 @@ function ProductForm({ activity, target, categories, units, minStock, onDone }: 
           <p>{t('detail.lotTracked', { value: t(product.is_lot_tracked ? 'detail.yes' : 'detail.no') })}</p>
         </section>
       )}
-      {activity !== 'display' && <p className="text-xs text-ink-muted">{t('detail.saveHint')}</p>}
+      {activity !== 'display' && <InfoNotice>{t('detail.saveHint')}</InfoNotice>}
     </div>
   );
 }

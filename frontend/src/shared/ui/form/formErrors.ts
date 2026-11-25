@@ -35,9 +35,11 @@ export function firstErrorMessage(errors: readonly unknown[]): string | undefine
 }
 
 // Error visible del campo (D2 de E2.22): después de salir del campo editado y, desde ahí, en
-// cada cambio, como el modo onTouched; al grabar, en todos. Los del servidor y la tabla de
-// verificación se ven siempre: llegan como respuesta a una acción del usuario.
-export function visibleFieldError(meta: FieldErrorState | undefined, submitted: boolean): string | undefined {
+// cada cambio, como el modo onTouched; al grabar, en todos. Un campo vacío no se marca al salir
+// de él, solo al grabar o ejecutar: recorrer la pantalla con Tab no llena de avisos los
+// obligatorios que todavía no se completaron. Los del servidor y la tabla de verificación se
+// ven siempre: llegan como respuesta a una acción del usuario.
+export function visibleFieldError(meta: FieldErrorState | undefined, submitted: boolean, empty = false): string | undefined {
   if (meta === undefined) {
     return undefined;
   }
@@ -48,7 +50,7 @@ export function visibleFieldError(meta: FieldErrorState | undefined, submitted: 
     return server;
   }
 
-  return meta.isBlurred || submitted ? firstErrorMessage(meta.errors) : undefined;
+  return submitted || (meta.isBlurred && !empty) ? firstErrorMessage(meta.errors) : undefined;
 }
 
 // Mínimo de la API del formulario que usan estas funciones: sirven para cualquier instancia

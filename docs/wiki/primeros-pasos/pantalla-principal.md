@@ -24,7 +24,7 @@ La carpeta **Favoritos**, arriba del menú, reúne las transacciones de uso frec
 
 ### Mostrar códigos {#mostrar-codigos}
 
-La casilla **Mostrar códigos de transacción**, al pie del menú y también en su menú contextual, agrega el código delante del título de cada transacción (`SU3 Parámetros de usuario`). La preferencia se guarda con el usuario.
+La casilla **Mostrar códigos de transacción**, al pie del menú y también en su menú contextual, agrega el código delante del título de cada transacción (`SU3 Gestionar parámetros de usuario`). La preferencia se guarda con el usuario.
 
 ## Campo de comando {#campo-de-comando}
 

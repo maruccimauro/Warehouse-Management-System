@@ -1,7 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
+import { useInitialScreenFlow, type MaintenanceActivity } from '@/app/shell/useInitialScreenFlow';
 import { useTransactionForm } from '@/app/shell/useTransactionForm';
 import { HelpLink } from '@/shared/help/HelpLink';
 import { optionalPositiveInteger, required, textRule } from '@/shared/ui/form/fieldRules';
@@ -9,38 +10,19 @@ import { WarehouseScopeProvider, ZoneField } from './LocationFields';
 import { useZones } from './warehouseQueries';
 import { LocationInitialScreen, type LocationTarget } from './LocationInitialScreen';
 import { createLocation, locationsQueryKey, updateLocation, type LocationInput, normalizeCode } from './warehousesApi';
-
-type MaintenanceActivity = 'create' | 'change' | 'display';
+import { InfoNotice } from '@/shared/ui/InfoNotice';
 
 // LS01N, LS02N y LS03N: crear, modificar y visualizar una ubicación (E2.12). La misma
 // pantalla en tres modos: inicial con depósito y ubicación (F8) y la ficha. Al grabar vuelve
 // a la pantalla inicial con el depósito y la ubicación, lista para la siguiente.
 export function LocationTransaction({ activity }: { activity: MaintenanceActivity }) {
-  const [target, setTarget] = useState<LocationTarget>();
-  const [last, setLast] = useState<{ warehouse: string; location: string }>();
+  const flow = useInitialScreenFlow((next: LocationTarget) => ({ warehouse: next.warehouse.code, location: next.code }));
 
-  if (target === undefined) {
-    return (
-      <LocationInitialScreen
-        activity={activity}
-        initial={last}
-        onContinue={(next) => {
-          setLast({ warehouse: next.warehouse.code, location: next.code });
-          setTarget(next);
-        }}
-      />
-    );
+  if (flow.target === undefined) {
+    return <LocationInitialScreen activity={activity} initial={flow.last} onContinue={flow.open} />;
   }
 
-  return (
-    <LocationDetail
-      activity={activity}
-      target={target}
-      onDone={() => {
-        setTarget(undefined);
-      }}
-    />
-  );
+  return <LocationDetail activity={activity} target={flow.target} onDone={flow.close} />;
 }
 
 export function CreateLocationTransaction() {
@@ -220,7 +202,7 @@ function LocationForm({ activity, target, defaultValues, statusEditable, onSaved
           <Field name="maxUnits" inputMode="numeric" className="w-32" description={t('detail.maxUnitsHint')} />
         </Section>
       </Form>
-      {activity !== 'display' && <p className="text-xs text-ink-muted">{t('detail.saveHint')}</p>}
+      {activity !== 'display' && <InfoNotice>{t('detail.saveHint')}</InfoNotice>}
     </div>
   );
 }

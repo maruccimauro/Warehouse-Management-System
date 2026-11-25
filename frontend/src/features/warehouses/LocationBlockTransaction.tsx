@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
 import { required } from '@/shared/ui/form/fieldRules';
 import { LocationInitialScreen, type LocationTarget } from './LocationInitialScreen';
 import { blockLocation, blockReasonMaxLength, locationsQueryKey, unblockLocation, type Location } from './warehousesApi';
+import { InfoNotice } from '@/shared/ui/InfoNotice';
 
 // ZW05: bloqueo y desbloqueo de ubicaciones (E2.12, D2). Permiso propio (locations.block),
 // separado del mantenimiento: el supervisor bloquea sin poder modificar la ficha. Bloquear
@@ -138,7 +139,7 @@ function BlockDetail({ target, location, onDone }: BlockDetailProps) {
           </Section>
         </Form>
       )}
-      {canBlock && <p className="text-xs text-ink-muted">{t('block.hint')}</p>}
+      {canBlock && <InfoNotice>{t('block.hint')}</InfoNotice>}
       <ConfirmDialog
         open={confirmingUnblock}
         title={t('block.unblockTitle')}

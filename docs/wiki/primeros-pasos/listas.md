@@ -15,7 +15,7 @@ En las listas de datos maestros, que pueden tener miles de filas, el servidor or
 
 ## Columnas {#columnas}
 
-**Modificar disposición** elige las columnas visibles y su orden. **Disposición inicial** vuelve a la de la pantalla. La disposición dura mientras la transacción está abierta.
+**Modificar disposición** elige las columnas visibles y su orden. Para cambiar el orden, arrastre la fila de la columna: una línea marca dónde va a quedar. También puede usar los botones de subir y bajar de cada fila, que funcionan con teclado y en pantallas táctiles. **Disposición inicial** vuelve a la de la pantalla. La disposición dura mientras la transacción está abierta.
 
 **Ocultar columna**, en el menú contextual de la columna, la quita de la vista.
 

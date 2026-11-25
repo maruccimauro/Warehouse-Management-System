@@ -23,7 +23,7 @@ describe('rutas', () => {
     await userEvent.type(screen.getByLabelText('Contraseña'), 'secreto');
     await userEvent.click(screen.getByRole('button', { name: 'Ingresar' }));
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Parámetros de usuario' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Gestionar parámetros de usuario' })).toBeInTheDocument();
     expect(within(screen.getByRole('banner')).getByText('Operador de Prueba')).toBeInTheDocument();
     expect(api.requestsTo('GET', '/api/v1/auth/me')).toHaveLength(1);
   });

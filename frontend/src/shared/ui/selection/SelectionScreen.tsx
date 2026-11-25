@@ -94,12 +94,15 @@ function SelectOptionsRow({ field, selection, onMessage }: RowProps<SelectOption
   const labelId = `${controlId(baseId, field.id, 'low')}-label`;
   const toId = `${controlId(baseId, field.id, 'high')}-label`;
   const countId = `${controlId(baseId, field.id, 'multiple')}-count`;
+  const lockedId = `${controlId(baseId, field.id, 'low')}-locked`;
 
   const entries = selectOptionsOf(selection.values, field.id);
   const main = entries[mainEntryIndex(entries)];
   const low = main?.low ?? '';
   const high = main?.option === 'BT' ? (main.high ?? '') : '';
-  // Hay más de lo que muestran desde y hasta: el botón se rellena, como la flecha verde de SAP.
+  // Hay más de lo que muestran desde y hasta: el botón se rellena, como la flecha verde de SAP,
+  // y desde y hasta quedan en solo lectura hasta que la selección múltiple vuelva a una sola
+  // entrada simple, para no editar una parte de la selección sin ver el resto.
   const hasMore = entries.length > (main === undefined ? 0 : 1);
   const multipleLabel = t('multiple', { label: field.label });
 
@@ -114,6 +117,8 @@ function SelectOptionsRow({ field, selection, onMessage }: RowProps<SelectOption
           id={controlId(baseId, field.id, 'low')}
           value={low}
           check={false}
+          disabled={hasMore}
+          aria-describedby={hasMore ? lockedId : undefined}
           onChange={(value) => {
             setValue(field.id, withMainEntry(entries, value, high));
           }}
@@ -130,6 +135,8 @@ function SelectOptionsRow({ field, selection, onMessage }: RowProps<SelectOption
           value={high}
           check={false}
           aria-labelledby={`${labelId} ${toId}`}
+          disabled={hasMore}
+          aria-describedby={hasMore ? lockedId : undefined}
           onChange={(value) => {
             setValue(field.id, withMainEntry(entries, low, value));
           }}
@@ -152,6 +159,11 @@ function SelectOptionsRow({ field, selection, onMessage }: RowProps<SelectOption
       >
         <Icon name={hasMore ? 'multipleSelectionActive' : 'multipleSelection'} />
       </button>
+      {hasMore && (
+        <span id={lockedId} className="visually-hidden">
+          {t('locked', { label: field.label })}
+        </span>
+      )}
       {entries.length > 0 && (
         <span id={countId} className={hasMore ? 'text-xs text-success' : 'visually-hidden'}>
           {t('entries', { count: entries.length })}

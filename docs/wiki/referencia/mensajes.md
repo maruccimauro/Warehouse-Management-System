@@ -158,7 +158,7 @@ La ubicación indicada no existe en el depósito. La ficha no se abre.
 
 ### `LOCATION_BATCH_TOO_LARGE` {#location-batch-too-large}
 
-La plantilla de [Generar ubicaciones](/administracion/generar-ubicaciones#limite) crea más ubicaciones que el máximo por lote (2.000). El mensaje indica la cantidad calculada y el máximo; no se crea ninguna ubicación.
+La plantilla de [Crear múltiples ubicaciones](/administracion/crear-multiples-ubicaciones#limite) crea más ubicaciones que el máximo por lote (2.000). El mensaje indica la cantidad calculada y el máximo; no se crea ninguna ubicación.
 
 **Qué hacer:** divida la estructura en varios lotes, por ejemplo uno por grupo de pasillos.
 

@@ -10,6 +10,7 @@ import { WarehouseField } from '@/features/warehouses/WarehouseField';
 import { fallbackLanguage, isSupportedLanguage, supportedLanguages } from '@/i18n/resources';
 import { Button } from '@/shared/ui/Button';
 import { FormSection } from '@/shared/ui/form/FormSection';
+import { InfoNotice } from '@/shared/ui/InfoNotice';
 
 const cellClass = 'border-b border-border px-3 py-1.5 text-start align-middle';
 
@@ -135,7 +136,7 @@ export function OwnDataTransaction() {
         </div>
       </FormSection>
 
-      <p className="text-xs text-ink-muted">{t('saveHint')}</p>
+      <InfoNotice>{t('saveHint')}</InfoNotice>
 
       <PasswordChangeDialog
         open={passwordDialogOpen}

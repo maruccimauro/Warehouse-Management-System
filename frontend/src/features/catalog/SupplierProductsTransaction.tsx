@@ -27,6 +27,7 @@ import {
 import { ProductField } from './CatalogFields';
 import { SupplierInitialScreen } from './SupplierInitialScreen';
 import { useSupplierProductColumns } from './supplierProductColumns';
+import { InfoNotice } from '@/shared/ui/InfoNotice';
 
 type Screen =
   | { kind: 'selection' }
@@ -125,7 +126,7 @@ function LinkList({ supplier, onBack, onOpen, onCreate }: LinkListProps) {
         onMessage={show}
         onRowActivate={onOpen}
       />
-      <p className="text-xs text-ink-muted">{t('links.hint')}</p>
+      <InfoNotice>{t('links.hint')}</InfoNotice>
     </div>
   );
 }

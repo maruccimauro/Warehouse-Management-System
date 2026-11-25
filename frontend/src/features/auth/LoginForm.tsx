@@ -132,7 +132,7 @@ export function LoginForm() {
 
       <form.Field name="email">
         {(field) => {
-          const error = visibleFieldError(field.state.meta, submitted);
+          const error = visibleFieldError(field.state.meta, submitted, field.state.value.trim() === '');
           const errorId = `${ids.email}-error`;
 
           return (
@@ -162,7 +162,7 @@ export function LoginForm() {
 
       <form.Field name="password">
         {(field) => {
-          const error = visibleFieldError(field.state.meta, submitted);
+          const error = visibleFieldError(field.state.meta, submitted, field.state.value.trim() === '');
           const errorId = `${ids.password}-error`;
 
           return (

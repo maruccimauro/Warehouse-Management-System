@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 import { useTransactionActions } from '@/app/shell/shellActions';
+import type { MaintenanceActivity } from '@/app/shell/useInitialScreenFlow';
 import { errorMessage, useStatusBar } from '@/app/shell/statusMessages';
 import type { WarehouseSummary } from '@/features/auth/authApi';
 import { useAuthenticatedUser } from '@/features/auth/useAuthenticatedUser';
@@ -16,8 +17,9 @@ import { useSelectionScreen } from '@/shared/ui/selection/useSelectionScreen';
 import { findProduct, normalizeSku, type Product } from './catalogApi';
 import { ProductField } from './CatalogFields';
 import { productLinkParams } from './productLinks';
+import { InfoNotice } from '@/shared/ui/InfoNotice';
 
-export type ProductActivity = 'create' | 'change' | 'display';
+export type ProductActivity = MaintenanceActivity;
 
 export interface ProductTarget {
   sku: string;
@@ -135,7 +137,7 @@ export function ProductInitialScreen({ activity, onContinue, initial }: ProductI
   return (
     <div className="grid gap-3">
       <SelectionScreen selection={selection} title={t(`initial.${activity}`)} onMessage={show} />
-      <p className="text-xs text-ink-muted">{t('initial.hint')}</p>
+      <InfoNotice>{t('initial.hint')}</InfoNotice>
     </div>
   );
 }

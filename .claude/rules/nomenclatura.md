@@ -1,0 +1,31 @@
+# Regla: nombres consistentes en la interfaz y la wiki
+
+Un mismo objeto y una misma acción se nombran igual en toda la aplicación: títulos de transacción, carpetas del menú, botones, mensajes y páginas de la wiki. Antes de agregar o renombrar una transacción, una carpeta o un botón, se revisa cómo se nombró lo existente y se sigue el patrón; si el patrón no alcanza, se plantea el cambio y se actualiza todo lo que lo usa en el mismo lote.
+
+## Transacciones
+
+- Título con la forma **Verbo + objeto**, en infinitivo y en singular cuando opera sobre un registro: **Crear producto**, **Modificar ubicación**, **Visualizar proveedor**, **Bloquear o desbloquear ubicación**.
+- Verbos fijos por actividad, sin sinónimos:
+  - **Crear**: alta. Para varios registros a la vez, **Crear múltiples <objetos>** (no "Generar").
+  - **Modificar**: cambio de un registro existente.
+  - **Visualizar**: consulta de un registro sin editar.
+  - **Gestionar <objetos>**: mantenimiento único con lista y ficha para tablas de configuración (depósitos, zonas, categorías, unidades).
+  - **Bloquear**, **Desbloquear**, **Activar**, **Desactivar**: cambio de estado. Las bajas son lógicas: no se usa "Eliminar" para datos maestros con historia.
+- Única excepción: los listados se titulan **Lista de <objetos>** (**Lista de productos**).
+- El objeto se nombra igual que su carpeta del menú y su sección de la wiki.
+
+## Carpetas del menú
+
+- Nombre del objeto en plural (**Productos**, **Proveedores**) o del área funcional (**Logística**, **Compras**, **Sistema**). Una carpeta no lleva el nombre de un concepto distinto del objeto que contiene: debajo de **Productos** van **Crear producto**, **Modificar producto**, y así.
+
+## Botones de diálogos y pantallas
+
+- **Aplicar**: toma lo editado en un diálogo y lo cierra (selección múltiple, disposición, filtro). No se usa "Copiar" ni "Aceptar" para esta acción.
+- **Cancelar**: cierra sin tomar cambios.
+- **Borrar pestaña** y **Borrar todo**: vacían lo visible o todo el diálogo.
+- **Grabar** (Ctrl+S) y **Ejecutar** (F8) en la barra estándar, sin variantes.
+
+## Wiki
+
+- La página de una transacción lleva su título exacto seguido del código: `# Crear múltiples ubicaciones (LS10)`. El nombre de archivo sigue el título, en minúsculas y con guiones.
+- Al renombrar, se actualizan el título, el `sidebar`, `referencia/transacciones.md`, los enlaces y la clave de ayuda en `helpLinks.ts`; las anclas `{#...}` no cambian.

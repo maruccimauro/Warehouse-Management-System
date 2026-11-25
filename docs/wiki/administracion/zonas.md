@@ -1,4 +1,4 @@
-# Zonas (ZW02)
+# Gestionar zonas (ZW02)
 
 La transacción `ZW02` mantiene las zonas de un depósito. Exige el permiso [`locations.manage`](/referencia/permisos#locations-manage) y está en el menú en **Logística ▸ Estructura del depósito**.
 

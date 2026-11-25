@@ -39,13 +39,13 @@ describe('armazón: campo de comando', () => {
 
     await runCommand('su3');
 
-    expect(heading()).toHaveTextContent('Parámetros de usuario');
+    expect(heading()).toHaveTextContent('Gestionar parámetros de usuario');
     // La transacción se carga en diferido: el foco llega cuando su contenido está en el DOM.
     await waitFor(() => {
       expect(screen.getByLabelText('Idioma')).toHaveFocus();
     });
     expect(statusBar().getByText('SU3')).toBeInTheDocument();
-    expect(document.title).toBe('SU3 Parámetros de usuario · WMS');
+    expect(document.title).toBe('SU3 Gestionar parámetros de usuario · WMS');
     expect(screen.getByLabelText('Campo de comando')).toHaveValue('');
   });
 
@@ -155,7 +155,7 @@ describe('armazón: teclas y barra de herramientas', () => {
 
     const favorites = screen.getByRole('treeitem', { name: /^Favoritos/ });
 
-    expect(within(favorites).getByRole('treeitem', { name: 'Parámetros de usuario' })).toBeInTheDocument();
+    expect(within(favorites).getByRole('treeitem', { name: 'Gestionar parámetros de usuario' })).toBeInTheDocument();
 
     await userEvent.click(favorite);
 
@@ -196,7 +196,7 @@ describe('armazón: árbol de transacciones', () => {
     await userEvent.keyboard('{ArrowLeft}');
 
     expect(system).toHaveAttribute('aria-expanded', 'false');
-    expect(within(tree).queryByRole('treeitem', { name: 'Parámetros de usuario' })).not.toBeInTheDocument();
+    expect(within(tree).queryByRole('treeitem', { name: 'Gestionar parámetros de usuario' })).not.toBeInTheDocument();
 
     await userEvent.keyboard('{ArrowRight}{ArrowRight}{ArrowRight}');
 
@@ -204,7 +204,7 @@ describe('armazón: árbol de transacciones', () => {
 
     await userEvent.keyboard('{End}');
 
-    const su3 = within(tree).getByRole('treeitem', { name: 'Parámetros de usuario' });
+    const su3 = within(tree).getByRole('treeitem', { name: 'Gestionar parámetros de usuario' });
 
     expect(su3).toHaveFocus();
 
@@ -214,8 +214,8 @@ describe('armazón: árbol de transacciones', () => {
 
     await userEvent.keyboard('{ArrowDown}{Enter}');
 
-    expect(heading()).toHaveTextContent('Parámetros de usuario');
-    expect(within(tree).getByRole('treeitem', { name: 'Parámetros de usuario' })).toHaveAttribute('aria-current', 'page');
+    expect(heading()).toHaveTextContent('Gestionar parámetros de usuario');
+    expect(within(tree).getByRole('treeitem', { name: 'Gestionar parámetros de usuario' })).toHaveAttribute('aria-current', 'page');
   });
 
   it('muestra los códigos de transacción cuando se pide', async () => {
@@ -223,7 +223,7 @@ describe('armazón: árbol de transacciones', () => {
 
     await userEvent.click(screen.getByLabelText('Mostrar códigos de transacción'));
 
-    expect(screen.getByRole('treeitem', { name: 'SU3 Parámetros de usuario' })).toBeInTheDocument();
+    expect(screen.getByRole('treeitem', { name: 'SU3 Gestionar parámetros de usuario' })).toBeInTheDocument();
   });
 });
 
@@ -303,7 +303,7 @@ describe('SU3: parámetros de usuario', () => {
 
     // Con el popup abierto, F3 no sale de la transacción de abajo.
     fireEvent.keyDown(window, { key: 'F3' });
-    expect(screen.getByRole('heading', { level: 1, name: 'Parámetros de usuario' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Gestionar parámetros de usuario' })).toBeInTheDocument();
 
     await userEvent.dblClick(within(grid).getByRole('gridcell', { name: 'Norte' }));
 
@@ -367,7 +367,7 @@ describe('armazón: menús contextuales', () => {
 
   it('el clic secundario en una transacción del árbol la agrega a favoritos', async () => {
     await renderShell();
-    const su3 = treeItem('Parámetros de usuario');
+    const su3 = treeItem('Gestionar parámetros de usuario');
 
     await rightClick(su3);
 
@@ -378,7 +378,7 @@ describe('armazón: menús contextuales', () => {
     await userEvent.click(within(menu).getByRole('menuitem', { name: 'Agregar a favoritos' }));
 
     expect(statusBar().getByRole('status')).toHaveTextContent('La transacción SU3 se agregó a favoritos.');
-    expect(within(treeItem(/^Favoritos/)).getByRole('treeitem', { name: 'Parámetros de usuario' })).toBeInTheDocument();
+    expect(within(treeItem(/^Favoritos/)).getByRole('treeitem', { name: 'Gestionar parámetros de usuario' })).toBeInTheDocument();
     expect(su3).toHaveFocus();
 
     await rightClick(su3);
@@ -390,15 +390,15 @@ describe('armazón: menús contextuales', () => {
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     await renderShell();
 
-    await rightClick(treeItem('Parámetros de usuario'));
+    await rightClick(treeItem('Gestionar parámetros de usuario'));
     await userEvent.click(screen.getByRole('menuitem', { name: 'Abrir en ventana nueva' }));
 
     expect(open).toHaveBeenCalledWith('/t/SU3', '_blank', 'noopener');
 
-    await rightClick(treeItem('Parámetros de usuario'));
+    await rightClick(treeItem('Gestionar parámetros de usuario'));
     await userEvent.click(screen.getByRole('menuitem', { name: 'Ejecutar' }));
 
-    expect(heading()).toHaveTextContent('Parámetros de usuario');
+    expect(heading()).toHaveTextContent('Gestionar parámetros de usuario');
   });
 
   it('contrae una carpeta y muestra los códigos desde el menú', async () => {
@@ -418,7 +418,7 @@ describe('armazón: menús contextuales', () => {
     await userEvent.keyboard('{End} ');
 
     expect(screen.getByRole('menuitemcheckbox', { name: 'Mostrar códigos de transacción' })).toHaveAttribute('aria-checked', 'true');
-    expect(treeItem('SU3 Parámetros de usuario')).toBeInTheDocument();
+    expect(treeItem('SU3 Gestionar parámetros de usuario')).toBeInTheDocument();
     expect(screen.getByLabelText('Mostrar códigos de transacción')).toBeChecked();
   });
 

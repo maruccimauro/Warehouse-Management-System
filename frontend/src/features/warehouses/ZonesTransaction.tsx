@@ -18,6 +18,7 @@ import { codeRule, required } from '@/shared/ui/form/fieldRules';
 import { useDefaultWarehouse } from './useDefaultWarehouse';
 import { WarehouseField } from './WarehouseField';
 import { createZone, fetchZones, updateZone, zonesQueryKey, zoneTypes, type Zone, type ZoneType, normalizeCode } from './warehousesApi';
+import { InfoNotice } from '@/shared/ui/InfoNotice';
 
 const byCode: GridSort = { columnId: 'code', desc: false };
 
@@ -98,7 +99,7 @@ function ZoneSelection({ selection, onExecute }: { selection: ReturnType<typeof 
   return (
     <div className="grid gap-3">
       <SelectionScreen selection={selection} title={t('selection.title')} onMessage={show} />
-      <p className="text-xs text-ink-muted">{t('selection.hint')}</p>
+      <InfoNotice>{t('selection.hint')}</InfoNotice>
     </div>
   );
 }
