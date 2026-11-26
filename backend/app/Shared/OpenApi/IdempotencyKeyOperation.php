@@ -2,6 +2,7 @@
 
 namespace App\Shared\OpenApi;
 
+use App\Shared\Exceptions\IdempotencyKeyRequired;
 use App\Shared\Exceptions\IdempotencyKeyReused;
 use App\Shared\Exceptions\IdempotencyRequestInProgress;
 use App\Shared\Http\Idempotency\Idempotency;
@@ -30,7 +31,7 @@ final class IdempotencyKeyOperation extends OperationExtension
         $header = new Parameter(Idempotency::HEADER, 'header');
         $header->required(true);
         $header->setSchema(ProblemResponses::toSchema(new StringType));
-        $header->description('Clave que el cliente genera al iniciar el intento de operación y repite en sus reintentos. Misma clave y mismo cuerpo: se devuelve la respuesta almacenada; misma clave con otro cuerpo: 422 IDEMPOTENCY_KEY_REUSED.');
+        $header->description('Clave que el cliente genera al iniciar el intento de operación y repite en sus reintentos. Sin la cabecera, vacía o de más de 100 caracteres: 428 IDEMPOTENCY_KEY_REQUIRED. Misma clave y mismo cuerpo: se devuelve la respuesta almacenada, con la cabecera Idempotent-Replayed; misma clave con otro cuerpo: 422 IDEMPOTENCY_KEY_REUSED; misma clave con una petición en curso que no termina a tiempo: 409 IDEMPOTENCY_REQUEST_IN_PROGRESS.');
 
         $operation->addParameters([$header]);
 
@@ -39,6 +40,7 @@ final class IdempotencyKeyOperation extends OperationExtension
         if ($actionType !== null) {
             $actionType->exceptions = [
                 ...$actionType->exceptions,
+                new ObjectType(IdempotencyKeyRequired::class),
                 new ObjectType(IdempotencyKeyReused::class),
                 new ObjectType(IdempotencyRequestInProgress::class),
             ];

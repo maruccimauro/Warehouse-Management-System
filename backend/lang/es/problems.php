@@ -20,6 +20,7 @@ return [
         'title' => 'El cambio de estado no está permitido.',
         'detail' => 'El recurso está en estado :from y no puede pasar a :to.',
     ],
+    'idempotency_key_required' => 'La operación requiere una clave de idempotencia válida.',
     'idempotency_key_reused' => 'La clave de idempotencia ya se usó con otro contenido.',
     'idempotency_request_in_progress' => 'Otra solicitud con la misma clave de idempotencia sigue en curso.',
     'concurrency_conflict' => [

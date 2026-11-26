@@ -3,6 +3,9 @@
 use App\Shared\Database\DatabaseErrorTranslator;
 use App\Shared\Exceptions\DomainException;
 use App\Shared\Exceptions\ProblemDetailsRenderer;
+use App\Shared\Http\Idempotency\EnsureIdempotency;
+use App\Shared\Http\Idempotency\Idempotency;
+use App\Shared\Http\Idempotency\PruneIdempotencyKeys;
 use App\Shared\Http\Middleware\SetLocale;
 use App\Shared\Providers\ModuleServiceProvider;
 use Illuminate\Database\QueryException;
@@ -26,7 +29,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Idioma de la respuesta según el usuario y Accept-Language (SetLocale).
         $middleware->append(SetLocale::class);
+
+        // Idempotencia por petición (ADR-007): las rutas que modifican stock la
+        // declaran con el alias, después de auth:sanctum.
+        $middleware->alias([Idempotency::MIDDLEWARE => EnsureIdempotency::class]);
     })
+    ->withCommands([PruneIdempotencyKeys::class])
     ->withExceptions(function (Exceptions $exceptions): void {
         // Contrato de errores de la API: Problem Details con código estable (ADR-010).
         $exceptions->shouldRenderJsonWhen(

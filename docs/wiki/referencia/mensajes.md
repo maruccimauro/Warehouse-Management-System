@@ -245,6 +245,12 @@ La misma operación ya se está procesando, por ejemplo por un doble envío.
 
 **Qué hacer:** espere el resultado de la primera antes de repetirla.
 
+### `IDEMPOTENCY_KEY_REQUIRED` {#idempotency-key-required}
+
+Una operación que modifica stock llegó sin la clave que la protege de ejecutarse dos veces ante un reenvío. La operación no se realizó. Lo evita la aplicación; no debería verse al usarla.
+
+**Qué hacer:** informe el error al administrador.
+
 ### `IDEMPOTENCY_KEY_REUSED` {#idempotency-key-reused}
 
 Una operación repetida llegó con datos distintos de la original. Lo evita la aplicación; no debería verse al usarla.

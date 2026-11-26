@@ -84,7 +84,7 @@ Las invariantes son condiciones que el sistema garantiza en todo momento, sin ex
 | Enunciado | Reintentos de una misma petición o confirmaciones repetidas de un documento no generan operaciones adicionales |
 | Garantía en base de datos | `UNIQUE (reference_type, reference_id)` en operaciones: un documento origina como máximo una operación, aunque fallen los controles de la aplicación. `UNIQUE (performed_by, idempotency_key)` en operaciones. Trigger `stock_movements_validate_reversal`: lo revertido de cada línea no supera su cantidad original, aunque lleguen reversiones concurrentes. `operation_id UNIQUE` en los documentos, que solo impide que dos documentos apunten a la misma operación. Índice único parcial de un despacho vigente por pedido |
 | Garantía en aplicación | Middleware de idempotencia ([ADR-007](../03-architecture/adr/007-idempotency.md)) |
-| Errores | 422 `IDEMPOTENCY_KEY_REUSED` (misma clave, otro contenido). 409 `IDEMPOTENCY_REQUEST_IN_PROGRESS`. 409 `OPERATION_ALREADY_CONFIRMED`. 422 `REVERSAL_EXCEEDS_REMAINING` |
+| Errores | 428 `IDEMPOTENCY_KEY_REQUIRED` (sin la cabecera, vacía o de más de 100 caracteres). 422 `IDEMPOTENCY_KEY_REUSED` (misma clave, otro contenido). 409 `IDEMPOTENCY_REQUEST_IN_PROGRESS`. 409 `OPERATION_ALREADY_CONFIRMED`. 422 `REVERSAL_EXCEEDS_REMAINING` |
 | Pruebas | Misma clave enviada 10 veces en paralelo: una sola operación. Despacho confirmado dos veces: una sola salida. Dos reversiones parciales concurrentes de la misma línea que juntas superan el original: una falla |
 | Etapa | E3, E4, E5, E6 |
 
@@ -178,6 +178,7 @@ Reglas de negocio que no son invariantes del inventario pero se aplican con el m
 | `SAME_SOURCE_AND_DESTINATION` | 422 | INV-004 |
 | `RESERVED_STOCK_NOT_AVAILABLE` | 422 | INV-005 |
 | `OVER_RECEIPT_NOT_ALLOWED` | 422 | INV-006 |
+| `IDEMPOTENCY_KEY_REQUIRED` | 428 | INV-007 |
 | `IDEMPOTENCY_KEY_REUSED` | 422 | INV-007 |
 | `IDEMPOTENCY_REQUEST_IN_PROGRESS` | 409 | INV-007 |
 | `OPERATION_ALREADY_CONFIRMED` | 409 | INV-007 |

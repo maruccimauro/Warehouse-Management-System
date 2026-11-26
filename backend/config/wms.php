@@ -20,6 +20,14 @@ return [
     // maria.martinez@wms.test, en adelante; IdentitySeeder::DEMO_USER_NAMES).
     'demo_users' => (int) env('WMS_DEMO_USERS', 10),
 
+    // Idempotencia por petición (ADR-007): espera máxima de una petición
+    // cuya clave está en uso por otra en curso (luego 409
+    // IDEMPOTENCY_REQUEST_IN_PROGRESS) y días que se conservan las claves.
+    'idempotency' => [
+        'lock_timeout_ms' => (int) env('WMS_IDEMPOTENCY_LOCK_TIMEOUT_MS', 5000),
+        'retention_days' => (int) env('WMS_IDEMPOTENCY_RETENTION_DAYS', 7),
+    ],
+
     // Interfaz de la documentación OpenAPI en /api/docs (ADR-012). Nunca se
     // registra en producción, aunque la variable esté activa.
     'api_docs' => [

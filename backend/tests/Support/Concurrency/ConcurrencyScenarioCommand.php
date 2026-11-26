@@ -2,6 +2,7 @@
 
 namespace Tests\Support\Concurrency;
 
+use App\Modules\Identity\Models\User;
 use App\Modules\Inventory\Data\MovementLine;
 use App\Modules\Inventory\Data\OperationDraft;
 use App\Modules\Inventory\Enums\AdjustmentReason;
@@ -9,9 +10,14 @@ use App\Modules\Inventory\Enums\OperationType;
 use App\Modules\Inventory\Models\StockMovement;
 use App\Modules\Inventory\Services\StockLedger;
 use App\Shared\Exceptions\ProblemDetailsRenderer;
+use App\Shared\Http\Idempotency\Idempotency;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use Tests\Fixtures\Modules\Sample\SampleServiceProvider;
 use Throwable;
 
 /**
@@ -48,6 +54,11 @@ final class ConcurrencyScenarioCommand extends Command
         }
 
         $scenario = (string) $this->argument('scenario');
+
+        if ($scenario === 'http-withdraw') {
+            return $this->httpWithdraw($payload);
+        }
+
         $work = $scenario === 'deadlock'
             ? fn (): ?int => $this->crossLocks($payload)
             : fn (): ?int => $ledger->apply($this->draft($scenario, $payload))->id;
@@ -75,6 +86,45 @@ final class ConcurrencyScenarioCommand extends Command
         }
 
         $this->line((string) json_encode([...$outcome, 'attempts' => $attempts]));
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * Retiro por HTTP con Idempotency-Key (E3.10): la petición atraviesa el
+     * kernel completo, con el middleware idempotent dueño de la transacción.
+     * El usuario se fija en el guard web, que Sanctum consulta primero.
+     *
+     * @param  array<array-key, mixed>  $payload
+     */
+    private function httpWithdraw(array $payload): int
+    {
+        $this->laravel->register(SampleServiceProvider::class);
+        Auth::guard('web')->setUser(User::query()->findOrFail(self::int($payload, 'user')));
+
+        $request = Request::create('/api/v1/sample/idempotent/withdraw', 'POST', server: [
+            'HTTP_ACCEPT' => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_'.strtoupper(str_replace('-', '_', Idempotency::HEADER)) => (string) ($payload['key'] ?? ''),
+        ], content: (string) json_encode([
+            'warehouse' => self::int($payload, 'warehouse'),
+            'product' => self::int($payload, 'product'),
+            'location' => self::int($payload, 'location'),
+            'quantity' => self::int($payload, 'quantity'),
+        ]));
+
+        DB::select('SELECT pg_advisory_lock_shared(?)', [self::BARRIER_KEY]);
+        DB::select('SELECT pg_advisory_unlock_shared(?)', [self::BARRIER_KEY]);
+
+        $response = $this->laravel->make(Kernel::class)->handle($request);
+        $body = json_decode((string) $response->getContent(), true);
+
+        $this->line((string) json_encode([
+            'status' => 'ok',
+            'http_status' => $response->getStatusCode(),
+            'body' => $body,
+            'replayed' => $response->headers->get(Idempotency::REPLAYED_HEADER) === 'true',
+        ]));
 
         return self::SUCCESS;
     }

@@ -15,6 +15,7 @@ El archivo `docker-compose.yml` de la raíz orquesta los servicios y toma sus va
 | Servicio | Imagen | Función |
 | - | - | - |
 | `app` | `php:8.5-fpm-alpine` (construida) | Laravel sobre PHP-FPM. Arranca cuando `db` está sano |
+| `scheduler` | La imagen de `app` | Tareas programadas de Laravel con `php artisan schedule:work`: limpieza diaria de las claves de idempotencia |
 | `web` | `nginx:1.30-alpine` | Punto de entrada en `WEB_PORT`. `/api` y `/sanctum` van a `app`; `/docs/`, a `wiki`; el resto, a `frontend` |
 | `db` | `postgres:18-alpine` | Bases `wms` y `wms_testing`, zona horaria UTC, volumen `db_data` y healthcheck con `pg_isready` |
 | `frontend` | `node:26-alpine` | Servidor de desarrollo de Vite, con `node_modules` en el volumen `frontend_node_modules` |

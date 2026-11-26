@@ -43,6 +43,31 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # Tareas programadas de Laravel (routes/console.php): limpieza diaria de las
+  # claves de idempotencia (ADR-007). Misma imagen y código que app; no instala
+  # dependencias ni migra, eso lo hace app al arrancar. Si vendor todavía no
+  # existe en el primer arranque, el reinicio lo reintenta.
+  scheduler:
+    image: wms-app:dev
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-wms}
+      DB_USERNAME: ${DB_USERNAME:-wms}
+      DB_PASSWORD: ${DB_PASSWORD:-wms}
+    entrypoint: ["su-exec", "www-data"]
+    command: ["php", "artisan", "schedule:work"]
+    volumes:
+      - ./backend:/var/www/backend
+      - backend_vendor:/var/www/backend/vendor
+    depends_on:
+      app:
+        condition: service_started
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
   web:
     image: nginx:1.30-alpine
     ports:
