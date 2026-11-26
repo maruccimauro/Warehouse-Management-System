@@ -11,7 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * Documento de ajuste con sus posiciones y las operaciones del libro que las
- * contabilizaron. status se deriva de las posiciones: pending_approval si
+ * contabilizaron (estas, solo en el detalle). status se deriva de las posiciones: pending_approval si
  * alguna espera aprobación, completed si no.
  *
  * @property StockAdjustment $resource
@@ -21,16 +21,20 @@ class StockAdjustmentResource extends JsonResource
     /**
      * @return array<int|string, string|(Closure(Relation<*, *, *>): mixed)>
      */
-    public static function relations(): array
+    public static function relations(bool $withOperations = true): array
     {
-        return [
+        $items = [
             'items' => fn (Relation $query) => $query->orderBy('item_number'),
             'items.product:id,sku',
             'items.location:id,code',
             'items.operation:id,number',
+        ];
+
+        return $withOperations ? [
+            ...$items,
             'operations' => fn (Relation $query) => $query->orderBy('id'),
             ...InventoryOperationResource::relations('operations.'),
-        ];
+        ] : $items;
     }
 
     /**

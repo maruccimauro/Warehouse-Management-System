@@ -20,6 +20,10 @@ return [
         'title' => 'El cambio de estado no está permitido.',
         'detail' => 'El recurso está en estado :from y no puede pasar a :to.',
     ],
+    'self_approval_not_allowed' => [
+        'title' => 'No se puede decidir sobre un documento propio.',
+        'detail' => 'Quien creó el documento no aprueba ni rechaza sus posiciones: lo decide otro usuario con el permiso de aprobar.',
+    ],
     'idempotency_key_required' => 'La operación requiere una clave de idempotencia válida.',
     'idempotency_key_reused' => 'La clave de idempotencia ya se usó con otro contenido.',
     'idempotency_request_in_progress' => 'Otra solicitud con la misma clave de idempotencia sigue en curso.',

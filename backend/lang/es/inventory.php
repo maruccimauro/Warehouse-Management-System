@@ -34,4 +34,8 @@ return [
         'title' => 'La ubicación de sistema no admite esta operación.',
         'detail' => 'La posición :item tiene como destino la ubicación de sistema :location: solo la cargan sus documentos.',
     ],
+    'adjustment_item_not_pending' => [
+        'title' => 'La posición de ajuste ya no está pendiente.',
+        'detail' => 'La posición :item ya no está pendiente de aprobación: se contabilizó al crear el ajuste o ya la aprobó o rechazó otro usuario.',
+    ],
 ];

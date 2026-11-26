@@ -4,6 +4,8 @@ namespace Tests\Support\Concurrency;
 
 use App\Modules\Identity\Models\User;
 use App\Modules\Inventory\Actions\AdjustStock;
+use App\Modules\Inventory\Actions\ApproveAdjustmentItems;
+use App\Modules\Inventory\Actions\RejectAdjustmentItems;
 use App\Modules\Inventory\Actions\TransferStock;
 use App\Modules\Inventory\Data\AdjustmentItem;
 use App\Modules\Inventory\Data\MovementLine;
@@ -12,6 +14,7 @@ use App\Modules\Inventory\Data\TransferItem;
 use App\Modules\Inventory\Enums\AdjustmentReason;
 use App\Modules\Inventory\Enums\MovementDirection;
 use App\Modules\Inventory\Enums\OperationType;
+use App\Modules\Inventory\Models\StockAdjustment;
 use App\Modules\Inventory\Models\StockMovement;
 use App\Modules\Inventory\Services\StockLedger;
 use App\Shared\Exceptions\ProblemDetailsRenderer;
@@ -69,6 +72,7 @@ final class ConcurrencyScenarioCommand extends Command
             'transfer' => fn (): ?int => $this->transfer($payload),
             'withdraw' => fn (): ?int => $this->adjust($payload, MovementDirection::Out, AdjustmentReason::Loss),
             'enter' => fn (): ?int => $this->adjust($payload, MovementDirection::In, AdjustmentReason::Found),
+            'decide-adjustment' => fn (): ?int => $this->decideAdjustment($payload),
             default => fn (): ?int => $ledger->apply($this->draft($scenario, $payload))->id,
         };
         $attempts = 0;
@@ -197,6 +201,29 @@ final class ConcurrencyScenarioCommand extends Command
         $adjustment = app(AdjustStock::class)(self::int($payload, 'warehouse'), $direction, $reason, [$item], self::int($payload, 'user'));
 
         return $adjustment->items()->value('operation_id');
+    }
+
+    /**
+     * Aprobación o rechazo de una posición de ajuste con las Actions de E3.23
+     * (decision approve o reject). Devuelve la operación de la aprobación, o
+     * null en un rechazo.
+     *
+     * @param  array<array-key, mixed>  $payload
+     */
+    private function decideAdjustment(array $payload): ?int
+    {
+        $adjustment = StockAdjustment::query()->findOrFail(self::int($payload, 'adjustment'));
+        $items = [self::int($payload, 'item')];
+
+        if (($payload['decision'] ?? 'approve') === 'reject') {
+            app(RejectAdjustmentItems::class)($adjustment, $items, self::int($payload, 'user'), 'Rechazo concurrente');
+
+            return null;
+        }
+
+        app(ApproveAdjustmentItems::class)($adjustment, $items, self::int($payload, 'user'));
+
+        return $adjustment->items()->where('item_number', $items[0])->value('operation_id');
     }
 
     /**

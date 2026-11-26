@@ -34,4 +34,8 @@ return [
         'title' => 'The system location does not allow this operation.',
         'detail' => 'Item :item has system location :location as its destination: only its documents load it.',
     ],
+    'adjustment_item_not_pending' => [
+        'title' => 'The adjustment item is no longer pending.',
+        'detail' => 'Item :item is no longer pending approval: it was posted when the adjustment was created, or another user already approved or rejected it.',
+    ],
 ];

@@ -415,8 +415,8 @@ final class StockLedger
             $location = $locations->get($line->locationId);
 
             throw $requested <= $stock->quantity_on_hand - $stock->quantity_blocked
-                ? new ReservedStockNotAvailable($stock, $product, $location, $requested)
-                : new InsufficientStock($stock, $product, $location, $requested);
+                ? new ReservedStockNotAvailable($stock, $product, $location, $requested, $line->itemNumber)
+                : new InsufficientStock($stock, $product, $location, $requested, $line->itemNumber);
         }
     }
 

@@ -3,11 +3,16 @@
 use App\Modules\Catalog\Actions\CreateCategory;
 use App\Modules\Catalog\Actions\CreateSupplier;
 use App\Modules\Catalog\Actions\CreateUnitOfMeasure;
+use App\Modules\Catalog\Actions\SetProductAdjustmentThresholds;
 use App\Modules\Catalog\Actions\SetProductSupplier;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Identity\Actions\SyncRolesAndPermissions;
 use App\Modules\Identity\Authorization\Permission;
 use App\Modules\Identity\Authorization\Role;
+use App\Modules\Inventory\Actions\AdjustStock;
+use App\Modules\Inventory\Data\AdjustmentItem;
+use App\Modules\Inventory\Enums\AdjustmentReason;
+use App\Modules\Inventory\Enums\MovementDirection;
 use App\Modules\Warehouse\Actions\CreateWarehouse;
 use App\Modules\Warehouse\Enums\ZoneType;
 use App\Shared\Http\Idempotency\Idempotency;
@@ -72,6 +77,8 @@ function writeEndpointPermissions(): array
         'POST api/v1/users' => Permission::UsersManage,
         'PATCH api/v1/users/{user}' => Permission::UsersManage,
         'POST api/v1/inventory/adjustments' => Permission::InventoryAdjust,
+        'POST api/v1/inventory/adjustments/{adjustment}/approve' => Permission::InventoryAdjustApprove,
+        'POST api/v1/inventory/adjustments/{adjustment}/reject' => Permission::InventoryAdjustApprove,
         'POST api/v1/inventory/transfers' => Permission::InventoryTransfer,
     ];
 }
@@ -105,6 +112,9 @@ beforeEach(function () {
     $supplier = app(CreateSupplier::class)(['tax_id' => 'DEV-0001', 'name' => 'ACME']);
     // El vínculo existe para que el DELETE autorizado no responda 404.
     app(SetProductSupplier::class)($supplier, $product, null, null);
+    // Ajuste con una posición pendiente, de otro usuario: la decisión llega a la validación.
+    app(SetProductAdjustmentThresholds::class)($product, $this->central, 1, null);
+    $adjustment = app(AdjustStock::class)($this->central->id, MovementDirection::In, AdjustmentReason::Found, [new AdjustmentItem($product->id, $location->id, 5)], userWithAccess(Role::Operator, [$this->central])->id);
 
     $this->routeParameters = [
         '{warehouse}' => $this->central->id,
@@ -115,6 +125,7 @@ beforeEach(function () {
         '{product}' => $product->id,
         '{supplier}' => $supplier->id,
         '{user}' => userWithAccess(Role::Operator)->id,
+        '{adjustment}' => $adjustment->id,
     ];
 });
 

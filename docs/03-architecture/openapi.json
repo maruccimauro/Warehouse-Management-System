@@ -12,6 +12,274 @@
     ],
     "paths": {
         "/inventory/adjustments": {
+            "get": {
+                "operationId": "inventory.adjustments.index",
+                "tags": [
+                    "Adjustment"
+                ],
+                "parameters": [
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "number",
+                                "-number",
+                                "created_at",
+                                "-created_at"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 200
+                        }
+                    },
+                    {
+                        "name": "filter[warehouse_id]",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "filter[status]",
+                        "in": "query",
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "$ref": "#/components/schemas/StockAdjustmentItemStatus"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "filter[product_id]",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "filter[created_by]",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated set of `StockAdjustmentResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/StockAdjustmentResource"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "last": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
+                                            ]
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "description": "Generated paginator links.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url",
+                                                            "label",
+                                                            "active"
+                                                        ]
+                                                    }
+                                                },
+                                                "path": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "Base path for paginator generated URLs."
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "description": "Number of items shown per page.",
+                                                    "minimum": 0
+                                                },
+                                                "to": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "description": "Number of the last item in the slice.",
+                                                    "minimum": 1
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "description": "Total number of items being paginated.",
+                                                    "minimum": 0
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "links",
+                                                "path",
+                                                "per_page",
+                                                "to",
+                                                "total"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "links",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "`PASSWORD_CHANGE_REQUIRED`: Debe cambiar la contrase\u00f1a antes de continuar.\n\n`FORBIDDEN`: Forbidden",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsPasswordChangeRequired"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsForbidden"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "`UNAUTHENTICATED`: Unauthorized",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsUnauthenticated"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "`VALIDATION_FAILED`: Los datos enviados no son v\u00e1lidos.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsValidationFailed"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sessionCookie": []
+                    }
+                ]
+            },
             "post": {
                 "operationId": "inventory.adjustments.store",
                 "tags": [
@@ -130,6 +398,451 @@
                             "application/problem+json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ProblemDetailsIdempotencyRequestInProgress"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "`UNAUTHENTICATED`: Unauthorized",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsUnauthenticated"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sessionCookie": [],
+                        "xsrfToken": []
+                    }
+                ]
+            }
+        },
+        "/inventory/adjustments/{adjustment}": {
+            "get": {
+                "operationId": "inventory.adjustments.show",
+                "tags": [
+                    "Adjustment"
+                ],
+                "parameters": [
+                    {
+                        "name": "adjustment",
+                        "in": "path",
+                        "required": true,
+                        "description": "The adjustment ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`StockAdjustmentResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/StockAdjustmentResource"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "operations"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "`FORBIDDEN`: Forbidden\n\n`PASSWORD_CHANGE_REQUIRED`: Debe cambiar la contrase\u00f1a antes de continuar.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsForbidden"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsPasswordChangeRequired"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "`NOT_FOUND`: Not Found",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsNotFound"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "`UNAUTHENTICATED`: Unauthorized",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsUnauthenticated"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sessionCookie": []
+                    }
+                ]
+            }
+        },
+        "/inventory/adjustments/{adjustment}/approve": {
+            "post": {
+                "operationId": "inventory.adjustments.approve",
+                "tags": [
+                    "Adjustment"
+                ],
+                "parameters": [
+                    {
+                        "name": "Idempotency-Key",
+                        "in": "header",
+                        "required": true,
+                        "description": "Clave que el cliente genera al iniciar el intento de operaci\u00f3n y repite en sus reintentos. Sin la cabecera, vac\u00eda o de m\u00e1s de 100 caracteres: 428 IDEMPOTENCY_KEY_REQUIRED. Misma clave y mismo cuerpo: se devuelve la respuesta almacenada, con la cabecera Idempotent-Replayed; misma clave con otro cuerpo: 422 IDEMPOTENCY_KEY_REUSED; misma clave con una petici\u00f3n en curso que no termina a tiempo: 409 IDEMPOTENCY_REQUEST_IN_PROGRESS.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "adjustment",
+                        "in": "path",
+                        "required": true,
+                        "description": "The adjustment ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ApproveAdjustmentItemsRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`StockAdjustmentResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/StockAdjustmentResource"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "operations"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "`WAREHOUSE_INACTIVE`: El dep\u00f3sito est\u00e1 inactivo.\n\n`PRODUCT_NOT_OPERABLE`: El estado del art\u00edculo no admite la operaci\u00f3n.\n\n`LOCATION_BLOCKED`: La ubicaci\u00f3n no admite movimientos.\n\n`LOCATION_CAPACITY_EXCEEDED`: La operaci\u00f3n supera la capacidad de la ubicaci\u00f3n.\n\n`INSUFFICIENT_STOCK`: No hay stock suficiente.\n\n`RESERVED_STOCK_NOT_AVAILABLE`: El stock est\u00e1 reservado.\n\n`IDEMPOTENCY_KEY_REUSED`: La clave de idempotencia ya se us\u00f3 con otro contenido.\n\n`VALIDATION_FAILED`: Los datos enviados no son v\u00e1lidos.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsWarehouseInactive"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsProductNotOperable"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsLocationBlocked"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsLocationCapacityExceeded"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsInsufficientStock"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsReservedStockNotAvailable"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsIdempotencyKeyReused"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsValidationFailed"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "`SELF_APPROVAL_NOT_ALLOWED`: No se puede decidir sobre un documento propio.\n\n`PASSWORD_CHANGE_REQUIRED`: Debe cambiar la contrase\u00f1a antes de continuar.\n\n`FORBIDDEN`: Forbidden",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsSelfApprovalNotAllowed"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsPasswordChangeRequired"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsForbidden"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "`ADJUSTMENT_ITEM_NOT_PENDING`: La posici\u00f3n de ajuste ya no est\u00e1 pendiente.\n\n`IDEMPOTENCY_REQUEST_IN_PROGRESS`: Otra solicitud con la misma clave de idempotencia sigue en curso.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsAdjustmentItemNotPending"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsIdempotencyRequestInProgress"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "419": {
+                        "description": "`CSRF_TOKEN_MISMATCH`: Page Expired",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsCsrfTokenMismatch"
+                                }
+                            }
+                        }
+                    },
+                    "428": {
+                        "description": "`IDEMPOTENCY_KEY_REQUIRED`: La operaci\u00f3n requiere una clave de idempotencia v\u00e1lida.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsIdempotencyKeyRequired"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "`NOT_FOUND`: Not Found",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsNotFound"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "`UNAUTHENTICATED`: Unauthorized",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsUnauthenticated"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sessionCookie": [],
+                        "xsrfToken": []
+                    }
+                ]
+            }
+        },
+        "/inventory/adjustments/{adjustment}/reject": {
+            "post": {
+                "operationId": "inventory.adjustments.reject",
+                "tags": [
+                    "Adjustment"
+                ],
+                "parameters": [
+                    {
+                        "name": "Idempotency-Key",
+                        "in": "header",
+                        "required": true,
+                        "description": "Clave que el cliente genera al iniciar el intento de operaci\u00f3n y repite en sus reintentos. Sin la cabecera, vac\u00eda o de m\u00e1s de 100 caracteres: 428 IDEMPOTENCY_KEY_REQUIRED. Misma clave y mismo cuerpo: se devuelve la respuesta almacenada, con la cabecera Idempotent-Replayed; misma clave con otro cuerpo: 422 IDEMPOTENCY_KEY_REUSED; misma clave con una petici\u00f3n en curso que no termina a tiempo: 409 IDEMPOTENCY_REQUEST_IN_PROGRESS.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "adjustment",
+                        "in": "path",
+                        "required": true,
+                        "description": "The adjustment ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RejectAdjustmentItemsRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`StockAdjustmentResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/StockAdjustmentResource"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "operations"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "`SELF_APPROVAL_NOT_ALLOWED`: No se puede decidir sobre un documento propio.\n\n`PASSWORD_CHANGE_REQUIRED`: Debe cambiar la contrase\u00f1a antes de continuar.\n\n`FORBIDDEN`: Forbidden",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsSelfApprovalNotAllowed"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsPasswordChangeRequired"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsForbidden"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "`ADJUSTMENT_ITEM_NOT_PENDING`: La posici\u00f3n de ajuste ya no est\u00e1 pendiente.\n\n`IDEMPOTENCY_REQUEST_IN_PROGRESS`: Otra solicitud con la misma clave de idempotencia sigue en curso.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsAdjustmentItemNotPending"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsIdempotencyRequestInProgress"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "419": {
+                        "description": "`CSRF_TOKEN_MISMATCH`: Page Expired",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsCsrfTokenMismatch"
+                                }
+                            }
+                        }
+                    },
+                    "428": {
+                        "description": "`IDEMPOTENCY_KEY_REQUIRED`: La operaci\u00f3n requiere una clave de idempotencia v\u00e1lida.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsIdempotencyKeyRequired"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "`IDEMPOTENCY_KEY_REUSED`: La clave de idempotencia ya se us\u00f3 con otro contenido.\n\n`VALIDATION_FAILED`: Los datos enviados no son v\u00e1lidos.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsIdempotencyKeyReused"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsValidationFailed"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "`NOT_FOUND`: Not Found",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsNotFound"
                                 }
                             }
                         }
@@ -7374,6 +8087,31 @@
                 ],
                 "title": "AdjustStockRequest"
             },
+            "ApproveAdjustmentItemsRequest": {
+                "type": "object",
+                "description": "POST /inventory/adjustments/{id}/approve (E3.23): las notas son opcionales.",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "uniqueItems": true
+                    },
+                    "notes": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 500
+                    }
+                },
+                "required": [
+                    "items"
+                ],
+                "title": "ApproveAdjustmentItemsRequest"
+            },
             "AuthenticatedUserResource": {
                 "type": "object",
                 "properties": {
@@ -7876,6 +8614,40 @@
                     "code"
                 ],
                 "title": "ProblemDetails"
+            },
+            "ProblemDetailsAdjustmentItemNotPending": {
+                "description": "La posici\u00f3n de ajuste ya no est\u00e1 pendiente.",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "urn:wms:problem:adjustment-item-not-pending"
+                            },
+                            "status": {
+                                "type": "integer",
+                                "const": 409
+                            },
+                            "code": {
+                                "type": "string",
+                                "const": "ADJUSTMENT_ITEM_NOT_PENDING"
+                            },
+                            "context": {
+                                "type": "object",
+                                "description": "Datos de la ocurrencia que el cliente puede usar; su contenido depende del c\u00f3digo."
+                            }
+                        },
+                        "required": [
+                            "code",
+                            "context"
+                        ]
+                    }
+                ],
+                "title": "ProblemDetailsAdjustmentItemNotPending"
             },
             "ProblemDetailsCategoryHierarchyCycle": {
                 "description": "El cambio cerrar\u00eda un ciclo en la jerarqu\u00eda de categor\u00edas.",
@@ -8474,6 +9246,40 @@
                 ],
                 "title": "ProblemDetailsSameSourceAndDestination"
             },
+            "ProblemDetailsSelfApprovalNotAllowed": {
+                "description": "No se puede decidir sobre un documento propio.",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "urn:wms:problem:self-approval-not-allowed"
+                            },
+                            "status": {
+                                "type": "integer",
+                                "const": 403
+                            },
+                            "code": {
+                                "type": "string",
+                                "const": "SELF_APPROVAL_NOT_ALLOWED"
+                            },
+                            "context": {
+                                "type": "object",
+                                "description": "Datos de la ocurrencia que el cliente puede usar; su contenido depende del c\u00f3digo."
+                            }
+                        },
+                        "required": [
+                            "code",
+                            "context"
+                        ]
+                    }
+                ],
+                "title": "ProblemDetailsSelfApprovalNotAllowed"
+            },
             "ProblemDetailsSelfDeactivationNotAllowed": {
                 "description": "Un usuario no puede desactivarse a s\u00ed mismo.",
                 "allOf": [
@@ -9027,6 +9833,29 @@
                 ],
                 "title": "ProductWarehouseSettingResource"
             },
+            "RejectAdjustmentItemsRequest": {
+                "type": "object",
+                "description": "POST /inventory/adjustments/{id}/reject (E3.23): el motivo es obligatorio\n(REG-024) y se copia en cada posici\u00f3n rechazada.",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "uniqueItems": true
+                    },
+                    "notes": {
+                        "type": "string",
+                        "maxLength": 500
+                    }
+                },
+                "required": [
+                    "items",
+                    "notes"
+                ],
+                "title": "RejectAdjustmentItemsRequest"
+            },
             "Role": {
                 "type": "string",
                 "description": "Roles del sistema y sus permisos (E2.07). El valor es un identificador estable que guarda la tabla roles; el nombre visible lo traduce el frontend, porque los roles son datos del sistema y no de los usuarios. La asignaci\u00f3n de permisos sigue la tabla de roles de docs/03-architecture/domain-model.md.\n",
@@ -9064,6 +9893,17 @@
                     "E"
                 ],
                 "title": "SelectionSign"
+            },
+            "StockAdjustmentItemStatus": {
+                "type": "string",
+                "description": "Estado de una posici\u00f3n de ajuste; coincide con stock_adjustment_items_status_check. posted y approved movieron stock; pending espera la decisi\u00f3n de otro usuario y rejected no lo movi\u00f3 nunca.\n",
+                "enum": [
+                    "posted",
+                    "pending",
+                    "approved",
+                    "rejected"
+                ],
+                "title": "StockAdjustmentItemStatus"
             },
             "StockAdjustmentResource": {
                 "type": "object",
@@ -9205,17 +10045,7 @@
                     "operations": {
                         "type": "array",
                         "items": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/components/schemas/InventoryOperationResource"
-                                },
-                                {
-                                    "type": "object",
-                                    "required": [
-                                        "movements"
-                                    ]
-                                }
-                            ]
+                            "$ref": "#/components/schemas/InventoryOperationResource"
                         }
                     }
                 },

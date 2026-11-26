@@ -109,6 +109,22 @@ flowchart LR
 | FA-01.8 | 5 | Todo lo recibido fue rechazado | No se registra operación ni tareas de guardado; la recepción queda `confirmed` con lo rechazado y su motivo, y `quantity_received` de la orden no cambia |
 | FA-01.9 | Cualquiera | El operador cancela la recepción en `draft` | Queda `cancelled` sin efecto sobre el stock |
 
+**Flujo de aprobación (E3.23)**
+
+1. El aprobador consulta los documentos con posiciones pendientes de sus depósitos (`GET /inventory/adjustments`, que sin filtro de estado lista los que tienen alguna `pending`) y abre uno (`GET /inventory/adjustments/{id}`).
+2. Elige una o más posiciones pendientes del documento y las aprueba (`POST /inventory/adjustments/{id}/approve` con `{ items: [números], notes? }`) o las rechaza con motivo (`POST /inventory/adjustments/{id}/reject` con `{ items, notes }`).
+3. El sistema bloquea el depósito (solo al aprobar), la cabecera del documento y las posiciones, y verifica que todas sigan `pending`.
+4. Al aprobar, contabiliza las posiciones juntas en una operación nueva que referencia al documento, revalidando el stock del momento. Al rechazar, registra el motivo en cada posición y no mueve stock.
+5. Responde 200 con el documento actualizado.
+
+| ID | Paso | Condición | Resultado |
+| - | - | - | - |
+| FA-04.9 | 2 | El aprobador es quien creó el documento, aunque sea Administrador | 403 `SELF_APPROVAL_NOT_ALLOWED` |
+| FA-04.10 | 3 | Alguna posición ya está decidida o se contabilizó al crear el documento | 409 `ADJUSTMENT_ITEM_NOT_PENDING` con `context.item`; ninguna posición cambia |
+| FA-04.11 | 4 | Al aprobar una salida, el stock libre ya no cubre una posición | 422 `INSUFFICIENT_STOCK` o `RESERVED_STOCK_NOT_AVAILABLE` con `context.item`; todas siguen pendientes |
+| FA-04.12 | 3 | Al aprobar, el depósito está inactivo | 422 `WAREHOUSE_INACTIVE`; el rechazo sí se admite |
+| FA-04.13 | 2 | Rechazo sin motivo | 422 de validación |
+
 **Flujo de reversión**
 
 | ID | Condición | Resultado |
@@ -247,7 +263,7 @@ Ejemplo completo:
 | Actor | Supervisor u operador autorizado |
 | Objetivo | Corregir el stock de una o más ubicaciones por daño, pérdida, hallazgo o corrección |
 | Permisos | `inventory.adjust`; `inventory.adjust.approve` para aprobar o rechazar las posiciones sobre el umbral (E3.23); `inventory.reverse` para revertir |
-| Endpoints | `POST /inventory/adjustments`, `POST /inventory/operations/{id}/reverse` |
+| Endpoints | `POST /inventory/adjustments`, `GET /inventory/adjustments`, `GET /inventory/adjustments/{id}`, `POST /inventory/adjustments/{id}/approve`, `POST /inventory/adjustments/{id}/reject`, `POST /inventory/operations/{id}/reverse` |
 | Movimiento | 551 `damage`, 711 `loss`, 712 `found`, 711 o 712 `correction` |
 | Reglas | INV-001, INV-005, INV-007, INV-008, INV-009, REG-014, REG-024 |
 | Etapa | E3 |
@@ -275,7 +291,7 @@ La carga inicial de stock (`initial_load`, 561) no es un ajuste de este caso de 
 | FA-04.2 | 3 | El motivo no corresponde a la dirección | 422 de validación |
 | FA-04.3 | 5 | La salida deja el físico por debajo de lo reservado más lo bloqueado | 422 `RESERVED_STOCK_NOT_AVAILABLE`; primero se liberan reservas o bloqueos. No se crea el documento |
 | FA-04.4 | 5 | La salida supera el físico | 422 `INSUFFICIENT_STOCK`. No se crea el documento |
-| FA-04.5 | 6 | Una posición supera el umbral de su artículo | 202: la posición queda `pending`; otro usuario con `inventory.adjust.approve` la aprueba, y entonces se revalida el stock y se contabiliza, o la rechaza con motivo (E3.23). El resto del documento ya está contabilizado |
+| FA-04.5 | 6 | Una posición supera el umbral de su artículo | 202: la posición queda `pending` y el resto del documento ya está contabilizado. Sigue el flujo de aprobación |
 | FA-04.7 | 5 | Ajuste positivo en una ubicación de sistema (RECEPCION, PACKING o DESPACHO) | 422 `SYSTEM_LOCATION_NOT_ALLOWED` (REG-014). Un sobrante en RECEPCION se registra con una recepción sin orden (FA-01.1) |
 | FA-04.6 | 5 | Ubicación bloqueada o en conteo | FC-9. Las diferencias de una ubicación en conteo se resuelven aprobando el inventario físico |
 | FA-04.8 | 1 | Dos posiciones sobre el mismo artículo y ubicación | 422 de validación (INV-004) |

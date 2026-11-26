@@ -18,7 +18,7 @@ final class ReservedStockNotAvailable extends DomainException
 {
     use TranslatesText;
 
-    public function __construct(Stock $stock, Product $product, Location $location, int $requested)
+    public function __construct(Stock $stock, Product $product, Location $location, int $requested, ?int $item = null)
     {
         parent::__construct(
             detail: self::text('inventory.reserved_stock_not_available.detail', [
@@ -28,7 +28,7 @@ final class ReservedStockNotAvailable extends DomainException
                 'available' => $stock->quantity_available,
                 'requested' => $requested,
             ]),
-            context: InsufficientStock::stockContext($stock, $requested),
+            context: InsufficientStock::stockContext($stock, $requested, $item),
         );
     }
 

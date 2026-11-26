@@ -1,13 +1,19 @@
 <?php
 
+use App\Modules\Catalog\Actions\SetProductAdjustmentThresholds;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Identity\Models\User;
+use App\Modules\Inventory\Actions\AdjustStock;
+use App\Modules\Inventory\Data\AdjustmentItem;
 use App\Modules\Inventory\Data\MovementLine;
 use App\Modules\Inventory\Data\OperationDraft;
 use App\Modules\Inventory\Enums\AdjustmentReason;
+use App\Modules\Inventory\Enums\MovementDirection;
 use App\Modules\Inventory\Enums\OperationType;
+use App\Modules\Inventory\Enums\StockAdjustmentItemStatus;
 use App\Modules\Inventory\Models\InventoryOperation;
 use App\Modules\Inventory\Models\Stock;
+use App\Modules\Inventory\Models\StockAdjustment;
 use App\Modules\Inventory\Models\StockMovement;
 use App\Modules\Inventory\Services\StockLedger;
 use App\Modules\Warehouse\Enums\ZoneType;
@@ -149,5 +155,33 @@ it('lets simultaneous reversals of one line add up to its quantity at most (INV-
     expect(concurrentOutcomes($results))->toBe(['REVERSAL_EXCEEDS_REMAINING' => 3, 'ok' => 2])
         ->and(concurrentOnHand($this->product, $this->a))->toBe(8)
         ->and(concurrentOnHand($this->product, $this->b))->toBe(102)
+        ->and(concurrentLedgerBalances())->toBeTrue();
+});
+
+it('lets only one of several simultaneous decisions on the same adjustment item win (REG-024, E3.23)', function () {
+    concurrentLoad($this->user->id, $this->product, $this->a, 100);
+    app(SetProductAdjustmentThresholds::class)($this->product, $this->warehouse, null, 10);
+    $adjustment = DB::transaction(fn (): StockAdjustment => app(AdjustStock::class)(
+        $this->warehouse->id,
+        MovementDirection::Out,
+        AdjustmentReason::Loss,
+        [new AdjustmentItem($this->product->id, $this->a->id, 30)],
+        $this->user->id,
+    ));
+    $approver = User::factory()->create();
+    $payloads = [];
+
+    for ($i = 0; $i < 6; $i++) {
+        $payloads[] = ['user' => $approver->id, 'adjustment' => $adjustment->id, 'item' => 1, 'decision' => $i % 3 === 0 ? 'reject' : 'approve'];
+    }
+
+    $results = ConcurrentRun::scenario('decide-adjustment', $payloads);
+    $item = $adjustment->items()->sole();
+    $approved = $item->status === StockAdjustmentItemStatus::Approved;
+
+    expect(concurrentOutcomes($results))->toBe(['ADJUSTMENT_ITEM_NOT_PENDING' => 5, 'ok' => 1])
+        ->and($item->status)->toBeIn([StockAdjustmentItemStatus::Approved, StockAdjustmentItemStatus::Rejected])
+        ->and(concurrentOnHand($this->product, $this->a))->toBe($approved ? 70 : 100)
+        ->and(InventoryOperation::query()->where('reference_type', StockAdjustment::REFERENCE_TYPE)->count())->toBe($approved ? 1 : 0)
         ->and(concurrentLedgerBalances())->toBeTrue();
 });

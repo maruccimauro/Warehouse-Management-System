@@ -18,7 +18,7 @@ final class InsufficientStock extends DomainException
 {
     use TranslatesText;
 
-    public function __construct(Stock $stock, Product $product, Location $location, int $requested)
+    public function __construct(Stock $stock, Product $product, Location $location, int $requested, ?int $item = null)
     {
         parent::__construct(
             detail: self::text('inventory.insufficient_stock.detail', [
@@ -27,7 +27,7 @@ final class InsufficientStock extends DomainException
                 'available' => $stock->quantity_available,
                 'requested' => $requested,
             ]),
-            context: self::stockContext($stock, $requested),
+            context: self::stockContext($stock, $requested, $item),
         );
     }
 
@@ -42,13 +42,15 @@ final class InsufficientStock extends DomainException
     }
 
     /**
-     * Cantidades de la existencia que acompañan a los dos errores de retiro.
+     * Cantidades de la existencia que acompañan a los dos errores de retiro,
+     * con la posición del documento cuando la operación las numera.
      *
      * @return array<string, int>
      */
-    public static function stockContext(Stock $stock, int $requested): array
+    public static function stockContext(Stock $stock, int $requested, ?int $item = null): array
     {
         return [
+            ...($item === null ? [] : ['item' => $item]),
             'product_id' => $stock->product_id,
             'location_id' => $stock->location_id,
             'requested' => $requested,

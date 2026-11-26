@@ -20,6 +20,10 @@ return [
         'title' => 'The state change is not allowed.',
         'detail' => 'The resource is in state :from and cannot move to :to.',
     ],
+    'self_approval_not_allowed' => [
+        'title' => 'You cannot decide on your own document.',
+        'detail' => 'Whoever created the document does not approve or reject its items: another user with the approval permission decides.',
+    ],
     'idempotency_key_required' => 'The operation requires a valid idempotency key.',
     'idempotency_key_reused' => 'The idempotency key was already used with different content.',
     'idempotency_request_in_progress' => 'Another request with the same idempotency key is still in progress.',
