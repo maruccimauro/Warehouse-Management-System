@@ -1,0 +1,98 @@
+# Pruebas de concurrencia del núcleo de inventario (E3.14, ADR-006): procesos
+# en paralelo contra PostgreSQL real, con la barrera de inicio de
+# tests/Support/Concurrency/ConcurrentRun.php.
+#
+# - Desde ci.yml (workflow_call), una corrida en cada push.
+# - A mano (workflow_dispatch) y cada noche (schedule), 20 corridas seguidas:
+#   una carrera que falla una vez de cada diez no la detecta una sola corrida.
+#
+# Mismo entorno que el job Backend de ci.yml; las actions se fijan por SHA.
+name: Concurrencia
+
+on:
+  workflow_call:
+    inputs:
+      repetitions:
+        description: Corridas seguidas del grupo concurrency
+        type: number
+        default: 1
+  workflow_dispatch:
+    inputs:
+      repetitions:
+        description: Corridas seguidas del grupo concurrency
+        type: number
+        default: 20
+  schedule:
+    - cron: '0 6 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  concurrency:
+    name: Concurrencia
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: wms_testing
+          POSTGRES_USER: wms
+          POSTGRES_PASSWORD: wms
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U wms -d wms_testing"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USERNAME: wms
+      DB_PASSWORD: wms
+      # El programado no tiene inputs: corre las 20 del workflow manual.
+      REPETITIONS: ${{ inputs.repetitions || 20 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.5'
+          extensions: bcmath, intl, pcntl, pdo_pgsql, zip
+          ini-values: date.timezone=UTC, memory_limit=512M
+          coverage: none
+          tools: composer:v2
+
+      - name: Ubicar la caché de Composer
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Instalar dependencias
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Preparar el entorno
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+
+      # Se detiene en la primera corrida que falla, con su número en el log.
+      - name: Pruebas de concurrencia
+        run: |
+          for run in $(seq 1 "$REPETITIONS"); do
+            echo "::group::Corrida $run de $REPETITIONS"
+            composer test:concurrency
+            echo "::endgroup::"
+          done

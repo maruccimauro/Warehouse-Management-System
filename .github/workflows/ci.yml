@@ -108,6 +108,14 @@ jobs:
           composer openapi
           git diff --exit-code -- ../docs/03-architecture/openapi.json
 
+  # Una corrida del grupo concurrency por push; las 20 seguidas, en el
+  # workflow manual y nocturno de concurrency.yml (D9 del plan de E3).
+  concurrency:
+    name: Concurrencia
+    uses: ./.github/workflows/concurrency.yml
+    with:
+      repetitions: 1
+
   frontend:
     name: Frontend
     runs-on: ubuntu-24.04

@@ -54,6 +54,10 @@
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ],
+        "test:concurrency": [
+            "@php artisan config:clear --ansi @no_additional_args",
+            "@php artisan test --group=concurrency"
+        ],
         "lint": "pint --test",
         "format": "pint",
         "analyse": "phpstan analyse --memory-limit=1G",
@@ -81,6 +85,7 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "scripts-descriptions": {
+        "test:concurrency": "Pruebas de concurrencia con procesos en paralelo (grupo concurrency, fuera de composer test).",
         "lint": "Verifica el estilo con Pint sin modificar archivos.",
         "format": "Aplica el estilo de Pint.",
         "analyse": "Análisis estático con PHPStan y Larastan en nivel máximo.",

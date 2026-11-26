@@ -52,6 +52,7 @@ The first start takes a few minutes: it builds the PHP image and installs the ba
 | - | - |
 | Follow the backend start | `docker compose logs -f app` |
 | Backend checks (Pint, PHPStan, Pest) | `docker compose exec app composer check` |
+| Concurrency tests (parallel processes, outside `composer check`) | `docker compose exec app composer test:concurrency` |
 | Frontend checks (tsc, ESLint, Vitest) | `docker compose exec frontend npm run check` |
 | User wiki (VitePress, in Spanish) | <http://localhost:8080/docs/> |
 | Build the wiki (fails on broken links) | `docker compose exec wiki npm run build` |
@@ -114,6 +115,7 @@ El primer arranque tarda unos minutos: construye la imagen de PHP e instala las 
 | - | - |
 | Seguir el arranque del backend | `docker compose logs -f app` |
 | Verificación del backend (Pint, PHPStan, Pest) | `docker compose exec app composer check` |
+| Pruebas de concurrencia (procesos en paralelo, fuera de `composer check`) | `docker compose exec app composer test:concurrency` |
 | Verificación del frontend (tsc, ESLint, Vitest) | `docker compose exec frontend npm run check` |
 | Wiki de usuario (VitePress) | <http://localhost:8080/docs/> |
 | Compilar la wiki (falla con enlaces rotos) | `docker compose exec wiki npm run build` |
