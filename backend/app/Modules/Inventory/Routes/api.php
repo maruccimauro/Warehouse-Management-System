@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Inventory\Http\Controllers\AdjustmentController;
+use App\Modules\Inventory\Http\Controllers\InitialLoadController;
 use App\Modules\Inventory\Http\Controllers\TransferController;
 use App\Shared\Http\Idempotency\Idempotency;
 use Illuminate\Support\Facades\Route;
@@ -20,5 +21,6 @@ Route::middleware(['auth:sanctum', Idempotency::MIDDLEWARE])->prefix('/inventory
     Route::post('/adjustments', [AdjustmentController::class, 'store'])->name('adjustments.store');
     Route::post('/adjustments/{adjustment}/approve', [AdjustmentController::class, 'approve'])->where('adjustment', $id)->name('adjustments.approve');
     Route::post('/adjustments/{adjustment}/reject', [AdjustmentController::class, 'reject'])->where('adjustment', $id)->name('adjustments.reject');
+    Route::post('/initial-loads', [InitialLoadController::class, 'store'])->name('initial-loads.store');
     Route::post('/transfers', [TransferController::class, 'store'])->name('transfers.store');
 });

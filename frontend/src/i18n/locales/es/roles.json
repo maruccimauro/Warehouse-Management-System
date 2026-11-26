@@ -63,6 +63,7 @@
     "inventory.adjust.approve": "Aprobar y rechazar posiciones de ajuste por encima del umbral.",
     "inventory.block": "Bloquear y liberar cantidades de stock.",
     "inventory.reverse": "Revertir transferencias y ajustes.",
+    "inventory.initial_load": "Cargar el stock inicial de los depósitos donde opera, sin umbral de aprobación.",
     "inventory.thresholds.manage": "Fijar los umbrales de aprobación de ajustes en los depósitos donde opera.",
     "procurement.create": "Crear, modificar y enviar órdenes de compra.",
     "procurement.approve": "Aprobar y rechazar órdenes de compra.",

@@ -268,7 +268,7 @@ Ejemplo completo:
 | Reglas | INV-001, INV-005, INV-007, INV-008, INV-009, REG-014, REG-024 |
 | Etapa | E3 |
 
-La carga inicial de stock (`initial_load`, 561) no es un ajuste de este caso de uso: tiene su propio endpoint y permiso (E3.06).
+La carga inicial de stock (`initial_load`, 561) no es un ajuste de este caso de uso: tiene su propio endpoint y permiso (E3.06). `POST /inventory/initial-loads`, idempotente, con `inventory.initial_load` (Administrador y Gerente de operaciones) y el depósito en el cuerpo, contabiliza hasta 100 posiciones (artículo, ubicación y cantidad) en una operación `adjustment_in` con un movimiento 561 por posición y responde 201 con la operación. No pasa por el umbral de REG-024 y se admite aunque la existencia ya tenga stock. Comparte con este caso de uso las reglas de ubicación (REG-014: 422 `SYSTEM_LOCATION_NOT_ALLOWED` con `context.item`), de estado del artículo (REG-017) y de existencia repetida (INV-004), y las validaciones de `StockLedger`. Se revierte con 562 desde el libro.
 
 **Precondiciones**
 

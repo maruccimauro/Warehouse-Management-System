@@ -36,6 +36,9 @@ enum Permission: string
     case InventoryAdjustApprove = 'inventory.adjust.approve';
     case InventoryBlock = 'inventory.block';
     case InventoryReverse = 'inventory.reverse';
+    // Carga inicial de stock (561, E3.06): no pasa por el umbral de
+    // aprobación, así que el permiso es el control.
+    case InventoryInitialLoad = 'inventory.initial_load';
     // Umbrales de aprobación de ajustes por artículo y depósito (REG-024): es
     // un control central, separado de quien ajusta y de quien aprueba.
     case InventoryThresholdsManage = 'inventory.thresholds.manage';

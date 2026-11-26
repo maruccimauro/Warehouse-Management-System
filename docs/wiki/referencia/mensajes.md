@@ -104,6 +104,14 @@ Un usuario no puede desactivar su propia cuenta.
 
 **Qué hacer:** si la cuenta debe desactivarse, pídalo a otro administrador.
 
+## Inventario {#inventario}
+
+### `SYSTEM_LOCATION_NOT_ALLOWED` {#system-location-not-allowed}
+
+Una posición tiene como destino una ubicación de sistema (RECEPCION, PACKING o DESPACHO). Esas ubicaciones solo las cargan sus propios procesos, así que no admiten una transferencia, un ajuste positivo ni una carga inicial. El mensaje indica el número de la posición y la ubicación. No se registra ninguna posición de la operación.
+
+**Qué hacer:** cambie la ubicación de esa posición por una de almacenamiento y vuelva a enviar la operación. Los [movimientos](./movimientos) explican qué operación admite cada ubicación.
+
 ## Mensajes de las pantallas {#mensajes-de-pantallas}
 
 La pantalla los emite al verificar lo ingresado, antes de consultar o grabar.

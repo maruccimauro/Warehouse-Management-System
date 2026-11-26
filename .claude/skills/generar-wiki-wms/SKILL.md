@@ -55,6 +55,7 @@ Atajo o buena práctica.
 ```
 
 - Página de transacción: párrafo inicial con código, permiso y ruta en el menú (**Sistema ▸ Datos de usuario**); un `##` por bloque de la pantalla y un `###` con ancla por campo; mensajes y errores posibles con enlace a `referencia/mensajes`. Todo aviso o error que la pantalla puede mostrar (límites, valores inexistentes, rangos) se explica en la página de la transacción y tiene su entrada con código en `referencia/mensajes`, para que el usuario sepa qué pasó, por qué y cómo seguir.
+- Página de transacción que mueve stock: lleva una sección `## Movimientos que genera {#movimientos}` con una tabla de los códigos que registra (código con enlace a `referencia/movimientos#mov-NNN`, dirección y cuándo se genera) y el código con que se revierte. En el mismo lote, la fila del código en `referencia/movimientos` nombra la transacción en la columna **Lo genera**, con enlace a su página. Un código entra en `referencia/movimientos` en el lote que implementa la operación que lo genera, no antes.
 - Página de referencia: tabla de cambios posibles al principio y un `###` con ancla por entrada, con **Qué hacer:** en los errores.
 
 ## 4. Estilo

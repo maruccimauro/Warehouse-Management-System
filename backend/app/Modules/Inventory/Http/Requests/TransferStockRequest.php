@@ -4,6 +4,7 @@ namespace App\Modules\Inventory\Http\Requests;
 
 use App\Modules\Inventory\Actions\TransferStock;
 use App\Modules\Inventory\Data\TransferItem;
+use App\Modules\Inventory\Http\Requests\Concerns\ReadsOperationBody;
 use App\Modules\Inventory\Models\InventoryOperation;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Http\FormRequest;
@@ -19,6 +20,8 @@ use Illuminate\Validation\Validator;
  */
 class TransferStockRequest extends FormRequest
 {
+    use ReadsOperationBody;
+
     public function authorize(): Response
     {
         return Gate::inspect('transfer', [InventoryOperation::class, $this->warehouseId()]);
@@ -102,23 +105,5 @@ class TransferStockRequest extends FormRequest
             (int) $item['to_location_id'],
             (int) $item['quantity'],
         ), $items);
-    }
-
-    public function notes(): ?string
-    {
-        $notes = $this->validated('notes');
-
-        return is_string($notes) && trim($notes) !== '' ? trim($notes) : null;
-    }
-
-    /**
-     * Depósito del cuerpo si es un identificador válido; si no, null y la
-     * validación lo rechaza.
-     */
-    public function warehouseId(): ?int
-    {
-        $id = filter_var($this->input('warehouse_id'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-
-        return is_int($id) ? $id : null;
     }
 }

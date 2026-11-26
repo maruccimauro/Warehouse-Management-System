@@ -124,6 +124,7 @@ export default defineConfig({
           { text: 'Transacciones', link: '/referencia/transacciones' },
           { text: 'Teclas', link: '/referencia/teclas' },
           { text: 'Estados', link: '/referencia/estados' },
+          { text: 'Movimientos', link: '/referencia/movimientos' },
           { text: 'Mensajes', link: '/referencia/mensajes' },
           { text: 'Permisos y roles', link: '/referencia/permisos' },
         ],

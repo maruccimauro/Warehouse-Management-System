@@ -79,6 +79,7 @@ function writeEndpointPermissions(): array
         'POST api/v1/inventory/adjustments' => Permission::InventoryAdjust,
         'POST api/v1/inventory/adjustments/{adjustment}/approve' => Permission::InventoryAdjustApprove,
         'POST api/v1/inventory/adjustments/{adjustment}/reject' => Permission::InventoryAdjustApprove,
+        'POST api/v1/inventory/initial-loads' => Permission::InventoryInitialLoad,
         'POST api/v1/inventory/transfers' => Permission::InventoryTransfer,
     ];
 }

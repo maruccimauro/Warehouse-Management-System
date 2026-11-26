@@ -42,6 +42,7 @@ enum Role: string
                 Permission::WarehousesViewAll,
                 Permission::InventoryAdjustApprove,
                 Permission::InventoryThresholdsManage,
+                Permission::InventoryInitialLoad,
                 Permission::ProcurementApprove,
                 Permission::StocktakeApprove,
                 Permission::AuditView,
