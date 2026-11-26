@@ -3,6 +3,7 @@
 namespace App\Modules\Inventory\Models;
 
 use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\Concerns\WrittenOnlyByStockLedger;
 use App\Modules\Warehouse\Models\Concerns\ScopedByWarehouse;
 use App\Modules\Warehouse\Models\Location;
 use App\Modules\Warehouse\Models\Warehouse;
@@ -34,7 +35,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['warehouse_id', 'location_id', 'product_id', 'lot_id', 'quantity_on_hand', 'quantity_reserved', 'quantity_blocked', 'last_movement_at'])]
 class Stock extends Model
 {
-    use ScopedByWarehouse;
+    use ScopedByWarehouse, WrittenOnlyByStockLedger;
 
     /**
      * Valores por defecto de la base, para que un registro recién creado los

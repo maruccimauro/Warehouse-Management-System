@@ -3,6 +3,7 @@
 namespace App\Modules\Inventory\Models;
 
 use App\Modules\Inventory\Enums\MovementDirection;
+use App\Modules\Inventory\Models\Concerns\WrittenOnlyByStockLedger;
 use App\Modules\Warehouse\Models\Concerns\ScopedByWarehouse;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -32,7 +33,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['operation_id', 'warehouse_id', 'stock_id', 'product_id', 'location_id', 'movement_code', 'delta', 'balance_after', 'reservation_id', 'reverses_movement_id'])]
 class StockMovement extends Model
 {
-    use ScopedByWarehouse;
+    use ScopedByWarehouse, WrittenOnlyByStockLedger;
 
     /** La línea no se modifica: solo tiene fecha de alta. */
     public const UPDATED_AT = null;

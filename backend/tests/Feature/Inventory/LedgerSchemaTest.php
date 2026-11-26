@@ -18,8 +18,10 @@ use Illuminate\Support\Facades\DB;
 
 /*
 | Esquema del libro de inventario (E3.02): lo que la base garantiza por sí
-| sola, sin StockLedger. Cada sentencia que debe fallar corre en un punto de
-| guardado, para que el error no aborte la transacción de la prueba.
+| sola, sin StockLedger. Las filas de stocks y stock_movements se escriben con
+| DB::table, porque los modelos solo se graban desde StockLedger. Cada
+| sentencia que debe fallar corre en un punto de guardado, para que el error
+| no aborte la transacción de la prueba.
 */
 
 /**
@@ -63,7 +65,7 @@ function ledgerOperation(Warehouse $warehouse, User $user, OperationType $type, 
  */
 function ledgerMovement(InventoryOperation $operation, Stock $stock, int $code, int $delta, array $attributes = []): StockMovement
 {
-    return StockMovement::query()->create([
+    return StockMovement::query()->findOrFail(DB::table('stock_movements')->insertGetId([
         'operation_id' => $operation->id,
         'warehouse_id' => $stock->warehouse_id,
         'stock_id' => $stock->id,
@@ -72,8 +74,17 @@ function ledgerMovement(InventoryOperation $operation, Stock $stock, int $code, 
         'movement_code' => $code,
         'delta' => $delta,
         'balance_after' => max(0, $delta),
+        'created_at' => now(),
         ...$attributes,
-    ]);
+    ]));
+}
+
+/**
+ * @param  array<string, mixed>  $attributes
+ */
+function insertStock(array $attributes): int
+{
+    return DB::table('stocks')->insertGetId($attributes);
 }
 
 beforeEach(function () {
@@ -81,12 +92,12 @@ beforeEach(function () {
     $this->warehouse = Warehouse::factory()->create();
     $this->location = storageLocation($this->warehouse);
     $this->product = Product::factory()->create();
-    $this->stock = Stock::query()->create([
+    $this->stock = Stock::query()->findOrFail(insertStock([
         'warehouse_id' => $this->warehouse->id,
         'location_id' => $this->location->id,
         'product_id' => $this->product->id,
         'quantity_on_hand' => 10,
-    ]);
+    ]));
 });
 
 describe('movement types', function () {
@@ -190,7 +201,7 @@ describe('stock rows', function () {
     // (reservado y bloqueado no bajan de cero), y PostgreSQL informa la primera
     // restricción violada por nombre.
     it('rejects negative quantities and commitments above the quantity on hand', function (array $quantities, string $constraints) {
-        $error = databaseErrorOf(fn () => $this->stock->update($quantities));
+        $error = databaseErrorOf(fn () => DB::table('stocks')->where('id', $this->stock->id)->update($quantities));
 
         expect($error->getMessage())->toMatch("/\"(?:{$constraints})\"/");
     })->with([
@@ -201,7 +212,7 @@ describe('stock rows', function () {
     ]);
 
     it('keeps a single row per article, location and lot, also without lot', function () {
-        $error = databaseErrorOf(fn () => Stock::query()->create([
+        $error = databaseErrorOf(fn () => insertStock([
             'warehouse_id' => $this->warehouse->id,
             'location_id' => $this->location->id,
             'product_id' => $this->product->id,
@@ -213,7 +224,7 @@ describe('stock rows', function () {
     it('rejects a location of another warehouse', function () {
         $other = Warehouse::factory()->create();
 
-        $error = databaseErrorOf(fn () => Stock::query()->create([
+        $error = databaseErrorOf(fn () => insertStock([
             'warehouse_id' => $other->id,
             'location_id' => $this->location->id,
             'product_id' => Product::factory()->create()->id,
@@ -223,9 +234,9 @@ describe('stock rows', function () {
     });
 
     it('computes the free quantity from on hand, reserved and blocked', function () {
-        $this->stock->update(['quantity_reserved' => 3, 'quantity_blocked' => 2]);
+        DB::table('stocks')->where('id', $this->stock->id)->update(['quantity_reserved' => 3, 'quantity_blocked' => 2]);
 
-        expect($this->stock->quantity_available)->toBe(5);
+        expect($this->stock->refresh()->quantity_available)->toBe(5);
     });
 });
 

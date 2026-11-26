@@ -2,6 +2,7 @@
 
 namespace App\Modules\Inventory\Exceptions;
 
+use App\Modules\Inventory\Exceptions\Concerns\TranslatesText;
 use App\Shared\Exceptions\DomainException;
 use Throwable;
 
@@ -14,6 +15,8 @@ use Throwable;
  */
 final class ReversalExceedsRemaining extends DomainException
 {
+    use TranslatesText;
+
     public function __construct(?Throwable $previous = null)
     {
         parent::__construct(detail: self::text('inventory.reversal_exceeds_remaining.detail'), previous: $previous);
@@ -27,12 +30,5 @@ final class ReversalExceedsRemaining extends DomainException
     public function title(): string
     {
         return self::text('inventory.reversal_exceeds_remaining.title');
-    }
-
-    private static function text(string $key): string
-    {
-        $text = __($key);
-
-        return is_string($text) ? $text : $key;
     }
 }
