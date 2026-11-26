@@ -48,6 +48,9 @@ use LogicException;
  */
 final class StockLedger
 {
+    /** Mayor posición que admite stock_movements.item_number (SMALLINT). */
+    public const MAX_ITEM_NUMBER = 32767;
+
     /** Profundidad de contabilización: habilita la escritura de Stock y StockMovement. */
     private static int $applying = 0;
 
@@ -157,6 +160,55 @@ final class StockLedger
             }
 
             $stockKeys[$key] = true;
+        }
+
+        self::validateItemNumbers($draft);
+    }
+
+    /**
+     * Posiciones de la operación (stock_movements.item_number): o las indica
+     * cada línea o ninguna, y entonces se numeran en el orden del borrador.
+     * Una transferencia siempre las indica, y cada posición tiene exactamente
+     * una salida y una entrada del mismo artículo por la misma cantidad.
+     */
+    private static function validateItemNumbers(OperationDraft $draft): void
+    {
+        $numbered = array_filter($draft->lines, fn (MovementLine $line): bool => $line->itemNumber !== null);
+        $isTransfer = $draft->type === OperationType::Transfer;
+
+        if ($numbered === [] && ! $isTransfer) {
+            return;
+        }
+
+        if (count($numbered) !== count($draft->lines)) {
+            throw new LogicException('Las líneas indican todas su posición, o ninguna (una transferencia siempre la indica).');
+        }
+
+        /** @var array<int, array{in?: MovementLine, out?: MovementLine}> $items */
+        $items = [];
+
+        foreach ($draft->lines as $line) {
+            $item = (int) $line->itemNumber;
+            $direction = $line->delta > 0 ? 'in' : 'out';
+
+            if ($item < 1 || $item > self::MAX_ITEM_NUMBER || isset($items[$item][$direction])) {
+                throw new LogicException("La posición {$item} no es válida o repite una línea de la misma dirección.");
+            }
+
+            $items[$item][$direction] = $line;
+        }
+
+        if (! $isTransfer) {
+            return;
+        }
+
+        foreach ($items as $item => $pair) {
+            $out = $pair['out'] ?? null;
+            $in = $pair['in'] ?? null;
+
+            if ($out === null || $in === null || $out->productId !== $in->productId || $out->delta !== -$in->delta) {
+                throw new LogicException("La posición {$item} de la transferencia no tiene una salida y una entrada del mismo artículo por la misma cantidad.");
+            }
         }
     }
 
@@ -394,15 +446,21 @@ final class StockLedger
             'performed_at' => $now,
         ]);
 
-        $lines = $draft->lines;
+        // Sin posición indicada, cada línea es una posición en el orden del
+        // borrador; se numera antes de reordenar las líneas de una reversión.
+        $lines = array_map(
+            fn (MovementLine $line, int $index): array => [$line, $line->itemNumber ?? $index + 1],
+            $draft->lines,
+            array_keys($draft->lines),
+        );
 
         if ($draft->type === OperationType::Reversal) {
-            usort($lines, fn (MovementLine $a, MovementLine $b): int => $a->reversesMovementId <=> $b->reversesMovementId);
+            usort($lines, fn (array $a, array $b): int => $a[0]->reversesMovementId <=> $b[0]->reversesMovementId);
         }
 
         $movements = new Collection;
 
-        foreach ($lines as $line) {
+        foreach ($lines as [$line, $itemNumber]) {
             $stock = self::stockOf($stocks, $line);
             $reservation = $line->reservationId !== null ? $reservations->get($line->reservationId) : null;
 
@@ -425,6 +483,7 @@ final class StockLedger
 
             $movements->push(StockMovement::query()->create([
                 'operation_id' => $operation->id,
+                'item_number' => $itemNumber,
                 'warehouse_id' => $draft->warehouseId,
                 'stock_id' => $stock->id,
                 'product_id' => $stock->product_id,

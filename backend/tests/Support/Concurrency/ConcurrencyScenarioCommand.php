@@ -3,8 +3,10 @@
 namespace Tests\Support\Concurrency;
 
 use App\Modules\Identity\Models\User;
+use App\Modules\Inventory\Actions\TransferStock;
 use App\Modules\Inventory\Data\MovementLine;
 use App\Modules\Inventory\Data\OperationDraft;
+use App\Modules\Inventory\Data\TransferItem;
 use App\Modules\Inventory\Enums\AdjustmentReason;
 use App\Modules\Inventory\Enums\OperationType;
 use App\Modules\Inventory\Models\StockMovement;
@@ -59,9 +61,11 @@ final class ConcurrencyScenarioCommand extends Command
             return $this->httpWithdraw($payload);
         }
 
-        $work = $scenario === 'deadlock'
-            ? fn (): ?int => $this->crossLocks($payload)
-            : fn (): ?int => $ledger->apply($this->draft($scenario, $payload))->id;
+        $work = match ($scenario) {
+            'deadlock' => fn (): ?int => $this->crossLocks($payload),
+            'transfer' => fn (): ?int => $this->transfer($payload),
+            default => fn (): ?int => $ledger->apply($this->draft($scenario, $payload))->id,
+        };
         $attempts = 0;
 
         // La barrera: la prueba tiene el bloqueo exclusivo y lo suelta cuando
@@ -146,8 +150,9 @@ final class ConcurrencyScenarioCommand extends Command
     }
 
     /**
-     * Escenarios sobre StockLedger. Cuando existan las Actions de E3.04 a
-     * E3.09, los escenarios las invocan en lugar de armar el borrador.
+     * Escenarios sobre StockLedger. A medida que existen las Actions de E3.05
+     * a E3.09, los escenarios las invocan en lugar de armar el borrador (la
+     * transferencia ya usa TransferStock).
      *
      * @param  array<array-key, mixed>  $payload
      */
@@ -165,10 +170,6 @@ final class ConcurrencyScenarioCommand extends Command
             'enter' => new OperationDraft(OperationType::AdjustmentIn, $warehouse, $user, [
                 new MovementLine($int('product'), $int('location'), 712, $int('quantity')),
             ], reasonCode: AdjustmentReason::Found),
-            'transfer' => new OperationDraft(OperationType::Transfer, $warehouse, $user, [
-                new MovementLine($int('product'), $int('from'), 931, -$int('quantity')),
-                new MovementLine($int('product'), $int('to'), 931, $int('quantity')),
-            ]),
             'reverse' => new OperationDraft(OperationType::Reversal, $warehouse, $user, StockMovement::query()
                 ->where('operation_id', $int('operation'))
                 ->orderBy('id')
@@ -183,6 +184,19 @@ final class ConcurrencyScenarioCommand extends Command
                 ->all(), reversesOperationId: $int('operation'), notes: 'Reversión concurrente'),
             default => throw new InvalidArgumentException("Escenario desconocido: {$scenario}."),
         };
+    }
+
+    /**
+     * Transferencia con la Action de E3.04, anidada en la transacción del
+     * escenario como en la del middleware idempotent.
+     *
+     * @param  array<array-key, mixed>  $payload
+     */
+    private function transfer(array $payload): int
+    {
+        $item = new TransferItem(self::int($payload, 'product'), self::int($payload, 'from'), self::int($payload, 'to'), self::int($payload, 'quantity'));
+
+        return app(TransferStock::class)(self::int($payload, 'warehouse'), [$item], self::int($payload, 'user'))->id;
     }
 
     /**

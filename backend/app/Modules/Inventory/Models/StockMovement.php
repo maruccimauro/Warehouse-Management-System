@@ -2,9 +2,11 @@
 
 namespace App\Modules\Inventory\Models;
 
+use App\Modules\Catalog\Models\Product;
 use App\Modules\Inventory\Enums\MovementDirection;
 use App\Modules\Inventory\Models\Concerns\WrittenOnlyByStockLedger;
 use App\Modules\Warehouse\Models\Concerns\ScopedByWarehouse;
+use App\Modules\Warehouse\Models\Location;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +20,7 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property int $operation_id
+ * @property int $item_number
  * @property int $warehouse_id
  * @property int $stock_id
  * @property int $product_id
@@ -30,7 +33,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $reverses_movement_id
  * @property Carbon $created_at
  */
-#[Fillable(['operation_id', 'warehouse_id', 'stock_id', 'product_id', 'location_id', 'movement_code', 'delta', 'balance_after', 'reservation_id', 'reverses_movement_id'])]
+#[Fillable(['operation_id', 'item_number', 'warehouse_id', 'stock_id', 'product_id', 'location_id', 'movement_code', 'delta', 'balance_after', 'reservation_id', 'reverses_movement_id'])]
 class StockMovement extends Model
 {
     use ScopedByWarehouse, WrittenOnlyByStockLedger;
@@ -44,6 +47,7 @@ class StockMovement extends Model
     protected function casts(): array
     {
         return [
+            'item_number' => 'integer',
             'movement_code' => 'integer',
             'delta' => 'integer',
             'direction' => MovementDirection::class,
@@ -65,6 +69,22 @@ class StockMovement extends Model
     public function stock(): BelongsTo
     {
         return $this->belongsTo(Stock::class);
+    }
+
+    /**
+     * @return BelongsTo<Product, $this>
+     */
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * @return BelongsTo<Location, $this>
+     */
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
     }
 
     /**

@@ -19,5 +19,12 @@ return [
         'sku' => 'SKU',
         'supplier_sku' => 'supplier code',
         'tax_id' => 'tax ID',
+        'warehouse_id' => 'warehouse',
+        'notes' => 'notes',
+        'items' => 'items',
+        'items.*.product_id' => 'item',
+        'items.*.from_location_id' => 'source location',
+        'items.*.to_location_id' => 'destination location',
+        'items.*.quantity' => 'quantity',
     ],
 ];

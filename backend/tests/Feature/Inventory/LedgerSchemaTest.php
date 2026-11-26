@@ -67,6 +67,8 @@ function ledgerMovement(InventoryOperation $operation, Stock $stock, int $code, 
 {
     return StockMovement::query()->findOrFail(DB::table('stock_movements')->insertGetId([
         'operation_id' => $operation->id,
+        // Una posición por línea, salvo que la prueba indique otra.
+        'item_number' => DB::table('stock_movements')->where('operation_id', $operation->id)->count() + 1,
         'warehouse_id' => $stock->warehouse_id,
         'stock_id' => $stock->id,
         'product_id' => $stock->product_id,
@@ -85,6 +87,17 @@ function ledgerMovement(InventoryOperation $operation, Stock $stock, int $code, 
 function insertStock(array $attributes): int
 {
     return DB::table('stocks')->insertGetId($attributes);
+}
+
+/**
+ * Otra existencia del mismo artículo, en una ubicación nueva de la misma zona.
+ */
+function secondStockRow(Stock $stock): Stock
+{
+    $location = Location::query()->findOrFail($stock->location_id);
+    $other = $location->warehouse->locations()->create(['zone_id' => $location->zone_id, 'code' => 'B-01-01']);
+
+    return Stock::query()->findOrFail(insertStock(['warehouse_id' => $stock->warehouse_id, 'location_id' => $other->id, 'product_id' => $stock->product_id]));
 }
 
 beforeEach(function () {
@@ -196,6 +209,22 @@ describe('append-only ledger (INV-003)', function () {
         $error = databaseErrorOf(fn () => ledgerMovement($this->operation, $this->stock, 712, 3));
 
         expect($error->getMessage())->toContain('stock_movements_operation_id_stock_id_unique');
+    });
+
+    it('rejects an item number below one', function () {
+        $stock = secondStockRow($this->stock);
+
+        $error = databaseErrorOf(fn () => ledgerMovement($this->operation, $stock, 712, 3, ['item_number' => 0]));
+
+        expect($error->getMessage())->toContain('stock_movements_item_number_check');
+    });
+
+    it('rejects two lines of one item in the same direction (E3.04)', function () {
+        $stock = secondStockRow($this->stock);
+
+        $error = databaseErrorOf(fn () => ledgerMovement($this->operation, $stock, 712, 3, ['item_number' => $this->movement->item_number]));
+
+        expect($error->getMessage())->toContain('stock_movements_operation_id_item_number_direction_unique');
     });
 });
 

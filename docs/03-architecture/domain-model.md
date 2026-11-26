@@ -95,7 +95,7 @@ flowchart LR
 | Relación | Cardinalidad | Nota |
 | - | - | - |
 | Documento a operación | Un documento origina como máximo una operación de inventario por instancia (recepción, tarea de putaway, línea de picking, despacho, inventario físico), más sus reversiones | Garantizado en base de datos por la unicidad de la referencia de la operación (ver [database-design.md](database-design.md#e3-núcleo-transaccional-de-inventario)) |
-| Operación a movimientos | Una operación tiene uno o más movimientos, cada uno con su código (DM-09) | Una transferencia tiene dos (931 salida y entrada); un despacho, uno por fila de stock de PACKING (601) |
+| Operación a movimientos | Una operación tiene una o más posiciones (`item_number`) y cada movimiento pertenece a una, con su código (DM-09) | Cada posición de una transferencia tiene dos movimientos (931 salida y entrada) con el mismo número; una transferencia admite hasta 100 posiciones. Un despacho tiene uno por fila de stock de PACKING (601) |
 | Operación a reversión | Una operación admite varias reversiones parciales, vinculadas por `reverses_operation_id`; cada línea de reversión apunta a la línea original que revierte | La base impide revertir más que la cantidad original de cada línea (trigger `stock_movements_validate_reversal`, DM-15) |
 | Línea de pedido a reservas | Una línea de pedido tiene cero o más reservas | Una por fila de stock asignada, más una sobre PACKING por cada pick confirmado |
 | Reserva a línea de picking | Una reserva de almacenamiento genera exactamente una línea de picking | |

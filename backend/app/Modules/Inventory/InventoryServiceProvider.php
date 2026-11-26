@@ -8,6 +8,7 @@ use App\Modules\Inventory\Models\Stock;
 use App\Modules\Inventory\Models\StockBlock;
 use App\Modules\Inventory\Models\StockMovement;
 use App\Modules\Inventory\Models\StockReservation;
+use App\Modules\Inventory\Policies\InventoryOperationPolicy;
 use App\Shared\Providers\ModuleServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
@@ -23,6 +24,10 @@ class InventoryServiceProvider extends ModuleServiceProvider
      */
     protected array $triggerErrors = [
         'REVERSAL_EXCEEDS_REMAINING' => ReversalExceedsRemaining::class,
+    ];
+
+    protected array $policies = [
+        InventoryOperation::class => InventoryOperationPolicy::class,
     ];
 
     public function boot(): void

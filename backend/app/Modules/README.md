@@ -74,7 +74,7 @@ Reproducen el DDL de `docs/03-architecture/database-design.md`.
 
 `tests/Feature/Http/ListingConventionsTest.php` prueba el contrato de listados y `tests/Feature/Database/UniqueConstraintTranslationTest.php` provoca cada restricción única registrada contra el esquema real.
 
-`tests/Feature/Http/WriteAuthorizationMatrixTest.php` cruza cada endpoint de escritura con cada rol y un usuario sin rol: 403 `FORBIDDEN` sin el permiso, una respuesta que no es de autorización con él, y 401 sin sesión. Un endpoint de escritura nuevo se declara en `writeEndpointPermissions()` con su permiso en el mismo commit; si falta, la prueba de cobertura falla. El alcance por depósito (404 y 403) se prueba en cada módulo.
+`tests/Feature/Http/WriteAuthorizationMatrixTest.php` cruza cada endpoint de escritura con cada rol y un usuario sin rol: 403 `FORBIDDEN` sin el permiso, una respuesta que no es de autorización con él, y 401 sin sesión. Un endpoint de escritura nuevo se declara en `writeEndpointPermissions()` con su permiso en el mismo commit; si falta, la prueba de cobertura falla. Cada petición lleva `Idempotency-Key` y el `warehouse_id` del depósito de prueba en el cuerpo, para que una ruta idempotente llegue a la autorización en lugar de responder 428. El alcance por depósito (404 y 403) se prueba en cada módulo.
 
 ## Documentación OpenAPI
 
@@ -97,6 +97,7 @@ Todo recurso que pertenece a un depósito respeta REG-005 con `App\Modules\Ident
 
 - El modelo usa el trait `App\Modules\Warehouse\Models\Concerns\ScopedByWarehouse`, que da los scopes `visibleTo($user)` para listados y `operableBy($user)` para elegir dónde operar. Si la columna no es `warehouse_id`, el modelo redefine `warehouseScopeColumn()`.
 - La Policy devuelve `authorizeView()` para consultar y `authorizeOperation()` con el permiso de la acción para operar. El orden es 404 fuera del alcance de consulta, 403 sin operación en el depósito y 403 sin el permiso.
+- Las operaciones de inventario manuales (`POST /inventory/transfers` y las que siguen en E3) reciben el depósito en el cuerpo, no en la ruta: `Inventory\Policies\InventoryOperationPolicy` exige primero el permiso y después que el usuario opere en el depósito. Un depósito inexistente o fuera del alcance de consulta responde 403 igual que uno visible y no asignado, porque un 404 sobre un dato del cuerpo revelaría cuáles existen. Sin un identificador válido decide solo el permiso, y la validación responde 422.
 - Toda Action que opera sobre un depósito (movimientos, documentos, bloqueo de ubicaciones) llama primero, dentro de su transacción, a `App\Modules\Warehouse\Actions\LockActiveWarehouse`: toma la fila del depósito con `FOR SHARE` (nivel 0 de ADR-003) y responde 422 `WAREHOUSE_INACTIVE` si está inactivo (REG-015). El mantenimiento de zonas y ubicaciones no es una operación y no la llama.
 
 ## Estado de la cuenta e idioma

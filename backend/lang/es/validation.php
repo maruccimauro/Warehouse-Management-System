@@ -178,5 +178,12 @@ return [
         'sku' => 'SKU',
         'supplier_sku' => 'código del proveedor',
         'tax_id' => 'identificador fiscal',
+        'warehouse_id' => 'depósito',
+        'notes' => 'notas',
+        'items' => 'posiciones',
+        'items.*.product_id' => 'artículo',
+        'items.*.from_location_id' => 'ubicación de origen',
+        'items.*.to_location_id' => 'ubicación de destino',
+        'items.*.quantity' => 'cantidad',
     ],
 ];

@@ -139,8 +139,8 @@ it('lets simultaneous reversals of one line add up to its quantity at most (INV-
         $this->warehouse->id,
         $this->user->id,
         [
-            new MovementLine($this->product->id, $this->a->id, 931, -10),
-            new MovementLine($this->product->id, $this->b->id, 931, 10),
+            new MovementLine($this->product->id, $this->a->id, 931, -10, itemNumber: 1),
+            new MovementLine($this->product->id, $this->b->id, 931, 10, itemNumber: 1),
         ],
     )));
 

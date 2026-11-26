@@ -25,4 +25,13 @@ return [
         'title' => 'The reversal exceeds what remains to be reversed.',
         'detail' => 'The quantity to reverse on a line exceeds its unreversed balance.',
     ],
+    'duplicate_stock_in_items' => 'Item :item moves the same article in the same location as item :other: each stock row moves in a single item.',
+    'same_source_and_destination' => [
+        'title' => 'The source and the destination are the same location.',
+        'detail' => 'Item :item transfers from location :location to itself.',
+    ],
+    'system_location_not_allowed' => [
+        'title' => 'The system location does not allow this operation.',
+        'detail' => 'Item :item has system location :location as its destination: only its documents load it.',
+    ],
 ];

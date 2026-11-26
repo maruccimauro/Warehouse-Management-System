@@ -4279,6 +4279,169 @@
                 ]
             }
         },
+        "/inventory/transfers": {
+            "post": {
+                "operationId": "inventory.transfers.store",
+                "tags": [
+                    "Transfer"
+                ],
+                "parameters": [
+                    {
+                        "name": "Idempotency-Key",
+                        "in": "header",
+                        "required": true,
+                        "description": "Clave que el cliente genera al iniciar el intento de operaci\u00f3n y repite en sus reintentos. Sin la cabecera, vac\u00eda o de m\u00e1s de 100 caracteres: 428 IDEMPOTENCY_KEY_REQUIRED. Misma clave y mismo cuerpo: se devuelve la respuesta almacenada, con la cabecera Idempotent-Replayed; misma clave con otro cuerpo: 422 IDEMPOTENCY_KEY_REUSED; misma clave con una petici\u00f3n en curso que no termina a tiempo: 409 IDEMPOTENCY_REQUEST_IN_PROGRESS.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TransferStockRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "`InventoryOperationResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/InventoryOperationResource"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "movements"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "`SAME_SOURCE_AND_DESTINATION`: El origen y el destino son la misma ubicaci\u00f3n.\n\n`SYSTEM_LOCATION_NOT_ALLOWED`: La ubicaci\u00f3n de sistema no admite esta operaci\u00f3n.\n\n`WAREHOUSE_INACTIVE`: El dep\u00f3sito est\u00e1 inactivo.\n\n`PRODUCT_NOT_OPERABLE`: El estado del art\u00edculo no admite la operaci\u00f3n.\n\n`LOCATION_BLOCKED`: La ubicaci\u00f3n no admite movimientos.\n\n`LOCATION_CAPACITY_EXCEEDED`: La operaci\u00f3n supera la capacidad de la ubicaci\u00f3n.\n\n`INSUFFICIENT_STOCK`: No hay stock suficiente.\n\n`RESERVED_STOCK_NOT_AVAILABLE`: El stock est\u00e1 reservado.\n\n`IDEMPOTENCY_KEY_REUSED`: La clave de idempotencia ya se us\u00f3 con otro contenido.\n\n`VALIDATION_FAILED`: Los datos enviados no son v\u00e1lidos.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsSameSourceAndDestination"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsSystemLocationNotAllowed"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsWarehouseInactive"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsProductNotOperable"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsLocationBlocked"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsLocationCapacityExceeded"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsInsufficientStock"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsReservedStockNotAvailable"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsIdempotencyKeyReused"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsValidationFailed"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "419": {
+                        "description": "`CSRF_TOKEN_MISMATCH`: Page Expired",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsCsrfTokenMismatch"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "`PASSWORD_CHANGE_REQUIRED`: Debe cambiar la contrase\u00f1a antes de continuar.\n\n`FORBIDDEN`: Forbidden",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsPasswordChangeRequired"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsForbidden"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "428": {
+                        "description": "`IDEMPOTENCY_KEY_REQUIRED`: La operaci\u00f3n requiere una clave de idempotencia v\u00e1lida.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsIdempotencyKeyRequired"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "`IDEMPOTENCY_REQUEST_IN_PROGRESS`: Otra solicitud con la misma clave de idempotencia sigue en curso.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsIdempotencyRequestInProgress"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "`UNAUTHENTICATED`: Unauthorized",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsUnauthenticated"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sessionCookie": [],
+                        "xsrfToken": []
+                    }
+                ]
+            }
+        },
         "/units": {
             "get": {
                 "operationId": "units.index",
@@ -6811,6 +6974,101 @@
                 ],
                 "title": "GenerateLocationsRequest"
             },
+            "InventoryOperationResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "number": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "receipt",
+                            "putaway",
+                            "transfer",
+                            "adjustment_in",
+                            "adjustment_out",
+                            "pick",
+                            "dispatch",
+                            "stocktake_adjustment",
+                            "reversal"
+                        ]
+                    },
+                    "warehouse_id": {
+                        "type": "integer"
+                    },
+                    "reason_code": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "damage",
+                            "loss",
+                            "found",
+                            "correction",
+                            "initial_load",
+                            null
+                        ]
+                    },
+                    "reference_type": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "reference_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "reverses_operation_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "notes": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "performed_by": {
+                        "type": "integer"
+                    },
+                    "performed_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "movements": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StockMovementResource"
+                        }
+                    }
+                },
+                "required": [
+                    "id",
+                    "number",
+                    "type",
+                    "warehouse_id",
+                    "reason_code",
+                    "reference_type",
+                    "reference_id",
+                    "reverses_operation_id",
+                    "notes",
+                    "performed_by",
+                    "performed_at"
+                ],
+                "title": "InventoryOperationResource"
+            },
             "LocationResource": {
                 "type": "object",
                 "properties": {
@@ -7114,6 +7372,142 @@
                 ],
                 "title": "ProblemDetailsForbidden"
             },
+            "ProblemDetailsIdempotencyKeyRequired": {
+                "description": "La operaci\u00f3n requiere una clave de idempotencia v\u00e1lida.",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "urn:wms:problem:idempotency-key-required"
+                            },
+                            "status": {
+                                "type": "integer",
+                                "const": 428
+                            },
+                            "code": {
+                                "type": "string",
+                                "const": "IDEMPOTENCY_KEY_REQUIRED"
+                            },
+                            "context": {
+                                "type": "object",
+                                "description": "Datos de la ocurrencia que el cliente puede usar; su contenido depende del c\u00f3digo."
+                            }
+                        },
+                        "required": [
+                            "code",
+                            "context"
+                        ]
+                    }
+                ],
+                "title": "ProblemDetailsIdempotencyKeyRequired"
+            },
+            "ProblemDetailsIdempotencyKeyReused": {
+                "description": "La clave de idempotencia ya se us\u00f3 con otro contenido.",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "urn:wms:problem:idempotency-key-reused"
+                            },
+                            "status": {
+                                "type": "integer",
+                                "const": 422
+                            },
+                            "code": {
+                                "type": "string",
+                                "const": "IDEMPOTENCY_KEY_REUSED"
+                            },
+                            "context": {
+                                "type": "object",
+                                "description": "Datos de la ocurrencia que el cliente puede usar; su contenido depende del c\u00f3digo."
+                            }
+                        },
+                        "required": [
+                            "code",
+                            "context"
+                        ]
+                    }
+                ],
+                "title": "ProblemDetailsIdempotencyKeyReused"
+            },
+            "ProblemDetailsIdempotencyRequestInProgress": {
+                "description": "Otra solicitud con la misma clave de idempotencia sigue en curso.",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "urn:wms:problem:idempotency-request-in-progress"
+                            },
+                            "status": {
+                                "type": "integer",
+                                "const": 409
+                            },
+                            "code": {
+                                "type": "string",
+                                "const": "IDEMPOTENCY_REQUEST_IN_PROGRESS"
+                            },
+                            "context": {
+                                "type": "object",
+                                "description": "Datos de la ocurrencia que el cliente puede usar; su contenido depende del c\u00f3digo."
+                            }
+                        },
+                        "required": [
+                            "code",
+                            "context"
+                        ]
+                    }
+                ],
+                "title": "ProblemDetailsIdempotencyRequestInProgress"
+            },
+            "ProblemDetailsInsufficientStock": {
+                "description": "No hay stock suficiente.",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "urn:wms:problem:insufficient-stock"
+                            },
+                            "status": {
+                                "type": "integer",
+                                "const": 422
+                            },
+                            "code": {
+                                "type": "string",
+                                "const": "INSUFFICIENT_STOCK"
+                            },
+                            "context": {
+                                "type": "object",
+                                "description": "Datos de la ocurrencia que el cliente puede usar; su contenido depende del c\u00f3digo."
+                            }
+                        },
+                        "required": [
+                            "code",
+                            "context"
+                        ]
+                    }
+                ],
+                "title": "ProblemDetailsInsufficientStock"
+            },
             "ProblemDetailsInvalidCredentials": {
                 "description": "Las credenciales no son v\u00e1lidas.",
                 "allOf": [
@@ -7216,6 +7610,74 @@
                 ],
                 "title": "ProblemDetailsLastAdministrator"
             },
+            "ProblemDetailsLocationBlocked": {
+                "description": "La ubicaci\u00f3n no admite movimientos.",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "urn:wms:problem:location-blocked"
+                            },
+                            "status": {
+                                "type": "integer",
+                                "const": 422
+                            },
+                            "code": {
+                                "type": "string",
+                                "const": "LOCATION_BLOCKED"
+                            },
+                            "context": {
+                                "type": "object",
+                                "description": "Datos de la ocurrencia que el cliente puede usar; su contenido depende del c\u00f3digo."
+                            }
+                        },
+                        "required": [
+                            "code",
+                            "context"
+                        ]
+                    }
+                ],
+                "title": "ProblemDetailsLocationBlocked"
+            },
+            "ProblemDetailsLocationCapacityExceeded": {
+                "description": "La operaci\u00f3n supera la capacidad de la ubicaci\u00f3n.",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "urn:wms:problem:location-capacity-exceeded"
+                            },
+                            "status": {
+                                "type": "integer",
+                                "const": 422
+                            },
+                            "code": {
+                                "type": "string",
+                                "const": "LOCATION_CAPACITY_EXCEEDED"
+                            },
+                            "context": {
+                                "type": "object",
+                                "description": "Datos de la ocurrencia que el cliente puede usar; su contenido depende del c\u00f3digo."
+                            }
+                        },
+                        "required": [
+                            "code",
+                            "context"
+                        ]
+                    }
+                ],
+                "title": "ProblemDetailsLocationCapacityExceeded"
+            },
             "ProblemDetailsNotFound": {
                 "description": "Not Found",
                 "allOf": [
@@ -7278,6 +7740,108 @@
                     }
                 ],
                 "title": "ProblemDetailsPasswordChangeRequired"
+            },
+            "ProblemDetailsProductNotOperable": {
+                "description": "El estado del art\u00edculo no admite la operaci\u00f3n.",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "urn:wms:problem:product-not-operable"
+                            },
+                            "status": {
+                                "type": "integer",
+                                "const": 422
+                            },
+                            "code": {
+                                "type": "string",
+                                "const": "PRODUCT_NOT_OPERABLE"
+                            },
+                            "context": {
+                                "type": "object",
+                                "description": "Datos de la ocurrencia que el cliente puede usar; su contenido depende del c\u00f3digo."
+                            }
+                        },
+                        "required": [
+                            "code",
+                            "context"
+                        ]
+                    }
+                ],
+                "title": "ProblemDetailsProductNotOperable"
+            },
+            "ProblemDetailsReservedStockNotAvailable": {
+                "description": "El stock est\u00e1 reservado.",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "urn:wms:problem:reserved-stock-not-available"
+                            },
+                            "status": {
+                                "type": "integer",
+                                "const": 422
+                            },
+                            "code": {
+                                "type": "string",
+                                "const": "RESERVED_STOCK_NOT_AVAILABLE"
+                            },
+                            "context": {
+                                "type": "object",
+                                "description": "Datos de la ocurrencia que el cliente puede usar; su contenido depende del c\u00f3digo."
+                            }
+                        },
+                        "required": [
+                            "code",
+                            "context"
+                        ]
+                    }
+                ],
+                "title": "ProblemDetailsReservedStockNotAvailable"
+            },
+            "ProblemDetailsSameSourceAndDestination": {
+                "description": "El origen y el destino son la misma ubicaci\u00f3n.",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "urn:wms:problem:same-source-and-destination"
+                            },
+                            "status": {
+                                "type": "integer",
+                                "const": 422
+                            },
+                            "code": {
+                                "type": "string",
+                                "const": "SAME_SOURCE_AND_DESTINATION"
+                            },
+                            "context": {
+                                "type": "object",
+                                "description": "Datos de la ocurrencia que el cliente puede usar; su contenido depende del c\u00f3digo."
+                            }
+                        },
+                        "required": [
+                            "code",
+                            "context"
+                        ]
+                    }
+                ],
+                "title": "ProblemDetailsSameSourceAndDestination"
             },
             "ProblemDetailsSelfDeactivationNotAllowed": {
                 "description": "Un usuario no puede desactivarse a s\u00ed mismo.",
@@ -7346,6 +7910,40 @@
                     }
                 ],
                 "title": "ProblemDetailsSessionRequired"
+            },
+            "ProblemDetailsSystemLocationNotAllowed": {
+                "description": "La ubicaci\u00f3n de sistema no admite esta operaci\u00f3n.",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "urn:wms:problem:system-location-not-allowed"
+                            },
+                            "status": {
+                                "type": "integer",
+                                "const": 422
+                            },
+                            "code": {
+                                "type": "string",
+                                "const": "SYSTEM_LOCATION_NOT_ALLOWED"
+                            },
+                            "context": {
+                                "type": "object",
+                                "description": "Datos de la ocurrencia que el cliente puede usar; su contenido depende del c\u00f3digo."
+                            }
+                        },
+                        "required": [
+                            "code",
+                            "context"
+                        ]
+                    }
+                ],
+                "title": "ProblemDetailsSystemLocationNotAllowed"
             },
             "ProblemDetailsTooManyRequests": {
                 "description": "Too Many Requests",
@@ -7822,6 +8420,78 @@
                 ],
                 "title": "SelectionSign"
             },
+            "StockMovementResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "item_number": {
+                        "type": "integer"
+                    },
+                    "product_id": {
+                        "type": "integer"
+                    },
+                    "sku": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "location_id": {
+                        "type": "integer"
+                    },
+                    "location_code": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "movement_code": {
+                        "type": "integer"
+                    },
+                    "direction": {
+                        "type": "string",
+                        "enum": [
+                            "in",
+                            "out"
+                        ]
+                    },
+                    "delta": {
+                        "type": "integer"
+                    },
+                    "balance_after": {
+                        "type": "integer"
+                    },
+                    "reservation_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "reverses_movement_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "id",
+                    "item_number",
+                    "product_id",
+                    "sku",
+                    "location_id",
+                    "location_code",
+                    "movement_code",
+                    "direction",
+                    "delta",
+                    "balance_after",
+                    "reservation_id",
+                    "reverses_movement_id"
+                ],
+                "title": "StockMovementResource"
+            },
             "StoreCategoryRequest": {
                 "type": "object",
                 "description": "Alta de categor\u00eda con catalog.manage. El nombre es \u00fanico entre las hijas de\nun mismo padre, tambi\u00e9n entre las ra\u00edces (categories_parent_id_name_unique,\nNULLS NOT DISTINCT). Profundidad y ciclos los valida la Action (REG-016).",
@@ -8187,6 +8857,58 @@
                     "updated_at"
                 ],
                 "title": "SupplierResource"
+            },
+            "TransferStockRequest": {
+                "type": "object",
+                "description": "POST /inventory/transfers (E3.04). Las ubicaciones se validan contra el\ndep\u00f3sito del cuerpo: una de otro dep\u00f3sito es un error de su campo. Las\nreglas de negocio (origen igual al destino, destino de sistema) las valida\nTransferStock con su c\u00f3digo.",
+                "properties": {
+                    "warehouse_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "notes": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 500
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "product_id": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                },
+                                "from_location_id": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                },
+                                "to_location_id": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                },
+                                "quantity": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                }
+                            },
+                            "required": [
+                                "product_id",
+                                "from_location_id",
+                                "to_location_id",
+                                "quantity"
+                            ]
+                        }
+                    }
+                },
+                "required": [
+                    "warehouse_id",
+                    "items"
+                ],
+                "title": "TransferStockRequest"
             },
             "UnitOfMeasureResource": {
                 "type": "object",

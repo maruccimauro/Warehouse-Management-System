@@ -25,4 +25,13 @@ return [
         'title' => 'La reversión supera lo que queda por revertir.',
         'detail' => 'La cantidad a revertir de una línea supera su saldo sin revertir.',
     ],
+    'duplicate_stock_in_items' => 'La posición :item mueve el mismo artículo en la misma ubicación que la posición :other: cada existencia se mueve en una sola posición.',
+    'same_source_and_destination' => [
+        'title' => 'El origen y el destino son la misma ubicación.',
+        'detail' => 'La posición :item transfiere de la ubicación :location a sí misma.',
+    ],
+    'system_location_not_allowed' => [
+        'title' => 'La ubicación de sistema no admite esta operación.',
+        'detail' => 'La posición :item tiene como destino la ubicación de sistema :location: solo la cargan sus documentos.',
+    ],
 ];

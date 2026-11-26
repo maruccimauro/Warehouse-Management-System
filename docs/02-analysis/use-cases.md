@@ -191,10 +191,10 @@ Ejemplo completo:
 | Campo | Valor |
 | - | - |
 | Actor | Operador de depósito |
-| Objetivo | Mover una cantidad de un producto de una ubicación a otra del mismo depósito |
+| Objetivo | Mover cantidades de uno o más productos entre ubicaciones del mismo depósito, en una transferencia con una o más posiciones |
 | Permisos | `inventory.transfer`; `inventory.reverse` para revertir |
 | Endpoints | `POST /inventory/transfers`, `POST /inventory/operations/{id}/reverse` |
-| Movimiento | 931 salida en origen y entrada en destino |
+| Movimiento | 931 por posición: salida en origen y entrada en destino, con el mismo número de posición |
 | Reglas | INV-001, INV-004, INV-005, INV-009, REG-010 |
 | Etapa | E3 |
 
@@ -205,11 +205,11 @@ Ejemplo completo:
 
 **Flujo principal**
 
-1. El operador escanea la ubicación de origen, el producto, la cantidad y la ubicación de destino.
+1. El operador carga una o más posiciones (hasta 100): por cada una, la ubicación de origen, el producto, la cantidad y la ubicación de destino.
 2. La interfaz muestra un resumen; el operador confirma.
-3. El sistema bloquea ambas ubicaciones y ambas existencias en orden de `id` y valida que las dos ubicaciones estén `active`.
-4. El sistema valida que el libre del origen (físico menos reservado menos bloqueado) alcance la cantidad y que el destino no supere su capacidad.
-5. El sistema registra una operación `transfer` con dos movimientos 931: salida en origen y entrada en destino, en la misma transacción.
+3. El sistema bloquea las ubicaciones y las existencias de todas las posiciones en orden de `id` y valida que las ubicaciones estén `active`.
+4. El sistema valida, por posición, que el libre del origen (físico menos reservado menos bloqueado) alcance la cantidad y que el destino no supere su capacidad.
+5. El sistema registra una operación `transfer` con dos movimientos 931 por posición, salida en origen y entrada en destino con el mismo número de posición, en la misma transacción. Si falla una posición, no se registra ninguna.
 
 **Flujos alternativos**
 
@@ -225,12 +225,13 @@ Ejemplo completo:
 | FA-03.8 | 2 | Doble clic o reintento de red | La interfaz reutiliza la clave generada al abrir el formulario (FC-4): una sola transferencia |
 | FA-03.9 | 1 | El destino es una ubicación de sistema (RECEPCION, PACKING o DESPACHO) | 422 `SYSTEM_LOCATION_NOT_ALLOWED` (REG-014) |
 | FA-03.10 | 1 | El origen es RECEPCION | Se permite sobre lo que esté libre. Lo comprometido por una solicitud de guardado pendiente responde 422 `RESERVED_STOCK_NOT_AVAILABLE`: primero se revierte esa cantidad de la solicitud (FR-02.1, DM-14) |
+| FA-03.11 | 1 | Dos posiciones mueven el mismo producto en la misma ubicación (por ejemplo, de A a B y de B a C) | 422 de validación sobre la segunda posición: cada existencia se mueve en una sola posición por operación. Se registran como dos transferencias |
 
 **Flujo de reversión**
 
 | ID | Condición | Resultado |
 | - | - | - |
-| FR-03.1 | La cantidad a revertir sigue libre en el destino y ambas ubicaciones están `active` | `POST /inventory/operations/{id}/reverse` con la cantidad: operación `reversal` con 932, del destino al origen. Se puede revertir una parte (por ejemplo 10 de 50) y más adelante el resto |
+| FR-03.1 | La cantidad a revertir sigue libre en el destino y ambas ubicaciones están `active` | `POST /inventory/operations/{id}/reverse` con la posición y la cantidad: operación `reversal` con 932, del destino al origen. Se puede revertir una parte (por ejemplo 10 de 50) y más adelante el resto |
 | FR-03.2 | La cantidad ya no está libre en el destino | 422 `INSUFFICIENT_STOCK` |
 | FR-03.3 | Se pide revertir más que el saldo de la transferencia | 422 `REVERSAL_EXCEEDS_REMAINING` |
 

@@ -86,8 +86,8 @@ function ledgerLoad(Product $product, Location $location, int $quantity): Invent
 function ledgerTransfer(Product $product, Location $from, Location $to, int $quantity): InventoryOperation
 {
     return ledgerPost(ledgerDraft(OperationType::Transfer, [
-        new MovementLine($product->id, $from->id, 931, -$quantity),
-        new MovementLine($product->id, $to->id, 931, $quantity),
+        new MovementLine($product->id, $from->id, 931, -$quantity, itemNumber: 1),
+        new MovementLine($product->id, $to->id, 931, $quantity, itemNumber: 1),
     ]));
 }
 
@@ -177,7 +177,24 @@ describe('draft validation', function () {
         'reversal line without its original' => [fn () => ledgerDraft(OperationType::Reversal, [new MovementLine($this->product->id, $this->a->id, 932, 5)], ['reverses' => 1, 'notes' => 'x']), 'línea original'],
         'same stock row twice' => [fn () => ledgerDraft(OperationType::Transfer, [new MovementLine($this->product->id, $this->a->id, 931, -5), new MovementLine($this->product->id, $this->a->id, 931, 5)]), 'una sola línea'],
         'reservation on an entry' => [fn () => ledgerDraft(OperationType::Transfer, [new MovementLine($this->product->id, $this->a->id, 931, 5, reservationId: 1)]), 'reserva'],
+        'transfer without item numbers' => [fn () => ledgerDraft(OperationType::Transfer, [new MovementLine($this->product->id, $this->a->id, 931, -5), new MovementLine($this->product->id, $this->b->id, 931, 5)]), 'posición'],
+        'item numbers on some lines only' => [fn () => ledgerDraft(OperationType::AdjustmentIn, [new MovementLine($this->product->id, $this->a->id, 712, 5, itemNumber: 1), new MovementLine($this->product->id, $this->b->id, 712, 5)], ['reason' => AdjustmentReason::Found]), 'posición'],
+        'item number zero' => [fn () => ledgerDraft(OperationType::AdjustmentIn, [new MovementLine($this->product->id, $this->a->id, 712, 5, itemNumber: 0)], ['reason' => AdjustmentReason::Found]), 'no es válida'],
+        'two entries in one item' => [fn () => ledgerDraft(OperationType::AdjustmentIn, [new MovementLine($this->product->id, $this->a->id, 712, 5, itemNumber: 1), new MovementLine($this->product->id, $this->b->id, 712, 5, itemNumber: 1)], ['reason' => AdjustmentReason::Found]), 'misma dirección'],
+        'transfer item without its entry' => [fn () => ledgerDraft(OperationType::Transfer, [new MovementLine($this->product->id, $this->a->id, 931, -5, itemNumber: 1), new MovementLine($this->product->id, $this->b->id, 931, 5, itemNumber: 2)]), 'una salida y una entrada'],
+        'transfer item with unequal quantities' => [fn () => ledgerDraft(OperationType::Transfer, [new MovementLine($this->product->id, $this->a->id, 931, -5, itemNumber: 1), new MovementLine($this->product->id, $this->b->id, 931, 4, itemNumber: 1)]), 'misma cantidad'],
+        'transfer item with two articles' => [fn () => ledgerDraft(OperationType::Transfer, [new MovementLine($this->product->id, $this->a->id, 931, -5, itemNumber: 1), new MovementLine(Product::factory()->create()->id, $this->b->id, 931, 5, itemNumber: 1)]), 'mismo artículo'],
     ]);
+
+    it('numbers the lines in draft order when the draft gives no item numbers', function () {
+        $operation = ledgerPost(ledgerDraft(OperationType::AdjustmentIn, [
+            new MovementLine($this->product->id, $this->b->id, 712, 2),
+            new MovementLine($this->product->id, $this->a->id, 712, 3),
+        ], ['reason' => AdjustmentReason::Found]));
+
+        expect($operation->movements->map(fn (StockMovement $line): array => [$line->item_number, $line->location_id])->all())
+            ->toBe([[1, $this->b->id], [2, $this->a->id]]);
+    });
 });
 
 describe('warehouse and item state', function () {
@@ -192,8 +209,8 @@ describe('warehouse and item state', function () {
         $this->product->forceFill(['status' => ProductStatus::Blocked])->save();
 
         $error = ledgerRejection(ledgerDraft(OperationType::Transfer, [
-            new MovementLine($this->product->id, $this->a->id, 931, -2),
-            new MovementLine($this->product->id, $this->b->id, 931, 2),
+            new MovementLine($this->product->id, $this->a->id, 931, -2, itemNumber: 1),
+            new MovementLine($this->product->id, $this->b->id, 931, 2, itemNumber: 1),
         ]));
 
         expect($error)->toBeInstanceOf(ProductNotOperable::class)
@@ -224,8 +241,8 @@ describe('locations', function () {
         $this->b->forceFill(['status' => $status, 'status_reason' => 'Revisión'])->save();
 
         $error = ledgerRejection(ledgerDraft(OperationType::Transfer, [
-            new MovementLine($this->product->id, $this->a->id, 931, -2),
-            new MovementLine($this->product->id, $this->b->id, 931, 2),
+            new MovementLine($this->product->id, $this->a->id, 931, -2, itemNumber: 1),
+            new MovementLine($this->product->id, $this->b->id, 931, 2, itemNumber: 1),
         ]));
 
         expect($error)->toBeInstanceOf(LocationBlocked::class)

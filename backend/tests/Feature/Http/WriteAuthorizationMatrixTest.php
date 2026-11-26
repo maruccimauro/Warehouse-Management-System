@@ -10,8 +10,10 @@ use App\Modules\Identity\Authorization\Permission;
 use App\Modules\Identity\Authorization\Role;
 use App\Modules\Warehouse\Actions\CreateWarehouse;
 use App\Modules\Warehouse\Enums\ZoneType;
+use App\Shared\Http\Idempotency\Idempotency;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Route as Router;
+use Illuminate\Support\Str;
 
 /*
 | Matriz de autorización de escritura (criterio de salida de E2): cada endpoint
@@ -68,6 +70,7 @@ function writeEndpointPermissions(): array
         'DELETE api/v1/suppliers/{supplier}/products/{product}' => Permission::SuppliersManage,
         'POST api/v1/users' => Permission::UsersManage,
         'PATCH api/v1/users/{user}' => Permission::UsersManage,
+        'POST api/v1/inventory/transfers' => Permission::InventoryTransfer,
     ];
 }
 
@@ -144,10 +147,15 @@ it('answers each role according to its permissions', function (string $endpoint,
     $allowed = $rule === OWN_ACCOUNT || ($role !== null && in_array($rule, $role->permissions(), true));
     [$method, $uri] = resolveWriteEndpoint($endpoint, $this->routeParameters);
 
-    $response = $this->actingAs(userWithAccess($role, [$this->central]))->json($method, $uri);
+    // Con Idempotency-Key, para que una ruta idempotente llegue a la
+    // autorización en lugar de responder 428; las demás la ignoran. Las
+    // operaciones de inventario leen el depósito del cuerpo.
+    $response = $this->actingAs(userWithAccess($role, [$this->central]))
+        ->withHeader(Idempotency::HEADER, (string) Str::uuid())
+        ->json($method, $uri, ['warehouse_id' => $this->central->id]);
 
     if ($allowed) {
-        expect($response->status())->not->toBeIn([401, 403, 404]);
+        expect($response->status())->not->toBeIn([401, 403, 404, 428]);
     } else {
         $response->assertForbidden()->assertJsonPath('code', 'FORBIDDEN');
     }
