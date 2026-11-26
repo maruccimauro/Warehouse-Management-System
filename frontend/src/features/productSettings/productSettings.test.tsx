@@ -11,7 +11,7 @@ const central = { id: 1, code: 'CENTRAL', name: 'Depósito central' };
 const norte = { id: 2, code: 'NORTE', name: 'Depósito norte' };
 
 const supervisor = testUser({ permissions: ['catalog.min_stock.manage', 'warehouses.view_all'], warehouses: [central] });
-const controller = testUser({ permissions: ['inventory.thresholds.manage', 'warehouses.view_all'], warehouses: [] });
+const controller = testUser({ permissions: ['inventory.thresholds.manage', 'warehouses.view_all'], warehouses: [central, norte] });
 
 const product = {
   id: 7,
@@ -147,7 +147,6 @@ describe('ZW36: modificar umbrales de ajuste', () => {
         jsonResponse(200, { data: setting({ warehouse_id: 2, adjustment_out_approval_threshold: 5 }) }),
     });
 
-    // Control central: modifica en un depósito que ve aunque no opere en ninguno.
     renderRoute('/t/ZW36');
     await fill('Depósito', 'norte');
     await fill('Artículo', 'tor-m6-30');
@@ -167,6 +166,20 @@ describe('ZW36: modificar umbrales de ajuste', () => {
       });
     });
     expect(await screen.findByRole('heading', { name: 'Modificar umbrales de ajuste', level: 2 })).toBeInTheDocument();
+  });
+
+  it('ofrece solo los depósitos donde opera, como el gerente regional', async () => {
+    const regional = testUser({ permissions: ['inventory.thresholds.manage', 'warehouses.view_all'], warehouses: [central] });
+    stubApi({
+      'GET /api/v1/auth/me': () => userResponse(regional),
+      'GET /api/v1/warehouses': warehouses,
+    });
+
+    renderRoute('/t/ZW36');
+    await fill('Depósito', 'norte');
+    await userEvent.keyboard('{F8}');
+
+    expect(await statusBar().findByRole('alert')).toHaveTextContent('VALUE_NOT_FOUND');
   });
 
   it('rechaza un umbral de cero, que no es un umbral válido', async () => {

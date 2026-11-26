@@ -427,7 +427,7 @@ Permisos que exigen las transiciones de este documento y la administración de d
 | `inventory.adjust.approve` | Aprobar o rechazar las posiciones de ajuste que superan el umbral de su artículo (REG-024), de ajustes creados por otro usuario |
 | `inventory.block` | Bloqueo y liberación de cantidades de stock |
 | `inventory.reverse` | Reversión de transferencias y ajustes |
-| `inventory.thresholds.manage` | Umbrales de aprobación de ajustes por producto y depósito (REG-024), en cualquier depósito visible, sin exigir operar en él. Solo Administrador: es un control central, separado de quien ajusta (`inventory.adjust`) y de quien aprueba (`inventory.adjust.approve`) |
+| `inventory.thresholds.manage` | Umbrales de aprobación de ajustes por producto y depósito (REG-024), con el alcance de operación sobre el depósito. Administrador y Gerente de operaciones: es un control central, separado de quien ajusta (`inventory.adjust`). El alcance de operación deja al gerente regional fijarlos solo en sus depósitos (E3.05c, decisión del usuario del 26/11/2026) |
 | `procurement.create` | Crear, editar y enviar órdenes de compra |
 | `procurement.approve` | Aprobar y rechazar órdenes de compra |
 | `procurement.cancel` | Cancelar órdenes de compra |
@@ -465,6 +465,7 @@ Los roles son datos del sistema con identificador estable; la interfaz traduce s
 | Rol | Identificador | Permisos |
 | - | - | - |
 | Administrador | `administrator` | Todos, como `SAP_ALL`. Las reglas de segregación por documento (REG-001, INV-010, DM-08) también lo alcanzan |
+| Gerente de operaciones | `operations_manager` | `warehouses.view_all`, `inventory.adjust.approve`, `inventory.thresholds.manage`, `procurement.approve`, `stocktake.approve` y `audit.view`. Controla por encima de los supervisores sin la operación diaria: no ajusta, no transfiere, no recibe y no administra usuarios, roles, depósitos, catálogo ni proveedores. Actúa en los depósitos que tiene asignados (gerente regional); si también debe operar, se le asigna además el rol Supervisor (E3.05c, decisiones del usuario del 26/11/2026) |
 | Supervisor | `supervisor` | `warehouses.view_all`, `locations.manage`, `locations.block`, `catalog.min_stock.manage`, los de `inventory` salvo `inventory.thresholds.manage` (control central), `procurement.approve`, `procurement.cancel`, `procurement.close`, todos los de `receiving`, `putaway`, `orders`, `picking`, `packing` y `dispatch`, `stocktake.manage`, `stocktake.approve`, `stocktake.reverse` y `audit.view` |
 | Operador | `operator` | `warehouses.view_all`, `inventory.transfer`, `receiving.create`, `receiving.confirm`, `putaway.execute`, `putaway.reverse`, `picking.execute`, `packing.execute`, `dispatch.execute` y `stocktake.count` |
 | Compras | `purchasing` | `warehouses.view_all`, `suppliers.manage`, `procurement.create` y `procurement.cancel` |

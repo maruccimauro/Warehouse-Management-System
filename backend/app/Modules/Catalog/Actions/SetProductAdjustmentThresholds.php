@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\DB;
 /**
  * Umbrales de aprobación de ajustes de un artículo en un depósito (REG-024),
  * uno por dirección; null es "sin umbral". Es un control central
- * (inventory.thresholds.manage): quien ajusta o aprueba ajustes no fija su
- * propio umbral. Crea la fila si no existe, con stock mínimo 0, y si existe
+ * (inventory.thresholds.manage, del Administrador y del Gerente de
+ * operaciones): quien ajusta no fija su propio umbral. Crea la fila si no existe, con stock mínimo 0, y si existe
  * cambia solo los umbrales.
  *
  * El cambio se audita (INV-012) porque decide qué ajustes pasan por

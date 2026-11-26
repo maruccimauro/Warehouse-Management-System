@@ -9,6 +9,7 @@ Esta página lista los permisos que usan las funciones disponibles hoy. Los de r
 | Rol | Puesto |
 | - | - |
 | Administrador | Configura el sistema y puede operar en todos los depósitos. Tiene todos los permisos |
+| Gerente de operaciones | Controla la operación de los depósitos que tiene asignados, por encima de los supervisores: aprueba y fija los umbrales de ajuste, sin la operación diaria ni la administración de usuarios |
 | Supervisor | Supervisa la operación del depósito: aprueba, revierte y bloquea |
 | Operador | Ejecuta las tareas del depósito |
 | Compras | Gestiona proveedores y órdenes de compra |
@@ -60,7 +61,7 @@ Crear, modificar, activar y desactivar proveedores, y vincularlos con los artíc
 
 ### `inventory.thresholds.manage` {#inventory-thresholds-manage}
 
-Fijar los umbrales de aprobación de ajustes de un artículo en cualquier depósito que el usuario consulta, aunque no opere en él: [Gestionar umbrales de ajuste](/administracion/umbrales-de-ajuste) y [Modificar umbrales de ajuste](/administracion/modificar-umbrales-de-ajuste). Es un control central: quien ajusta stock no fija su propio umbral. Solo lo tiene el Administrador.
+Fijar los umbrales de aprobación de ajustes de un artículo en los depósitos donde el usuario opera: [Gestionar umbrales de ajuste](/administracion/umbrales-de-ajuste) y [Modificar umbrales de ajuste](/administracion/modificar-umbrales-de-ajuste). Es un control central: quien ajusta stock no fija su propio umbral. Lo tienen el Administrador y el Gerente de operaciones.
 
 ## Usuarios {#usuarios}
 

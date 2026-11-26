@@ -56,13 +56,15 @@ final class CatalogPolicy
     }
 
     /**
-     * Umbrales de aprobación de ajustes (REG-024): control central, con su
-     * permiso y sin exigir operar en el depósito; basta con verlo.
+     * Umbrales de aprobación de ajustes (REG-024): control central, separado
+     * de quien ajusta, con su permiso y el alcance de operación sobre el
+     * depósito, para que un gerente regional los fije solo en sus depósitos
+     * (E3.05c). Un depósito fuera del alcance de consulta responde 404.
      */
     public function updateAdjustmentThresholds(User $user, Product $product, Warehouse $warehouse): Response
     {
         $visible = $this->viewWarehouseSettings($user, $warehouse);
 
-        return $visible->denied() ? $visible : $this->access->authorizePermission($user, Permission::InventoryThresholdsManage);
+        return $visible->denied() ? $visible : $this->access->authorizeOperation($user, $warehouse->id, Permission::InventoryThresholdsManage);
     }
 }

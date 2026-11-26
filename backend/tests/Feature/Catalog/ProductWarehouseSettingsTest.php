@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\DB;
 | responsables distintos (.claude/rules/responsabilidades-por-transaccion.md):
 | el stock mínimo, con catalog.min_stock.manage y el alcance de operación (el
 | supervisor del depósito); los umbrales de ajuste, con
-| inventory.thresholds.manage (control central).
+| inventory.thresholds.manage (control central, del administrador y del gerente
+| de operaciones) y el mismo alcance de operación (E3.05c).
 */
 
 beforeEach(function () {
@@ -160,15 +161,21 @@ describe('adjustment approval thresholds', function () {
             ->assertForbidden();
     });
 
-    it('does not require operating in the warehouse, only seeing it', function () {
-        // El Auditor consulta todos los depósitos y no opera en ninguno.
-        $controller = userWithAccess(Role::Auditor);
-        $controller->givePermissionTo(Permission::InventoryThresholdsManage->value);
+    it('lets the operations manager set it only in the assigned warehouses', function () {
+        $manager = userWithAccess(Role::OperationsManager, [$this->central]);
 
-        $this->actingAs($controller)
-            ->putJson(thresholdsUrl($this->product, $this->norte->id), thresholdsBody(100, 20))
+        $this->actingAs($manager)
+            ->putJson(thresholdsUrl($this->product, $this->central->id), thresholdsBody(100, 20))
             ->assertOk();
 
+        // Ve el depósito norte (warehouses.view_all) pero no opera en él.
+        $this->actingAs($manager)
+            ->putJson(thresholdsUrl($this->product, $this->norte->id), thresholdsBody(100, 20))
+            ->assertForbidden()
+            ->assertJsonPath('code', 'FORBIDDEN');
+    });
+
+    it('answers 404 for a warehouse outside the query scope', function () {
         $outsider = userWithAccess(null, [$this->central]);
         $outsider->givePermissionTo(Permission::InventoryThresholdsManage->value);
 

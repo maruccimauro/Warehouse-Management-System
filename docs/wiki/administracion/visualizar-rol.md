@@ -10,7 +10,7 @@ Ingrese el **Rol** y presione <kbd>F8</kbd>.
 
 ### Rol {#role}
 
-El rol, por su nombre (**Operador**) o por su identificador (`operator`). <kbd>F4</kbd> ofrece los cinco roles: Administrador, Supervisor, Operador, Compras y Auditor. Si el rol no existe, el campo lo marca con [`VALUE_NOT_FOUND`](/referencia/mensajes#value-not-found).
+El rol, por su nombre (**Operador**) o por su identificador (`operator`). <kbd>F4</kbd> ofrece los seis roles: Administrador, Gerente de operaciones, Supervisor, Operador, Compras y Auditor. Si el rol no existe, el campo lo marca con [`VALUE_NOT_FOUND`](/referencia/mensajes#value-not-found).
 
 ## Ficha {#ficha}
 

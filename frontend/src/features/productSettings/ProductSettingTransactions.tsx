@@ -45,7 +45,8 @@ import {
 //   ZW04, ZW42 y ZW43: gestionar, modificar y visualizar el stock mínimo. Lo mantiene el
 //     supervisor en los depósitos donde opera (catalog.min_stock.manage).
 //   ZW35, ZW36 y ZW37: gestionar, modificar y visualizar los umbrales de aprobación de ajustes.
-//     Son un control central (inventory.thresholds.manage): basta con ver el depósito.
+//     Son un control central (inventory.thresholds.manage), separado de quien ajusta, que
+//     mantiene el administrador o el gerente de operaciones en los depósitos donde opera.
 // No hay Crear: un artículo sin fila en el depósito ya tiene sus valores por defecto (stock
 // mínimo 0, sin umbrales), y la gestión lista todos los artículos del catálogo con su valor.
 export type SettingKind = 'minStock' | 'thresholds';
@@ -80,12 +81,12 @@ export function DisplayAdjustmentThresholdsTransaction() {
   return <SettingActivity kind="thresholds" activity="display" />;
 }
 
-// Depósitos que admite la pantalla: modificar el stock mínimo exige operar en el depósito
-// (REG-005); visualizarlo y todo lo de los umbrales, que son un control central, solo verlo.
-function useWarehouseScope(kind: SettingKind, mode: Mode) {
+// Depósitos que admite la pantalla: gestionar y modificar exigen operar en el depósito
+// (REG-005), y visualizar, solo verlo. Vale igual para el stock mínimo y para los umbrales.
+function useWarehouseScope(mode: Mode) {
   const user = useAuthenticatedUser();
   const visible = useVisibleWarehouses();
-  const operate = kind === 'minStock' && mode === 'change';
+  const operate = mode === 'change';
 
   return {
     field: operate ? WarehouseField : VisibleWarehouseField,
@@ -110,7 +111,7 @@ function SettingManagement({ kind }: { kind: SettingKind }) {
   const { t } = useTranslation('productSettings');
   const { show } = useStatusBar();
   const defaultWarehouse = useDefaultWarehouse();
-  const scope = useWarehouseScope(kind, 'change');
+  const scope = useWarehouseScope('change');
   const [screen, setScreen] = useState<ManagementScreen>({ kind: 'selection' });
 
   const fields = useMemo(
@@ -310,7 +311,7 @@ function SettingInitialScreen({ kind, activity, initial, onContinue }: SettingIn
   const { t } = useTranslation('productSettings');
   const { show } = useStatusBar();
   const defaultWarehouse = useDefaultWarehouse();
-  const scope = useWarehouseScope(kind, activity);
+  const scope = useWarehouseScope(activity);
   const running = useRef(false);
 
   const fields = useMemo(

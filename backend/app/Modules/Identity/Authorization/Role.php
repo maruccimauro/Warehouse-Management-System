@@ -13,6 +13,7 @@ namespace App\Modules\Identity\Authorization;
 enum Role: string
 {
     case Administrator = 'administrator';
+    case OperationsManager = 'operations_manager';
     case Supervisor = 'supervisor';
     case Operator = 'operator';
     case Purchasing = 'purchasing';
@@ -31,6 +32,20 @@ enum Role: string
             // operar en todos sin asignación (warehouses.operate_all) es solo
             // del administrador.
             self::Administrator => Permission::cases(),
+            // Control por encima de los supervisores, en los depósitos que
+            // tiene asignados (regional) o en todos con el permiso directo
+            // warehouses.operate_all (general), sin la operación diaria: quien
+            // fija los umbrales y aprueba no ajusta (regla de responsabilidades
+            // por transacción). No administra usuarios, roles, depósitos,
+            // catálogo ni proveedores (decisión del usuario del 26/11/2026).
+            self::OperationsManager => [
+                Permission::WarehousesViewAll,
+                Permission::InventoryAdjustApprove,
+                Permission::InventoryThresholdsManage,
+                Permission::ProcurementApprove,
+                Permission::StocktakeApprove,
+                Permission::AuditView,
+            ],
             self::Supervisor => [
                 Permission::WarehousesViewAll,
                 // Zonas, ubicaciones y stock mínimo de los depósitos donde
