@@ -68,12 +68,13 @@ describe('creation', function () {
         $this->actingAs($this->purchasing)
             ->getJson("/api/v1/suppliers/{$first->id}")
             ->assertOk()
-            ->assertJsonPath('data.number', str_pad((string) $first->number, 6, '0', STR_PAD_LEFT));
+            ->assertJsonPath('data.number', str_pad((string) $first->number, 10, '0', STR_PAD_LEFT));
     });
 
-    it('formats numbers past six digits without truncating them', function () {
-        expect(Supplier::formatNumber(7))->toBe('000007')
-            ->and(Supplier::formatNumber(1234567))->toBe('1234567')
+    it('formats numbers past ten digits without truncating them', function () {
+        expect(Supplier::formatNumber(7))->toBe('0000000007')
+            ->and(Supplier::formatNumber(12345678901))->toBe('12345678901')
+            ->and(Supplier::parseNumber('0000000012'))->toBe(12)
             ->and(Supplier::parseNumber('000012'))->toBe(12)
             ->and(Supplier::parseNumber('0'))->toBeNull()
             ->and(Supplier::parseNumber('A1'))->toBeNull();

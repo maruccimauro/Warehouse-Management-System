@@ -42,7 +42,7 @@ function product(overrides: Record<string, unknown> = {}) {
   };
 }
 
-const acme = { id: 3, number: '000003', tax_id: '30712345671', name: 'ACME SA', email: null, phone: null, is_active: true };
+const acme = { id: 3, number: '0000000003', tax_id: '30712345671', name: 'ACME SA', email: null, phone: null, is_active: true };
 
 function page(items: unknown[]) {
   return jsonResponse(200, { data: items, meta: { current_page: 1, last_page: 1, per_page: 200, total: items.length } });
@@ -168,7 +168,7 @@ describe('MM01 a MM03: artículos', () => {
       'GET /api/v1/products': () => page([product()]),
       'GET /api/v1/products/7/suppliers': () =>
         jsonResponse(200, {
-          data: [{ product_id: 7, supplier_id: 3, supplier: { number: '000003', tax_id: '30712345671', name: 'ACME SA', is_active: true }, supplier_sku: 'A-100', lead_time_days: 5 }],
+          data: [{ product_id: 7, supplier_id: 3, supplier: { number: '0000000003', tax_id: '30712345671', name: 'ACME SA', is_active: true }, supplier_sku: 'A-100', lead_time_days: 5 }],
         }),
     });
 
@@ -215,7 +215,7 @@ describe('XK01 a XK03: proveedores', () => {
     await userEvent.keyboard('{Control>}s{/Control}');
 
     await waitFor(() => {
-      expect(statusBar().getByRole('status')).toHaveTextContent('Proveedor 000003 ACME SA creado.');
+      expect(statusBar().getByRole('status')).toHaveTextContent('Proveedor 0000000003 ACME SA creado.');
     });
     expect(api.requestsTo('POST', '/api/v1/suppliers')[0]?.body).toEqual({
       tax_id: '30712345671',
@@ -241,9 +241,9 @@ describe('XK01 a XK03: proveedores', () => {
     await userEvent.keyboard('{Control>}s{/Control}');
 
     await waitFor(() => {
-      expect(statusBar().getByRole('status')).toHaveTextContent('Proveedor 000003 ACME SA grabado.');
+      expect(statusBar().getByRole('status')).toHaveTextContent('Proveedor 0000000003 ACME SA grabado.');
     });
-    expect(api.requestsTo('GET', '/api/v1/suppliers')[0]?.query.get('filter[number]')).toBe('000003');
+    expect(api.requestsTo('GET', '/api/v1/suppliers')[0]?.query.get('filter[number]')).toBe('0000000003');
     expect(api.requestsTo('PATCH', '/api/v1/suppliers/3')[0]?.body).toMatchObject({ is_active: false });
   });
 });
@@ -251,7 +251,7 @@ describe('XK01 a XK03: proveedores', () => {
 describe('ZW06: artículos del proveedor', () => {
   async function openNewLink() {
     renderRoute('/t/ZW06');
-    await fill('Proveedor', '000003');
+    await fill('Proveedor', '0000000003');
     await userEvent.keyboard('{F8}');
     await userEvent.click(await screen.findByRole('button', { name: 'Vincular artículo' }));
   }
@@ -312,7 +312,7 @@ describe('ZW61 a ZW63: transacciones individuales del artículo del proveedor', 
     await fill('Artículo', 'tor-m6-30');
     await userEvent.keyboard('{F8}');
 
-    expect(await statusBar().findByRole('alert')).toHaveTextContent('El artículo TOR-M6-30 no está vinculado al proveedor 000003.');
+    expect(await statusBar().findByRole('alert')).toHaveTextContent('El artículo TOR-M6-30 no está vinculado al proveedor 0000000003.');
     expect(statusBar().getByRole('link', { name: /SUPPLIER_PRODUCT_NOT_FOUND/ })).toHaveAttribute(
       'href',
       '/docs/referencia/mensajes#supplier-product-not-found',
@@ -329,7 +329,7 @@ describe('ZW61 a ZW63: transacciones individuales del artículo del proveedor', 
     });
 
     renderRoute('/t/ZW63');
-    await fill('Proveedor', '000003');
+    await fill('Proveedor', '0000000003');
     await fill('Artículo', 'tor-m6-30');
     await userEvent.keyboard('{F8}');
 

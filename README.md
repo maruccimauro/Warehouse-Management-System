@@ -46,7 +46,7 @@ cd Warehouse-Management-System
 docker compose up -d
 ```
 
-The first start takes a few minutes: it builds the PHP image and installs the backend and frontend dependencies. Every start also applies pending migrations and seeds development data (idempotent). Then open <http://localhost:8080> and sign in with the development administrator: `admin@wms.test` / `admin-dev-1`. Ten fictitious users (`usuario01@wms.test` to `usuario10@wms.test`) are created as well. These credentials are public and only valid in the local environment; the seeders refuse to run outside `local` and `testing`.
+The first start takes a few minutes: it builds the PHP image and installs the backend and frontend dependencies. Every start also applies pending migrations and seeds development data (idempotent). Then open <http://localhost:8080> and sign in with the development administrator: `admin@wms.test` / `admin-dev-1`. Ten fictitious users with name and surname are created as well, from `maria.martinez@wms.test` (code `U000001`) to `nicolas.torres@wms.test` (`U000010`), with the password `password`. These credentials are public and only valid in the local environment; the seeders refuse to run outside `local` and `testing`.
 
 | Task | Command |
 | - | - |
@@ -108,7 +108,7 @@ cd Warehouse-Management-System
 docker compose up -d
 ```
 
-El primer arranque tarda unos minutos: construye la imagen de PHP e instala las dependencias del backend y del frontend. Cada arranque aplica además las migraciones pendientes y siembra los datos de desarrollo (idempotente). Después, abrir <http://localhost:8080> e ingresar con el administrador de desarrollo: `admin@wms.test` / `admin-dev-1`. También se crean diez usuarios ficticios (`usuario01@wms.test` a `usuario10@wms.test`). Estas credenciales son públicas y solo valen en el entorno local; los seeders se niegan a correr fuera de `local` y `testing`.
+El primer arranque tarda unos minutos: construye la imagen de PHP e instala las dependencias del backend y del frontend. Cada arranque aplica además las migraciones pendientes y siembra los datos de desarrollo (idempotente). Después, abrir <http://localhost:8080> e ingresar con el administrador de desarrollo: `admin@wms.test` / `admin-dev-1`. También se crean diez usuarios ficticios con nombre y apellido, desde `maria.martinez@wms.test` (código `U000001`) hasta `nicolas.torres@wms.test` (`U000010`), con la contraseña `password`. Estas credenciales son públicas y solo valen en el entorno local; los seeders se niegan a correr fuera de `local` y `testing`.
 
 | Tarea | Comando |
 | - | - |

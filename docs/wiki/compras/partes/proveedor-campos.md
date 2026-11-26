@@ -2,7 +2,7 @@
 
 ### Número {#number}
 
-Número interno del proveedor, por ejemplo `000012`. El sistema lo asigna al crear el proveedor, en orden correlativo, y no cambia nunca: es el dato con que se busca al proveedor en las demás transacciones. No se muestra al crear, porque todavía no existe.
+Número interno del proveedor, por ejemplo `0000000012`. El sistema lo asigna al crear el proveedor, en orden correlativo, y no cambia nunca: es el dato con que se busca al proveedor en las demás transacciones. No se muestra al crear, porque todavía no existe.
 
 ### Identificador fiscal {#tax-id}
 

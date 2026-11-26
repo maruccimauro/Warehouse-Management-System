@@ -13,7 +13,7 @@ use Illuminate\Database\Seeder;
  * El administrador no recibe asignaciones: opera en todos con
  * warehouses.operate_all. Los usuarios ficticios reciben depósitos en ciclo,
  * para que haya quien opere en uno solo y vea el otro sin poder operar:
- * usuario01 CENTRAL, usuario02 NORTE, usuario03 los dos, y así sucesivamente.
+ * U000001 CENTRAL, U000002 NORTE, U000003 los dos, y así sucesivamente.
  *
  * Es idempotente: solo asigna a quien no tiene ningún depósito, así no pisa
  * una asignación cambiada a mano.
@@ -27,8 +27,8 @@ class WarehouseAssignmentSeeder extends Seeder
     {
         $warehouseIds = Warehouse::query()->pluck('id', 'code');
 
-        for ($number = 1; $number <= config()->integer('wms.demo_users'); $number++) {
-            $user = User::query()->where('email', sprintf(IdentitySeeder::DEMO_EMAIL_PATTERN, $number))->first();
+        for ($number = 1; $number <= IdentitySeeder::demoUserCount(); $number++) {
+            $user = User::query()->where('email', IdentitySeeder::demoEmail($number))->first();
 
             if ($user === null || $user->warehouses()->exists()) {
                 continue;

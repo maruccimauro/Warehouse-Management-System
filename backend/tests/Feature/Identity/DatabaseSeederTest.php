@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Identity\Database\Seeders\IdentitySeeder;
 use App\Modules\Identity\Models\User;
 use App\Modules\Warehouse\Models\Warehouse;
 use Database\Seeders\DatabaseSeeder;
@@ -37,14 +38,29 @@ it('creates the development admin who can log in', function () {
     )->assertOk();
 });
 
-it('creates the configured number of fictitious users with predictable emails', function () {
+it('creates the configured number of fictitious users with name, email and code', function () {
     $this->seed(DatabaseSeeder::class);
 
-    expect(User::query()->where('email', 'like', 'usuario%@wms.test')->orderBy('email')->pluck('email')->all())
-        ->toBe(['usuario01@wms.test', 'usuario02@wms.test', 'usuario03@wms.test'])
-        ->and(User::query()->where('username', 'like', 'USUARIO%')->orderBy('username')->pluck('username')->all())
-        ->toBe(['USUARIO01', 'USUARIO02', 'USUARIO03']);
+    expect(User::query()->where('username', 'like', 'U0%')->orderBy('username')->get(['username', 'name', 'email'])->toArray())
+        ->toBe([
+            ['username' => 'U000001', 'name' => 'María Martínez', 'email' => 'maria.martinez@wms.test'],
+            ['username' => 'U000002', 'name' => 'Juan Pérez', 'email' => 'juan.perez@wms.test'],
+            ['username' => 'U000003', 'name' => 'Lucía Fernández', 'email' => 'lucia.fernandez@wms.test'],
+        ]);
 });
+
+it('derives a valid and unique email for every fictitious person', function () {
+    $emails = array_map(IdentitySeeder::demoEmail(...), range(1, count(IdentitySeeder::DEMO_USER_NAMES)));
+
+    expect($emails)->each->toMatch('/^[a-z]+\.[a-z]+@wms\.test$/')
+        ->and(array_unique($emails))->toHaveCount(count($emails));
+});
+
+it('refuses more fictitious users than the list has', function () {
+    config()->set('wms.demo_users', count(IdentitySeeder::DEMO_USER_NAMES) + 1);
+
+    $this->seed(DatabaseSeeder::class);
+})->throws(LogicException::class, 'wms.demo_users');
 
 it('is idempotent and keeps passwords changed after seeding', function () {
     $this->seed(DatabaseSeeder::class);
@@ -64,15 +80,15 @@ it('assigns warehouses to the fictitious users in cycle and none to the admin', 
         ->warehouses()->orderBy('code')->pluck('code')->all();
 
     expect($codesOf('admin@wms.test'))->toBe([])
-        ->and($codesOf('usuario01@wms.test'))->toBe(['CENTRAL'])
-        ->and($codesOf('usuario02@wms.test'))->toBe(['NORTE'])
-        ->and($codesOf('usuario03@wms.test'))->toBe(['CENTRAL', 'NORTE'])
-        ->and($codesOf('usuario04@wms.test'))->toBe(['CENTRAL']);
+        ->and($codesOf('maria.martinez@wms.test'))->toBe(['CENTRAL'])
+        ->and($codesOf('juan.perez@wms.test'))->toBe(['NORTE'])
+        ->and($codesOf('lucia.fernandez@wms.test'))->toBe(['CENTRAL', 'NORTE'])
+        ->and($codesOf('martin.gomez@wms.test'))->toBe(['CENTRAL']);
 });
 
 it('keeps warehouse assignments changed after seeding', function () {
     $this->seed(DatabaseSeeder::class);
-    $user = User::query()->where('email', 'usuario01@wms.test')->sole();
+    $user = User::query()->where('email', 'maria.martinez@wms.test')->sole();
     $user->warehouses()->sync(Warehouse::query()->where('code', 'NORTE')->pluck('id')->all());
 
     $this->seed(DatabaseSeeder::class);

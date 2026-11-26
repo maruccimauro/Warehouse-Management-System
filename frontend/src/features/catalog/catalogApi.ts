@@ -62,12 +62,15 @@ export const warehouseSettingSchema = z.object({
   min_stock: z.number().int(),
 });
 
-// Número interno del proveedor tal como lo muestra la API (000001): lo escrito con o sin
+// Diez dígitos, como InternalNumber en el backend.
+const SUPPLIER_NUMBER_LENGTH = 10;
+
+// Número interno del proveedor tal como lo muestra la API (0000000001): lo escrito con o sin
 // ceros a la izquierda se lleva a ese formato.
 export function normalizeSupplierNumber(text: string): string {
   const trimmed = text.trim();
 
-  return /^\d+$/.test(trimmed) ? trimmed.replace(/^0+(?=\d)/, '').padStart(6, '0') : trimmed;
+  return /^\d+$/.test(trimmed) ? trimmed.replace(/^0+(?=\d)/, '').padStart(SUPPLIER_NUMBER_LENGTH, '0') : trimmed;
 }
 
 export const supplierSchema = z.object({

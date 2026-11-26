@@ -26,7 +26,7 @@ class SupplierListRequest extends ListRequest
             $filter['tax_id'] = Supplier::normalizeTaxId($filter['tax_id']);
         }
 
-        // 000012 y 12 son el mismo número; lo que no es un número queda tal cual y lo rechaza la regla.
+        // 0000000012 y 12 son el mismo número; lo que no es un número queda tal cual y lo rechaza la regla.
         if (is_string($filter['number'] ?? null)) {
             $filter['number'] = (string) (Supplier::parseNumber($filter['number']) ?? $filter['number']);
         }

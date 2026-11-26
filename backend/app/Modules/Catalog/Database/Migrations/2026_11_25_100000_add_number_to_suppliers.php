@@ -9,9 +9,10 @@ use Illuminate\Support\Facades\DB;
  * Lo asigna una secuencia propia, separada del id: el id es la clave técnica
  * y puede cambiar con una migración de datos; el número es el que se dicta,
  * se escribe en XK02 y XK03 y se imprime en los documentos. Se guarda como
- * entero y la API lo muestra con ceros a la izquierda hasta seis dígitos
- * (000001); por encima sigue creciendo sin truncarse. Los proveedores
- * existentes reciben su número en el orden de alta.
+ * entero y la API lo muestra con ceros a la izquierda hasta diez dígitos
+ * (0000000001, InternalNumber; antes eran seis); por encima sigue creciendo
+ * sin truncarse. Los proveedores existentes reciben su número en el orden de
+ * alta.
  *
  * La columna no tiene DEFAULT nextval: la convención del esquema reserva las
  * secuencias implícitas para nadie (las claves son IDENTITY). El número lo

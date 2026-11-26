@@ -2,6 +2,7 @@
 
 namespace App\Modules\Catalog\Models;
 
+use App\Shared\Numbering\InternalNumber;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -38,11 +39,12 @@ class Supplier extends Model
      * verificadores.
      */
     /**
-     * Número interno con ceros a la izquierda hasta seis dígitos (000001).
+     * Número interno con diez dígitos (0000000012), como el número de acreedor
+     * de SAP.
      */
     public static function formatNumber(int $number): string
     {
-        return str_pad((string) $number, 6, '0', STR_PAD_LEFT);
+        return InternalNumber::format($number);
     }
 
     /**
@@ -50,9 +52,7 @@ class Supplier extends Model
      */
     public static function parseNumber(string $value): ?int
     {
-        $digits = trim($value);
-
-        return preg_match('/^\d{1,18}$/', $digits) === 1 && (int) $digits > 0 ? (int) $digits : null;
+        return InternalNumber::parse($value);
     }
 
     /**

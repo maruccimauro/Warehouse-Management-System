@@ -18,18 +18,21 @@ El DDL de este documento es la referencia que reproducen las migraciones de Lara
 | Claves foráneas | `ON DELETE` restrictivo (predeterminado) en todas | Los datos maestros se desactivan, nunca se borran; los documentos se cancelan |
 | Coherencia por depósito | Claves foráneas compuestas `(id, warehouse_id)` | La base impide que un documento, movimiento o existencia mezcle depósitos, sin triggers |
 | Referencias polimórficas | `reference_type` y `reference_id` con `CHECK` sobre los tipos admitidos | Mantiene la dirección de dependencias de [ADR-001](adr/001-modular-monolith.md): `Inventory` no conoce las tablas de los módulos que lo usan. Los valores son alias del morph map de Laravel (`Relation::enforceMorphMap`), no nombres de clase |
-| Documentos | Número legible `PREFIJO-AAAA-NNNNNN` desde una secuencia por tipo de documento, con `CHECK` de formato | La secuencia no requiere bloqueo; los huecos por transacciones revertidas son aceptables porque el número no es fiscal |
+| Documentos | Número entero desde una secuencia por tipo de documento, con un intervalo propio por tipo (`START WITH`, `MAXVALUE`, `NO CYCLE` y `CHECK` del intervalo), como los rangos de números de SAP. No depende del año ni se reinicia. Se muestra con diez dígitos y ceros a la izquierda (`InternalNumber`, como la conversión ALPHA), y la entrada acepta el número con o sin ceros | El número indica el tipo de documento por su intervalo y un rango BT compara enteros, sin el límite de ancho de un texto. La secuencia no requiere bloqueo: reiniciarla por año exigiría una tabla de contadores con bloqueo de fila, que serializaría toda contabilización. Los huecos por transacciones revertidas son aceptables porque el número no es fiscal. Un intervalo agotado falla en `nextval` y no invade el de otro tipo. Decisión del usuario del 25/11/2026: reemplaza al formato `PREFIJO-AAAA-NNNNNN` del diseño inicial |
 | Reversión de documentos | Reversión parcial por posición y cantidad (DM-15): cada reversión es una operación `reversal` propia, con usuario, fecha y motivo, cuyas líneas apuntan a la línea original (`reverses_movement_id`). El documento acumula lo revertido por posición (`quantity_reversed`) y no cambia de estado: muestra por posición el original, lo revertido y el neto, como un documento de material de SAP frente a sus anulaciones | Mismo patrón en recepciones, tareas de guardado, líneas de picking, despachos e inventarios físicos. El límite de lo revertido lo garantiza un trigger sobre `stock_movements` ([ADR-013](adr/013-partial-reversal-by-line.md)) |
 | Nombres de restricciones | `{tabla}_{columnas}_{tipo}`, igual que Laravel | Las violaciones se traducen a errores de dominio por nombre de restricción |
 
-| Prefijo | Documento | Secuencia |
-| - | - | - |
-| `OP` | Operación de inventario | `inventory_operation_number_seq` |
-| `PO` | Orden de compra | `purchase_order_number_seq` |
-| `GR` | Recepción | `goods_receipt_number_seq` |
-| `SO` | Pedido | `customer_order_number_seq` |
-| `DS` | Despacho | `dispatch_number_seq` |
-| `ST` | Inventario físico | `stocktake_number_seq` |
+| Documento | Desde | Hasta | Secuencia |
+| - | - | - | - |
+| Orden de compra | `4500000000` | `4599999999` | `purchase_order_number_seq` |
+| Operación de inventario | `4900000000` | `4999999999` | `inventory_operation_number_seq` |
+| Recepción | `5000000000` | `5099999999` | `goods_receipt_number_seq` |
+| Solicitud de ajuste | `5100000000` | `5199999999` | `stock_adjustment_request_number_seq` (E3.23) |
+| Pedido de cliente | `0000000001` | `0079999999` | `customer_order_number_seq` |
+| Despacho | `0080000000` | `0089999999` | `dispatch_number_seq` |
+| Inventario físico | `0100000000` | `0109999999` | `stocktake_number_seq` |
+
+Los intervalos 45, 49, 50 y 80 son los habituales en una instalación de SAP para pedidos de compras, documentos de material, entradas de mercancías y entregas; el resto es propio y no se superpone. Los maestros con número interno (proveedor) usan el mismo formato de diez dígitos con una secuencia desde 1.
 
 ## Concurrencia
 
@@ -248,7 +251,7 @@ Más las tablas de `spatie/laravel-permission` (`roles`, `permissions`, `model_h
 Notas:
 
 - `users.locale` es el idioma preferido que resuelve el middleware de idioma. La base exige solo el formato; la lista de idiomas admitidos es configuración (`app.supported_locales`) y se valida en la aplicación, para que agregar un idioma no requiera migración.
-- `users.username` es el código de usuario (E2.14, D1), como el nombre de usuario de SU01: identificador de negocio en la administración, las ayudas de búsqueda y los documentos, en mayúsculas y dígitos, hasta 12 caracteres. Lo elige el administrador en el alta y no cambia después; el ingreso sigue con el email y las claves foráneas con el id. Se agregó con una migración propia que asigna a las filas existentes `U` más el id con al menos seis dígitos (`U000001`), único y con formato válido.
+- `users.username` es el código de usuario (E2.14, D1), como el nombre de usuario de SU01: identificador de negocio en la administración, las ayudas de búsqueda y los documentos, en mayúsculas y dígitos, hasta 12 caracteres. Lo elige el administrador en el alta y no cambia después; el ingreso sigue con el email y las claves foráneas con el id. Se agregó con una migración propia que asigna a las filas existentes `U` más el id con al menos seis dígitos (`U000001`), único y con formato válido. Los usuarios ficticios de desarrollo usan el mismo formato con su número de orden (`U000001` es `maria.martinez@wms.test`).
 - `users.password_change_required` marca una contraseña inicial o reseteada por el administrador (REG-021). Se agregó en E2.09 con una migración propia y no reescribiendo la de `users`, porque la base de desarrollo ya tenía las tablas que la referencian. Vale `FALSE` por defecto para que los usuarios de desarrollo entren sin cambio; `CreateUser` la pone en `TRUE`.
 - `user_parameters`, `user_favorites` y `users.show_technical_names` (E2.21, DM-24) guardan en el servidor lo que en E1 vivía en el navegador. `user_parameters` equivale a USR05 de SAP: los IDs admitidos se fijan con `CHECK` y con el enum `UserParameter`, como la tabla TPARA, y un parámetro sin valor no tiene fila. `LGN` guarda el código del depósito, que es inmutable (DM-19), y se valida contra los depósitos donde el usuario opera al grabar. `user_favorites` guarda el orden explícito de la carpeta de favoritos; el código solo se valida por formato porque el registro de transacciones vive en el frontend. Las dos tablas se graban como reemplazo completo con la fila del usuario bloqueada (`FOR NO KEY UPDATE`), así dos grabaciones simultáneas no chocan en la clave primaria.
 - Desactivar un usuario o resetear su contraseña borra sus filas de `sessions` por `user_id` (REG-020), con el índice que trae la migración publicada de Laravel. Sin borrado de usuarios: las claves foráneas de los documentos hacia `users` no tienen `ON DELETE`.
@@ -259,7 +262,7 @@ Notas:
 - `UNIQUE NULLS NOT DISTINCT (parent_id, name)` impide dos categorías raíz con el mismo nombre; un `UNIQUE` común lo permitiría. Los ciclos de más de un nivel y la profundidad máxima de 5 niveles los valida la Action con el árbol bloqueado (REG-016).
 - `products.barcode` admite `NULL` en varias filas: la API guarda un código vacío como nulo. No se normaliza a mayúsculas porque Code 128 las distingue; un código numérico con largo de GTIN exige dígito verificador válido.
 - `product_warehouse_settings` guarda lo que un producto tiene de propio en cada depósito, como los datos de centro (`MARC`) de SAP (DM-21). Sin fila, el producto usa los valores por defecto en ese depósito: `min_stock` 0, sin alerta de stock crítico. Reemplaza a la columna `products.min_stock` del diseño de E0.
-- `suppliers.number` es el número interno del proveedor (25/11/2026): lo asigna `CreateSupplier` desde `suppliers_number_seq` (`Supplier::nextNumber()`), sin `DEFAULT nextval` en la columna, porque las secuencias implícitas están reservadas por convención (las claves son `IDENTITY`). Es estable aunque cambie el `id` y la API lo muestra con seis dígitos (`000012`); por encima de 999.999 sigue creciendo sin truncarse.
+- `suppliers.number` es el número interno del proveedor (25/11/2026): lo asigna `CreateSupplier` desde `suppliers_number_seq` (`Supplier::nextNumber()`), sin `DEFAULT nextval` en la columna, porque las secuencias implícitas están reservadas por convención (las claves son `IDENTITY`). Es estable aunque cambie el `id` y la API lo muestra con diez dígitos (`0000000012`, `InternalNumber`), como el número de acreedor de SAP; hasta el 25/11/2026 se mostraba con seis.
 - `suppliers.tax_id` se guarda sin espacios, puntos, guiones ni barras y en mayúsculas, para que `30-71234567-1` y `30712345671` choquen en la unicidad. No se valida el dígito verificador de ningún país: el mismo campo sirve para CUIT, RUT, NIF o VAT. El email se guarda en minúsculas, como en `users`.
 - `product_supplier` es el registro info de compras (DM-22). `UNIQUE (supplier_id, supplier_sku)` impide que un código del proveedor apunte a dos productos; varios vínculos sin código (`NULL`) no chocan. Como el índice empieza por `supplier_id`, también resuelve los productos de un proveedor y reemplaza al índice `product_supplier_supplier_id_index` del diseño de E0. Se agregan `created_at` y `updated_at`, como en `product_warehouse_settings`, porque el vínculo se edita.
 
@@ -353,11 +356,11 @@ INSERT INTO movement_types (code, direction, name, reversal_code) VALUES
   (932, 'out', 'Anulación de transferencia, salida', 931),
   (932, 'in',  'Anulación de transferencia, entrada', 931);
 
-CREATE SEQUENCE inventory_operation_number_seq;
+CREATE SEQUENCE inventory_operation_number_seq AS BIGINT START WITH 4900000000 MINVALUE 4900000000 MAXVALUE 4999999999 NO CYCLE;
 
 CREATE TABLE inventory_operations (
   id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  number VARCHAR(30) NOT NULL,
+  number BIGINT NOT NULL,
   type VARCHAR(30) NOT NULL,
   warehouse_id BIGINT NOT NULL REFERENCES warehouses (id),
   status VARCHAR(20) NOT NULL DEFAULT 'confirmed',
@@ -374,7 +377,7 @@ CREATE TABLE inventory_operations (
   CONSTRAINT inventory_operations_reverses_operation_id_foreign FOREIGN KEY (reverses_operation_id, warehouse_id) REFERENCES inventory_operations (id, warehouse_id),
   CONSTRAINT inventory_operations_reference_unique UNIQUE (reference_type, reference_id),
   CONSTRAINT inventory_operations_performed_by_idempotency_key_unique UNIQUE (performed_by, idempotency_key),
-  CONSTRAINT inventory_operations_number_format_check CHECK (number ~ '^OP-[0-9]{4}-[0-9]{6,}$'),
+  CONSTRAINT inventory_operations_number_check CHECK (number BETWEEN 4900000000 AND 4999999999),
   CONSTRAINT inventory_operations_type_check CHECK (type IN ('receipt', 'putaway', 'transfer', 'adjustment_in', 'adjustment_out', 'pick', 'dispatch', 'stocktake_adjustment', 'reversal')),
   CONSTRAINT inventory_operations_status_check CHECK (status = 'confirmed'),
   CONSTRAINT inventory_operations_reference_pair_check CHECK ((reference_type IS NULL) = (reference_id IS NULL)),
@@ -621,11 +624,11 @@ Notas:
 ## E4. Abastecimiento y recepción
 
 ```sql
-CREATE SEQUENCE purchase_order_number_seq;
+CREATE SEQUENCE purchase_order_number_seq AS BIGINT START WITH 4500000000 MINVALUE 4500000000 MAXVALUE 4599999999 NO CYCLE;
 
 CREATE TABLE purchase_orders (
   id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  number VARCHAR(30) NOT NULL,
+  number BIGINT NOT NULL,
   supplier_id BIGINT NOT NULL REFERENCES suppliers (id),
   warehouse_id BIGINT NOT NULL REFERENCES warehouses (id),
   status VARCHAR(20) NOT NULL DEFAULT 'draft',
@@ -640,7 +643,7 @@ CREATE TABLE purchase_orders (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT purchase_orders_number_unique UNIQUE (number),
   CONSTRAINT purchase_orders_id_warehouse_id_unique UNIQUE (id, warehouse_id),
-  CONSTRAINT purchase_orders_number_format_check CHECK (number ~ '^PO-[0-9]{4}-[0-9]{6,}$'),
+  CONSTRAINT purchase_orders_number_check CHECK (number BETWEEN 4500000000 AND 4599999999),
   CONSTRAINT purchase_orders_status_check CHECK (status IN ('draft', 'pending_approval', 'approved', 'closed', 'cancelled')),
   CONSTRAINT purchase_orders_tolerance_check CHECK (over_receipt_tolerance_pct >= 0),
   CONSTRAINT purchase_orders_approval_pair_check CHECK ((approved_by IS NULL) = (approved_at IS NULL)),
@@ -665,11 +668,11 @@ CREATE TABLE purchase_order_items (
   CONSTRAINT purchase_order_items_unit_price_check CHECK (unit_price >= 0)
 );
 
-CREATE SEQUENCE goods_receipt_number_seq;
+CREATE SEQUENCE goods_receipt_number_seq AS BIGINT START WITH 5000000000 MINVALUE 5000000000 MAXVALUE 5099999999 NO CYCLE;
 
 CREATE TABLE goods_receipts (
   id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  number VARCHAR(30) NOT NULL,
+  number BIGINT NOT NULL,
   purchase_order_id BIGINT,
   warehouse_id BIGINT NOT NULL REFERENCES warehouses (id),
   receiving_location_id BIGINT NOT NULL,
@@ -686,7 +689,7 @@ CREATE TABLE goods_receipts (
   CONSTRAINT goods_receipts_purchase_order_foreign FOREIGN KEY (purchase_order_id, warehouse_id) REFERENCES purchase_orders (id, warehouse_id),
   CONSTRAINT goods_receipts_receiving_location_foreign FOREIGN KEY (receiving_location_id, warehouse_id) REFERENCES locations (id, warehouse_id),
   CONSTRAINT goods_receipts_operation_foreign FOREIGN KEY (operation_id, warehouse_id) REFERENCES inventory_operations (id, warehouse_id),
-  CONSTRAINT goods_receipts_number_format_check CHECK (number ~ '^GR-[0-9]{4}-[0-9]{6,}$'),
+  CONSTRAINT goods_receipts_number_check CHECK (number BETWEEN 5000000000 AND 5099999999),
   CONSTRAINT goods_receipts_status_check CHECK (status IN ('draft', 'confirmed', 'cancelled')),
   CONSTRAINT goods_receipts_confirmed_check CHECK ((status = 'confirmed') = (confirmed_at IS NOT NULL) AND (confirmed_by IS NULL) = (confirmed_at IS NULL)),
   CONSTRAINT goods_receipts_operation_status_check CHECK (operation_id IS NULL OR status = 'confirmed')
@@ -798,11 +801,11 @@ CREATE TABLE customers (
   CONSTRAINT customers_code_uppercase_check CHECK (code = upper(code))
 );
 
-CREATE SEQUENCE customer_order_number_seq;
+CREATE SEQUENCE customer_order_number_seq AS BIGINT START WITH 1 MINVALUE 1 MAXVALUE 79999999 NO CYCLE;
 
 CREATE TABLE customer_orders (
   id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  number VARCHAR(30) NOT NULL,
+  number BIGINT NOT NULL,
   customer_id BIGINT NOT NULL REFERENCES customers (id),
   warehouse_id BIGINT NOT NULL REFERENCES warehouses (id),
   status VARCHAR(20) NOT NULL DEFAULT 'draft',
@@ -815,7 +818,7 @@ CREATE TABLE customer_orders (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT customer_orders_number_unique UNIQUE (number),
   CONSTRAINT customer_orders_id_warehouse_id_unique UNIQUE (id, warehouse_id),
-  CONSTRAINT customer_orders_number_format_check CHECK (number ~ '^SO-[0-9]{4}-[0-9]{6,}$'),
+  CONSTRAINT customer_orders_number_check CHECK (number BETWEEN 1 AND 79999999),
   CONSTRAINT customer_orders_status_check CHECK (status IN ('draft', 'confirmed', 'picking', 'picked', 'packed', 'dispatched', 'cancelled')),
   CONSTRAINT customer_orders_priority_check CHECK (priority BETWEEN 1 AND 5),
   CONSTRAINT customer_orders_cancelled_reason_check CHECK (status <> 'cancelled' OR status_reason IS NOT NULL)
@@ -909,11 +912,11 @@ CREATE TABLE package_items (
 );
 CREATE INDEX package_items_customer_order_item_id_index ON package_items (customer_order_item_id);
 
-CREATE SEQUENCE dispatch_number_seq;
+CREATE SEQUENCE dispatch_number_seq AS BIGINT START WITH 80000000 MINVALUE 80000000 MAXVALUE 89999999 NO CYCLE;
 
 CREATE TABLE dispatches (
   id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  number VARCHAR(30) NOT NULL,
+  number BIGINT NOT NULL,
   warehouse_id BIGINT NOT NULL,
   customer_order_id BIGINT NOT NULL,
   status VARCHAR(20) NOT NULL DEFAULT 'confirmed',
@@ -924,7 +927,7 @@ CREATE TABLE dispatches (
   CONSTRAINT dispatches_customer_order_foreign FOREIGN KEY (customer_order_id, warehouse_id) REFERENCES customer_orders (id, warehouse_id),
   CONSTRAINT dispatches_operation_id_unique UNIQUE (operation_id),
   CONSTRAINT dispatches_operation_foreign FOREIGN KEY (operation_id, warehouse_id) REFERENCES inventory_operations (id, warehouse_id),
-  CONSTRAINT dispatches_number_format_check CHECK (number ~ '^DS-[0-9]{4}-[0-9]{6,}$'),
+  CONSTRAINT dispatches_number_check CHECK (number BETWEEN 80000000 AND 89999999),
   CONSTRAINT dispatches_status_check CHECK (status = 'confirmed')
 );
 CREATE UNIQUE INDEX dispatches_one_confirmed_per_order_unique ON dispatches (customer_order_id) WHERE status = 'confirmed';
@@ -963,11 +966,11 @@ Notas:
 ## E6. Inventario físico
 
 ```sql
-CREATE SEQUENCE stocktake_number_seq;
+CREATE SEQUENCE stocktake_number_seq AS BIGINT START WITH 100000000 MINVALUE 100000000 MAXVALUE 109999999 NO CYCLE;
 
 CREATE TABLE stocktakes (
   id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  number VARCHAR(30) NOT NULL,
+  number BIGINT NOT NULL,
   warehouse_id BIGINT NOT NULL REFERENCES warehouses (id),
   status VARCHAR(20) NOT NULL DEFAULT 'draft',
   origin VARCHAR(20) NOT NULL DEFAULT 'manual',
@@ -985,7 +988,7 @@ CREATE TABLE stocktakes (
   CONSTRAINT stocktakes_id_warehouse_id_unique UNIQUE (id, warehouse_id),
   CONSTRAINT stocktakes_operation_id_unique UNIQUE (operation_id),
   CONSTRAINT stocktakes_operation_foreign FOREIGN KEY (operation_id, warehouse_id) REFERENCES inventory_operations (id, warehouse_id),
-  CONSTRAINT stocktakes_number_format_check CHECK (number ~ '^ST-[0-9]{4}-[0-9]{6,}$'),
+  CONSTRAINT stocktakes_number_check CHECK (number BETWEEN 100000000 AND 109999999),
   CONSTRAINT stocktakes_status_check CHECK (status IN ('draft', 'counting', 'review', 'approved', 'cancelled')),
   CONSTRAINT stocktakes_origin_check CHECK (origin IN ('manual', 'picking_shortage')),
   CONSTRAINT stocktakes_recount_threshold_pct_check CHECK (recount_threshold_pct >= 0),

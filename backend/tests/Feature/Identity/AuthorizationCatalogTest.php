@@ -97,16 +97,16 @@ it('assigns a role to every development user without overwriting manual changes'
     $roleOf = fn (string $email): array => User::query()->where('email', $email)->sole()->getRoleNames()->all();
 
     expect($roleOf('admin@wms.test'))->toBe([Role::Administrator->value])
-        ->and($roleOf('usuario01@wms.test'))->toBe([Role::Operator->value])
-        ->and($roleOf('usuario03@wms.test'))->toBe([Role::Supervisor->value])
-        ->and($roleOf('usuario04@wms.test'))->toBe([Role::Purchasing->value])
-        ->and($roleOf('usuario05@wms.test'))->toBe([Role::Auditor->value])
-        ->and($roleOf('usuario06@wms.test'))->toBe([Role::Operator->value]);
+        ->and($roleOf('maria.martinez@wms.test'))->toBe([Role::Operator->value])
+        ->and($roleOf('lucia.fernandez@wms.test'))->toBe([Role::Supervisor->value])
+        ->and($roleOf('martin.gomez@wms.test'))->toBe([Role::Purchasing->value])
+        ->and($roleOf('sofia.rodriguez@wms.test'))->toBe([Role::Auditor->value])
+        ->and($roleOf('diego.lopez@wms.test'))->toBe([Role::Operator->value]);
 
-    User::query()->where('email', 'usuario01@wms.test')->sole()->syncRoles([Role::Auditor->value]);
+    User::query()->where('email', 'maria.martinez@wms.test')->sole()->syncRoles([Role::Auditor->value]);
     $this->seed(DatabaseSeeder::class);
 
-    expect($roleOf('usuario01@wms.test'))->toBe([Role::Auditor->value]);
+    expect($roleOf('maria.martinez@wms.test'))->toBe([Role::Auditor->value]);
 });
 
 it('returns the roles and effective permissions of the authenticated user', function () {

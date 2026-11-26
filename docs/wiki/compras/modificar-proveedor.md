@@ -16,6 +16,6 @@ Un proveedor inactivo no admite órdenes de compra nuevas y deja terminar las ab
 
 ### Proveedor {#supplier}
 
-[Número](#number) del proveedor, con o sin los ceros a la izquierda: `12` y `000012` son el mismo. Si no lo conoce, <kbd>F4</kbd> busca por número, por fragmento del nombre o por el identificador fiscal completo.
+[Número](#number) del proveedor, con o sin los ceros a la izquierda: `12` y `0000000012` son el mismo. Si no lo conoce, <kbd>F4</kbd> busca por número, por fragmento del nombre o por el identificador fiscal completo.
 
 <!--@include: ./partes/proveedor-campos.md-->

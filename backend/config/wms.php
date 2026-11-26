@@ -16,7 +16,8 @@ return [
         'password' => env('WMS_DEV_ADMIN_PASSWORD', 'admin-dev-1'),
     ],
 
-    // Usuarios ficticios para probar listados y búsquedas (usuario01@wms.test en adelante).
+    // Usuarios ficticios para probar listados y búsquedas, hasta 10 (U000001,
+    // maria.martinez@wms.test, en adelante; IdentitySeeder::DEMO_USER_NAMES).
     'demo_users' => (int) env('WMS_DEMO_USERS', 10),
 
     // Interfaz de la documentación OpenAPI en /api/docs (ADR-012). Nunca se
