@@ -6,6 +6,7 @@ use App\Shared\Exceptions\ProblemDetailsRenderer;
 use App\Shared\Http\Idempotency\EnsureIdempotency;
 use App\Shared\Http\Idempotency\Idempotency;
 use App\Shared\Http\Idempotency\PruneIdempotencyKeys;
+use App\Shared\Http\Middleware\AssignRequestId;
 use App\Shared\Http\Middleware\SetLocale;
 use App\Shared\Providers\ModuleServiceProvider;
 use Illuminate\Database\QueryException;
@@ -26,6 +27,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Sanctum en modo SPA (ADR-009): las peticiones de SANCTUM_STATEFUL_DOMAINS
         // a /api usan sesión por cookie y verificación CSRF.
         $middleware->statefulApi();
+
+        // Identificador de petición (X-Request-Id) para correlacionar la auditoría
+        // con los logs (ADR-008): primero, para que lo lleve toda respuesta.
+        $middleware->prepend(AssignRequestId::class);
 
         // Idioma de la respuesta según el usuario y Accept-Language (SetLocale).
         $middleware->append(SetLocale::class);

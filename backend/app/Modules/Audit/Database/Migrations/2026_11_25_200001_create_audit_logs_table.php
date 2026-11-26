@@ -8,8 +8,7 @@ use Illuminate\Support\Facades\DB;
  * INV-012). Es de solo inserción: reutiliza prevent_ledger_mutation, que
  * crea la migración de Inventory, por eso corre después de ella.
  *
- * DatabaseAuditLogger (E3.11) escribe en esta tabla; hasta entonces el
- * binding sigue siendo NullAuditLogger.
+ * La escribe DatabaseAuditLogger (E3.11).
  */
 return new class extends Migration
 {

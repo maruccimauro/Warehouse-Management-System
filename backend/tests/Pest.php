@@ -5,6 +5,7 @@ use App\Modules\Identity\Models\User;
 use App\Modules\Warehouse\Models\Warehouse;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concurrency\ConcurrencyTestCase;
+use Tests\Support\AuditedOperations;
 use Tests\TestCase;
 
 /*
@@ -22,7 +23,20 @@ pest()->extend(TestCase::class)->in('Feature');
 // Concurrencia real (E3.14): procesos hijos y truncado en lugar de transacción.
 pest()->extend(ConcurrencyTestCase::class)->group('concurrency')->in('Concurrency');
 
-pest()->use(RefreshDatabase::class)->in('Feature/Audit', 'Feature/Catalog', 'Feature/Database', 'Feature/Http', 'Feature/Identity', 'Feature/Inventory', 'Feature/Warehouse');
+// Toda operación de inventario confirmada tiene su auditoría (INV-012): se
+// verifica al final de cada prueba, antes de revertir su transacción.
+pest()->use(RefreshDatabase::class)
+    ->afterEach(fn () => AuditedOperations::assertAllAudited())
+    ->in('Feature/Audit', 'Feature/Catalog', 'Feature/Database', 'Feature/Http', 'Feature/Identity', 'Feature/Inventory', 'Feature/Warehouse');
+
+/**
+ * Exime a la prueba de la verificación de INV-012: solo para las que insertan
+ * operaciones con DB::table para probar el esquema.
+ */
+function skipAuditedOperationsCheck(): void
+{
+    AuditedOperations::skip();
+}
 
 /**
  * Usuario con un rol (null: sin rol, como uno sin warehouses.view_all) y los

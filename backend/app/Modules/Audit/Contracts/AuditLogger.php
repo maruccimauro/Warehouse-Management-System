@@ -18,6 +18,8 @@ interface AuditLogger
      * @param  string  $action  Acción en la forma entidad.verbo, por ejemplo location.blocked
      * @param  array<string, mixed>|null  $before  Valores afectados antes del cambio
      * @param  array<string, mixed>|null  $after  Valores afectados después del cambio
+     * @param  int|null  $operationId  Operación de inventario que generó el cambio, si la hay:
+     *                                 la propia operación o la que contabiliza un documento (E4 en adelante)
      */
-    public function record(string $action, Model $auditable, ?int $warehouseId, ?array $before, ?array $after): void;
+    public function record(string $action, Model $auditable, ?int $warehouseId, ?array $before, ?array $after, ?int $operationId = null): void;
 }

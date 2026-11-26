@@ -137,7 +137,7 @@ Las invariantes son condiciones que el sistema garantiza en todo momento, sin ex
 | Enunciado | Toda operación de inventario, aprobación, cambio de permisos y bloqueo de ubicación tiene un registro de auditoría en la misma transacción |
 | Garantía en base de datos | Trigger de inmutabilidad sobre `audit_logs` |
 | Garantía en aplicación | `AuditLogger` invocado por las Actions dentro de la transacción ([ADR-008](../03-architecture/adr/008-transactional-audit.md)) |
-| Pruebas | Toda operación confirmada en la suite tiene su registro de auditoría. Una operación revertida por error no deja auditoría |
+| Pruebas | Toda operación confirmada en la suite tiene su registro de auditoría: se verifica al final de cada prueba con base de datos (`tests/Pest.php`). Un cambio cuya transacción se revierte no deja auditoría |
 | Etapa | E3 en adelante |
 
 ## Reglas complementarias

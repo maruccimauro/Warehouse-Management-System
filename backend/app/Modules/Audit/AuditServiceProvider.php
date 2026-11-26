@@ -3,7 +3,7 @@
 namespace App\Modules\Audit;
 
 use App\Modules\Audit\Contracts\AuditLogger;
-use App\Modules\Audit\Services\NullAuditLogger;
+use App\Modules\Audit\Services\DatabaseAuditLogger;
 use App\Shared\Providers\ModuleServiceProvider;
 
 /**
@@ -15,6 +15,6 @@ class AuditServiceProvider extends ModuleServiceProvider
      * @var array<class-string, class-string>
      */
     public array $singletons = [
-        AuditLogger::class => NullAuditLogger::class,
+        AuditLogger::class => DatabaseAuditLogger::class,
     ];
 }

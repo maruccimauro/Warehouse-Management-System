@@ -113,10 +113,11 @@ El modelo `User` repite en `$attributes` los valores por defecto de la base (`is
 
 Las operaciones críticas (INV-012) se auditan con el contrato `App\Modules\Audit\Contracts\AuditLogger` (ADR-008):
 
-- La Action lo recibe por inyección y llama a `record()` dentro de su `DB::transaction`, después de aplicar el cambio, con la acción en la forma `entidad.verbo` (`location.blocked`) y los valores afectados antes y después como valores planos.
+- La Action lo recibe por inyección y llama a `record()` dentro de su `DB::transaction`, después de aplicar el cambio, con la acción en la forma `entidad.verbo` (`location.blocked`) y los valores afectados antes y después como valores planos. Si el cambio contabiliza una operación de inventario, pasa además su id como `operationId` (`StockLedger` lo hace con `inventory_operation.created`; las recepciones y los despachos de E4 a E6, con la operación que generan).
 - El modelo auditado necesita un alias en el morph map, que el provider de su módulo registra con `Relation::morphMap()`: Identity activa `enforceMorphMap`.
 - Acciones registradas: `location.blocked`, `location.unblocked`, `warehouse.activated` y `warehouse.deactivated`; sin depósito, porque son globales, `product.status_changed`, `supplier.activated`, `supplier.deactivated`, `user.created`, `user.activated`, `user.deactivated`, `user.roles_changed`, `user.warehouses_changed`, `user.password_reset` y `user.password_changed` (estas dos sin valores: la contraseña nunca se audita).
-- Hasta E3 el binding es `NullAuditLogger`; E3 crea `audit_logs` con su trigger de inmutabilidad y reemplaza el binding sin tocar las Actions. Las pruebas reemplazan el contrato por `Tests\Support\RecordingAuditLogger`, un registro en memoria que verifica que se audita dentro de la transacción.
+- El binding es `Audit\Services\DatabaseAuditLogger` (E3.11), que escribe en `audit_logs` sin abrir transacción propia: un rollback del cambio descarta también su registro. El usuario sale de la guardia vigente; la IP y el identificador de petición, del contexto que carga el middleware global `App\Shared\Http\Middleware\AssignRequestId` (`X-Request-Id`). Fuera de HTTP (comandos, seeders, programador) los tres quedan nulos.
+- Pruebas: todas usan el logger real, y `tests/Pest.php` verifica al final de cada prueba con base de datos que toda operación de inventario tenga su `inventory_operation.created` (INV-012). Las que comprueban el nivel de transacción reemplazan el contrato por `Tests\Support\RecordingAuditLogger`; las que insertan operaciones con `DB::table` llaman a `skipAuditedOperationsCheck()`.
 
 ## Reglas
 

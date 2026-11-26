@@ -88,6 +88,9 @@ function insertStock(array $attributes): int
 }
 
 beforeEach(function () {
+    // Las operaciones de estas pruebas se insertan con DB::table, sin StockLedger.
+    skipAuditedOperationsCheck();
+
     $this->user = User::factory()->create();
     $this->warehouse = Warehouse::factory()->create();
     $this->location = storageLocation($this->warehouse);

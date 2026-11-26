@@ -12,10 +12,10 @@ use Illuminate\Support\Facades\DB;
  */
 final class RecordingAuditLogger implements AuditLogger
 {
-    /** @var list<array{action: string, auditable: Model, warehouse_id: int|null, before: array<string, mixed>|null, after: array<string, mixed>|null, transaction_level: int}> */
+    /** @var list<array{action: string, auditable: Model, warehouse_id: int|null, before: array<string, mixed>|null, after: array<string, mixed>|null, operation_id: int|null, transaction_level: int}> */
     public array $records = [];
 
-    public function record(string $action, Model $auditable, ?int $warehouseId, ?array $before, ?array $after): void
+    public function record(string $action, Model $auditable, ?int $warehouseId, ?array $before, ?array $after, ?int $operationId = null): void
     {
         $this->records[] = [
             'action' => $action,
@@ -23,6 +23,7 @@ final class RecordingAuditLogger implements AuditLogger
             'warehouse_id' => $warehouseId,
             'before' => $before,
             'after' => $after,
+            'operation_id' => $operationId,
             'transaction_level' => DB::transactionLevel(),
         ];
     }

@@ -96,7 +96,7 @@ final class StockLedger
             'reference_id' => $operation->reference_id,
             'reverses_operation_id' => $operation->reverses_operation_id,
             'lines' => count($draft->lines),
-        ]);
+        ], $operation->id);
 
         return $operation;
     }
