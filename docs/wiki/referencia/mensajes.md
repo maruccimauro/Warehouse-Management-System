@@ -32,9 +32,15 @@ La sesión expiró, se cerró desde otro lugar (por ejemplo, al cambiar la contr
 
 ### `FORBIDDEN` {#forbidden}
 
-El usuario no tiene el permiso que la acción exige, o el depósito no está asignado al usuario: se puede consultar, pero no operar en él. El mensaje explica cuál de los casos se aplica.
+El usuario no tiene el permiso que la acción exige. Un depósito no asignado se informa con [`WAREHOUSE_NOT_ASSIGNED`](#warehouse-not-assigned).
 
-**Qué hacer:** si la tarea corresponde a su puesto, pida al administrador el rol o el depósito que falta. La [referencia de permisos](./permisos) indica qué rol tiene cada permiso.
+**Qué hacer:** si la tarea corresponde a su puesto, pida al administrador el rol que falta. La [referencia de permisos](./permisos) indica qué rol tiene cada permiso.
+
+### `WAREHOUSE_NOT_ASSIGNED` {#warehouse-not-assigned}
+
+El usuario consulta el depósito, pero no opera en él: no está entre sus depósitos asignados y no tiene [`warehouses.operate_all`](./permisos#warehouses-operate-all). Lo informa la pantalla al elegir el depósito, por ejemplo **No opera en el depósito NORTE.**, y también el servidor si la acción llega a enviarse. No se graba nada.
+
+**Qué hacer:** elija un depósito con **Sí** en la columna **Opera** de la [ayuda de búsqueda](/primeros-pasos/ayuda-de-busqueda#deposito). Si la tarea corresponde a ese depósito, pida al administrador que se lo asigne.
 
 ### `TOO_MANY_REQUESTS` {#too-many-requests}
 

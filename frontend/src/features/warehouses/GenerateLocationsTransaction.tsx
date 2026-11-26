@@ -171,7 +171,7 @@ export function GenerateLocationsTransaction() {
       const warehouse = user.warehouses.find((candidate) => candidate.code === warehouseCode);
 
       if (warehouse === undefined) {
-        throw new StatusMessageError({ type: 'E', text: tWarehouses('searchHelp.invalid', { code: warehouseCode }), id: 'VALUE_NOT_FOUND' });
+        throw new StatusMessageError({ type: 'E', text: tWarehouses('searchHelp.notAssigned', { code: warehouseCode }), id: 'WAREHOUSE_NOT_ASSIGNED' });
       }
 
       // Las zonas pueden no haber llegado todavía: se esperan antes de decidir.

@@ -8,7 +8,7 @@ Ingrese el **Depósito** y la **Zona** y presione <kbd>F8</kbd>.
 
 ### Depósito {#warehouse}
 
-Depósito de la zona, con <kbd>F4</kbd>. Se completa con el parámetro de usuario [`LGN`](/primeros-pasos/parametros-de-usuario#lgn). Ofrece los depósitos asignados al usuario.
+Depósito de la zona, entre los asignados al usuario. Se elige con la [ayuda de búsqueda](/primeros-pasos/ayuda-de-busqueda#deposito) (<kbd>F4</kbd>) y se completa con el parámetro de usuario [`LGN`](/primeros-pasos/parametros-de-usuario#lgn).
 
 ### Zona {#zone}
 

@@ -18,7 +18,7 @@ Un usuario opera solo en los depósitos que tiene asignados en su ficha. Con el 
 
 **Por qué:** cada depósito tiene su propio personal responsable. Ver los demás ayuda a coordinar; modificarlos no corresponde.
 
-**Mensajes:** un depósito que el usuario no puede ver se informa como inexistente. Una acción sobre un depósito que ve pero en el que no opera se rechaza con [`FORBIDDEN`](./mensajes#forbidden).
+**Mensajes:** un depósito que el usuario no puede ver se informa como inexistente. Una acción sobre un depósito que ve pero en el que no opera se rechaza con [`WAREHOUSE_NOT_ASSIGNED`](./mensajes#warehouse-not-assigned).
 
 ## Depósitos {#depositos}
 

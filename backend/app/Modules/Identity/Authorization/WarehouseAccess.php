@@ -20,13 +20,20 @@ use Illuminate\Support\Facades\DB;
  *   404, para no revelar su existencia.
  * - Operación (actividades 01 y 02): solo los depósitos asignados, o todos con
  *   warehouses.operate_all. Operar en un depósito visible pero no asignado
- *   responde 403.
+ *   responde 403 con el código WAREHOUSE_NOT_ASSIGNED (D16.3 del plan E3),
+ *   distinto del FORBIDDEN de un permiso que falta.
  *
  * Las Policies de cada módulo resuelven primero el alcance y después el
  * permiso de la acción.
  */
 final class WarehouseAccess
 {
+    /**
+     * Código del 403 al operar en un depósito visible no asignado: viaja en la
+     * denegación de la Policy y ProblemDetailsRenderer lo usa como code.
+     */
+    public const NOT_ASSIGNED = 'WAREHOUSE_NOT_ASSIGNED';
+
     public function canView(User $user, int $warehouseId): bool
     {
         return $this->viewsAll($user) || $this->isAssigned($user, $warehouseId);
@@ -57,7 +64,7 @@ final class WarehouseAccess
         }
 
         if (! $this->canOperate($user, $warehouseId)) {
-            return Response::deny(__('identity.warehouse_not_assigned'));
+            return Response::deny(__('identity.warehouse_not_assigned'), WarehouseAccess::NOT_ASSIGNED);
         }
 
         return $this->authorizePermission($user, $permission);

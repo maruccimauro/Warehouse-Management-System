@@ -14,7 +14,8 @@ export type SelectionValueType = 'text' | 'integer';
 export interface SelectionInputProps {
   id: string;
   value: string;
-  onChange: (value: string, valid: boolean) => void;
+  // problem: el mensaje del rechazo, cuando no es un valor inexistente (WAREHOUSE_NOT_ASSIGNED).
+  onChange: (value: string, valid: boolean, problem?: GridMessage) => void;
   onMessage: (message: GridMessage) => void;
   check?: boolean;
   required?: boolean;

@@ -381,7 +381,7 @@ describe('authorization', function () {
 
         $this->actingAs($viewer);
 
-        approvalPost($adjustment, 'approve', [1])->assertForbidden()->assertJsonPath('code', 'FORBIDDEN');
+        approvalPost($adjustment, 'approve', [1])->assertForbidden()->assertJsonPath('code', 'WAREHOUSE_NOT_ASSIGNED');
         $this->getJson("/api/v1/inventory/adjustments/{$adjustment->id}")->assertOk();
     });
 

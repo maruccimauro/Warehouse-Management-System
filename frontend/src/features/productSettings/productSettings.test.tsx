@@ -120,7 +120,7 @@ describe('ZW04: gestionar stock mínimo', () => {
     expect(await screen.findByRole('textbox', { name: 'Stock mínimo' })).toHaveValue('25');
   });
 
-  it('ofrece solo los depósitos donde el supervisor opera', async () => {
+  it('rechaza un depósito donde el supervisor no opera con WAREHOUSE_NOT_ASSIGNED', async () => {
     stubApi({
       'GET /api/v1/auth/me': () => userResponse(supervisor),
       'GET /api/v1/warehouses': warehouses,
@@ -130,8 +130,41 @@ describe('ZW04: gestionar stock mínimo', () => {
     await fill('Depósito', 'norte');
     await userEvent.keyboard('{F8}');
 
-    expect(await statusBar().findByRole('alert')).toHaveTextContent('VALUE_NOT_FOUND');
+    expect(await statusBar().findByRole('alert')).toHaveTextContent('No opera en el depósito NORTE.');
+    expect(statusBar().getByRole('link', { name: /WAREHOUSE_NOT_ASSIGNED/ })).toHaveAttribute('href', '/docs/referencia/mensajes#warehouse-not-assigned');
     expect(screen.queryByRole('grid')).not.toBeInTheDocument();
+  });
+});
+
+describe('ZW04: F4 del depósito', () => {
+  it('ofrece todos los depósitos visibles con la columna Opera y rechaza el que no opera', async () => {
+    stubApi({
+      'GET /api/v1/auth/me': () => userResponse(supervisor),
+      'GET /api/v1/warehouses': warehouses,
+    });
+
+    renderRoute('/t/ZW04');
+
+    const field = await screen.findByRole('textbox', { name: 'Depósito' }, { timeout: 5000 });
+
+    field.focus();
+    await userEvent.keyboard('{F4}');
+
+    const dialog = await screen.findByRole('dialog', { name: 'Depósitos' });
+    const grid = within(dialog).getByRole('grid', { name: 'Resultados: Depósitos' });
+
+    expect(within(grid).getByRole('columnheader', { name: /Opera/ })).toBeInTheDocument();
+
+    const northRow = within(grid).getByRole('gridcell', { name: 'NORTE' }).closest('tr') as HTMLElement;
+    const centralRow = within(grid).getByRole('gridcell', { name: 'CENTRAL' }).closest('tr') as HTMLElement;
+
+    expect(within(centralRow).getByRole('gridcell', { name: 'Sí' })).toBeInTheDocument();
+    expect(within(northRow).getByRole('gridcell', { name: 'No' })).toBeInTheDocument();
+
+    await userEvent.dblClick(within(northRow).getByRole('gridcell', { name: 'NORTE' }));
+
+    expect(await statusBar().findByRole('alert')).toHaveTextContent('No opera en el depósito NORTE.');
+    expect(screen.getByRole('textbox', { name: 'Depósito' })).toHaveAttribute('aria-invalid', 'true');
   });
 });
 
@@ -168,7 +201,7 @@ describe('ZW36: modificar umbrales de ajuste', () => {
     expect(await screen.findByRole('heading', { name: 'Modificar umbrales de ajuste', level: 2 })).toBeInTheDocument();
   });
 
-  it('ofrece solo los depósitos donde opera, como el gerente regional', async () => {
+  it('rechaza un depósito donde no opera, como el gerente regional', async () => {
     const regional = testUser({ permissions: ['inventory.thresholds.manage', 'warehouses.view_all'], warehouses: [central] });
     stubApi({
       'GET /api/v1/auth/me': () => userResponse(regional),
@@ -179,7 +212,8 @@ describe('ZW36: modificar umbrales de ajuste', () => {
     await fill('Depósito', 'norte');
     await userEvent.keyboard('{F8}');
 
-    expect(await statusBar().findByRole('alert')).toHaveTextContent('VALUE_NOT_FOUND');
+    expect(await statusBar().findByRole('alert')).toHaveTextContent('No opera en el depósito NORTE.');
+    expect(statusBar().getByRole('link', { name: /WAREHOUSE_NOT_ASSIGNED/ })).toHaveAttribute('href', '/docs/referencia/mensajes#warehouse-not-assigned');
   });
 
   it('rechaza un umbral de cero, que no es un umbral válido', async () => {

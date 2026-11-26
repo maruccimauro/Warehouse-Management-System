@@ -5,7 +5,7 @@ interface SelectionInputComponentProps {
   field: SelectionField;
   id: string;
   value: string;
-  onChange: (value: string, valid: boolean) => void;
+  onChange: (value: string, valid: boolean, problem?: GridMessage) => void;
   onMessage: (message: GridMessage) => void;
   // false en los límites de un SELECT-OPTIONS: sin tabla de verificación (D4 de E2.18).
   check: boolean;

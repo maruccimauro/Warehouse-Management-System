@@ -77,9 +77,9 @@ function ParameterRow({ field, selection, onMessage }: RowProps<ParameterField>)
         value={parameterValue(selection.values, field.id)}
         check
         required={required}
-        onChange={(value, valid) => {
+        onChange={(value, valid, problem) => {
           setValue(field.id, value);
-          setValidity(field.id, valid);
+          setValidity(field.id, valid, problem);
         }}
         onMessage={onMessage}
       />

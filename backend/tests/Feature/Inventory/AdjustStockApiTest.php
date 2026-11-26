@@ -322,7 +322,7 @@ describe('authorization (REG-005)', function () {
     it('forbids a warehouse the user does not operate in, without revealing whether it exists', function (Closure $warehouseId) {
         $this->postJson('/api/v1/inventory/adjustments', ['warehouse_id' => $warehouseId->call($this), 'items' => []], [Idempotency::HEADER => (string) Str::uuid()])
             ->assertForbidden()
-            ->assertJsonPath('code', 'FORBIDDEN');
+            ->assertJsonPath('code', 'WAREHOUSE_NOT_ASSIGNED');
     })->with([
         'visible, not assigned' => [fn () => app(CreateWarehouse::class)('NORTE', 'Depósito norte')->id],
         'nonexistent' => [fn () => 999999],

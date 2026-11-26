@@ -42,6 +42,6 @@ final class InventoryOperationPolicy
             return $response;
         }
 
-        return Response::deny(__('identity.warehouse_not_assigned'));
+        return Response::deny(__('identity.warehouse_not_assigned'), WarehouseAccess::NOT_ASSIGNED);
     }
 }

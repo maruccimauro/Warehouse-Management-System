@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { SelectOption } from '@/shared/api/listing';
 import type { GridMessage } from '../grid/gridTypes';
@@ -18,7 +18,8 @@ export interface SelectionScreenState {
   screen: {
     baseId: string;
     setValue: (fieldId: string, value: string | readonly SelectOption[]) => void;
-    setValidity: (fieldId: string, valid: boolean) => void;
+    // problem: el mensaje del rechazo, que F8 repite en lugar del genérico VALUE_NOT_FOUND.
+    setValidity: (fieldId: string, valid: boolean, problem?: GridMessage) => void;
   };
 }
 
@@ -31,12 +32,19 @@ export function useSelectionScreen(fields: readonly SelectionField[], initial?: 
   const baseId = useId();
   const [values, setValues] = useState(() => initialSelectionValues(fields, initial));
   const [invalid, setInvalid] = useState<ReadonlySet<string>>(() => new Set());
+  const problems = useRef(new Map<string, GridMessage>());
 
   const setValue = (fieldId: string, value: string | readonly SelectOption[]) => {
     setValues((previous) => ({ ...previous, [fieldId]: value }));
   };
 
-  const setValidity = (fieldId: string, valid: boolean) => {
+  const setValidity = (fieldId: string, valid: boolean, problem?: GridMessage) => {
+    if (problem === undefined) {
+      problems.current.delete(fieldId);
+    } else {
+      problems.current.set(fieldId, problem);
+    }
+
     setInvalid((previous) => {
       if (previous.has(fieldId) !== valid) {
         return previous;
@@ -65,8 +73,9 @@ export function useSelectionScreen(fields: readonly SelectionField[], initial?: 
 
     const { fieldId, target, code } = result.error;
     const field = fields.find((candidate) => candidate.id === fieldId);
+    const problem = code === 'invalid' ? problems.current.get(fieldId) : undefined;
 
-    onMessage({ type: 'E', text: selectionErrorText(t, code, field?.label ?? fieldId), id: selectionMessageIds[code] });
+    onMessage(problem ?? { type: 'E', text: selectionErrorText(t, code, field?.label ?? fieldId), id: selectionMessageIds[code] });
     document.getElementById(controlId(baseId, fieldId, target))?.focus();
 
     return undefined;
@@ -79,6 +88,7 @@ export function useSelectionScreen(fields: readonly SelectionField[], initial?: 
     reset: (next) => {
       setValues(initialSelectionValues(fields, next));
       setInvalid(new Set());
+      problems.current.clear();
     },
     screen: { baseId, setValue, setValidity },
   };

@@ -4,6 +4,7 @@ namespace App\Shared\Exceptions;
 
 use App\Shared\Database\DatabaseErrorTranslator;
 use App\Shared\Http\Problems\ProblemDetails;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Database\ConcurrencyErrorDetector;
 use Illuminate\Database\QueryException;
@@ -122,8 +123,24 @@ final readonly class ProblemDetailsRenderer
             }
         }
 
-        return ProblemDetails::forHttpStatus($status, self::HTTP_CODES[$status] ?? 'HTTP_ERROR', $detail)
+        return ProblemDetails::forHttpStatus($status, $this->deniedCode($exception) ?? self::HTTP_CODES[$status] ?? 'HTTP_ERROR', $detail)
             ->withHeaders($headers);
+    }
+
+    /**
+     * Código propio de una denegación de Policy (Response::deny con código),
+     * como WAREHOUSE_NOT_ASSIGNED. Sin código, el del estado HTTP.
+     */
+    private function deniedCode(HttpExceptionInterface $exception): ?string
+    {
+        $previous = $exception->getPrevious();
+        // AuthorizationException guarda en $code el código de Response::deny, que puede ser un
+        // texto aunque getCode() esté documentado como entero; una excepción creada a mano no
+        // trae Response, por eso no se lee response()->code().
+        /** @var mixed $code */
+        $code = $previous instanceof AuthorizationException ? $previous->getCode() : null;
+
+        return is_string($code) && preg_match('/^[A-Z][A-Z_]*$/', $code) === 1 ? $code : null;
     }
 
     private function internalError(Throwable $exception): ProblemDetails

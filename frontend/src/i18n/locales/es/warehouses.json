@@ -4,7 +4,11 @@
     "code": "Depósito",
     "name": "Nombre",
     "invalid": "El depósito {{code}} no existe o no está asignado al usuario.",
-    "invalidVisible": "El depósito {{code}} no existe o el usuario no puede consultarlo."
+    "invalidVisible": "El depósito {{code}} no existe o el usuario no puede consultarlo.",
+    "operates": "Opera",
+    "yes": "Sí",
+    "no": "No",
+    "notAssigned": "No opera en el depósito {{code}}."
   },
   "list": {
     "title": "Depósitos",

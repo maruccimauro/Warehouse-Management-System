@@ -172,7 +172,7 @@ describe('adjustment approval thresholds', function () {
         $this->actingAs($manager)
             ->putJson(thresholdsUrl($this->product, $this->norte->id), thresholdsBody(100, 20))
             ->assertForbidden()
-            ->assertJsonPath('code', 'FORBIDDEN');
+            ->assertJsonPath('code', 'WAREHOUSE_NOT_ASSIGNED');
     });
 
     it('answers 404 for a warehouse outside the query scope', function () {

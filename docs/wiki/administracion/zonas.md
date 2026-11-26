@@ -12,7 +12,7 @@ Ingrese el **Depósito** y ejecute con <kbd>F8</kbd>.
 
 ### Depósito {#warehouse}
 
-Depósito cuyas zonas se mantienen. Se elige con la [ayuda de búsqueda](/primeros-pasos/ayuda-de-busqueda#deposito) (<kbd>F4</kbd>), que ofrece los depósitos asignados al usuario, y se completa con el parámetro [`LGN`](/primeros-pasos/parametros-de-usuario#lgn).
+Depósito cuyas zonas se mantienen. Se elige con la [ayuda de búsqueda](/primeros-pasos/ayuda-de-busqueda#deposito) (<kbd>F4</kbd>), entre los asignados al usuario, y se completa con el parámetro [`LGN`](/primeros-pasos/parametros-de-usuario#lgn).
 
 ## Lista de zonas {#lista}
 

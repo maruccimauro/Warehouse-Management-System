@@ -34,7 +34,8 @@ export type TransactionFieldName<TValues> = Extract<keyof TValues, string>;
 export interface TransactionFieldControlProps {
   id: string;
   value: string;
-  onChange: (value: string, valid: boolean) => void;
+  // problem: el mensaje del rechazo, cuando no es un valor inexistente (WAREHOUSE_NOT_ASSIGNED).
+  onChange: (value: string, valid: boolean, problem?: GridMessage) => void;
   onBlur?: (() => void) | undefined;
   onMessage: (message: GridMessage) => void;
   disabled?: boolean | undefined;
@@ -146,6 +147,8 @@ export function useTransactionForm<TSchema extends FormSchema>(
   const labelOf = (name: string) => (t as unknown as DynamicT)(`fields.${name}`);
   const baseId = useId();
   const latest = useRef(options);
+  // Código del rechazo de un campo con F4 (WAREHOUSE_NOT_ASSIGNED), para el mensaje al grabar.
+  const fieldMessageIds = useRef(new Map<string, string>());
 
   useLayoutEffect(() => {
     latest.current = options;
@@ -201,7 +204,7 @@ export function useTransactionForm<TSchema extends FormSchema>(
       const first = firstInvalidField(formApi);
 
       if (first !== undefined) {
-        show({ type: 'E', text: `${labelOf(first.name)}: ${first.message}`, id: 'VALIDATION_FAILED' });
+        show({ type: 'E', text: `${labelOf(first.name)}: ${first.message}`, id: fieldMessageIds.current.get(first.name) ?? 'VALIDATION_FAILED' });
         document.getElementById(controlId(first.name))?.focus();
       }
     },
@@ -305,11 +308,18 @@ export function useTransactionForm<TSchema extends FormSchema>(
               .join(' ');
             const value = toText(field.state.value);
 
-            const change = (next: string, valid = true) => {
+            const change = (next: string, valid = true, problem?: GridMessage) => {
               field.handleChange(next);
               // Un cambio deja sin efecto el error del servidor; un valor inexistente en la tabla
-              // de verificación bloquea la grabación hasta corregirlo (D3 de E2.17).
-              setServerError(form, name, valid ? undefined : i18n.t('invalidValue', { ns: 'form' }));
+              // de verificación, o rechazado por ella, bloquea la grabación hasta corregirlo (D3
+              // de E2.17). El rechazo conserva su código para la barra de estado al grabar.
+              setServerError(form, name, valid ? undefined : (problem?.text ?? i18n.t('invalidValue', { ns: 'form' })));
+
+              if (problem === undefined) {
+                fieldMessageIds.current.delete(name);
+              } else if (problem.id !== undefined) {
+                fieldMessageIds.current.set(name, problem.id);
+              }
             };
 
             const common = {

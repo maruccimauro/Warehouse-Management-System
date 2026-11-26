@@ -12,10 +12,10 @@ export interface SearchHelpFieldProps<TData> {
   // Valor del campo ('' sin valor).
   value: string;
   // Se llama con cada cambio de lo escrito, ya normalizado, y al tomar un valor del F4. valid
-  // en false: el texto no existe en la ayuda; la pantalla no graba hasta que se corrija (D3 de
-  // E2.17). Avisar en cada cambio, y no solo al salir del campo, evita que Ctrl+S con el foco
+  // en false: el texto no existe en la ayuda o la ayuda lo rechaza (problem trae el mensaje);
+  // la pantalla no graba hasta que se corrija (D3 de E2.17). Avisar en cada cambio, y no solo al salir del campo, evita que Ctrl+S con el foco
   // en el campo grabe el valor anterior: como el PAI de SAP, toda acción ve lo escrito.
-  onChange: (value: string, valid: boolean) => void;
+  onChange: (value: string, valid: boolean, problem?: GridMessage) => void;
   searchHelp: SearchHelp<TData>;
   onMessage: (message: GridMessage) => void;
   // Al salir del campo, después de validarlo (el formulario marca el campo como visitado).
@@ -74,8 +74,24 @@ export function SearchHelpField<TData extends RowData>({
   const rowOf = (candidate: string) => localRows?.find((row) => searchHelp.valueOf(row) === candidate);
   const exists = (candidate: string) => candidate === '' || rowOf(candidate) !== undefined;
   // Con fuente de servidor el campo no tiene tabla de verificación: la pantalla valida el valor
-  // al leer el registro.
-  const isValid = (candidate: string) => !check || localRows === undefined || loading || exists(candidate);
+  // al leer el registro. Un valor inexistente da VALUE_NOT_FOUND; uno que existe puede tener
+  // su propio rechazo (rejectionOf).
+  const problemOf = (candidate: string): GridMessage | undefined => {
+    if (!check || localRows === undefined || loading || candidate === '') {
+      return undefined;
+    }
+
+    const row = rowOf(candidate);
+
+    if (row === undefined) {
+      return { type: 'E', text: searchHelp.invalidMessage(candidate), id: 'VALUE_NOT_FOUND' };
+    }
+
+    return searchHelp.rejectionOf?.(row);
+  };
+  // A la pantalla solo le llega el mensaje de un rechazo: el de un valor inexistente lo arma ella
+  // con la etiqueta del campo (VALUE_NOT_FOUND, "el valor no existe").
+  const rejection = (problem: GridMessage | undefined) => (problem?.id === 'VALUE_NOT_FOUND' ? undefined : problem);
 
   // Un valor que llega desde afuera (restablecido por la pantalla) reemplaza lo escrito. El
   // que este campo acaba de informar no: el texto puede diferir solo por la normalización.
@@ -92,10 +108,10 @@ export function SearchHelpField<TData extends RowData>({
   // Las filas pueden llegar después de lo escrito (las zonas del depósito recién elegido): con
   // filas nuevas se vuelve a verificar el valor y se informa a la pantalla si cambió su validez.
   const rowsSeen = useRef({ rows: localRows, loading });
-  const latestCheck = useRef({ text, committed, normalize, isValid, onChange, onMessage, searchHelp });
+  const latestCheck = useRef({ text, committed, normalize, problemOf, onChange, onMessage });
 
   useLayoutEffect(() => {
-    latestCheck.current = { text, committed, normalize, isValid, onChange, onMessage, searchHelp };
+    latestCheck.current = { text, committed, normalize, problemOf, onChange, onMessage };
   });
 
   useEffect(() => {
@@ -112,13 +128,13 @@ export function SearchHelpField<TData extends RowData>({
       return;
     }
 
-    const valid = latest.isValid(current);
+    const problem = latest.problemOf(current);
 
-    setInvalid(!valid && current === latest.committed);
-    latest.onChange(current, valid);
+    setInvalid(problem !== undefined && current === latest.committed);
+    latest.onChange(current, problem === undefined, rejection(problem));
 
-    if (!valid && current === latest.committed) {
-      latest.onMessage({ type: 'E', text: latest.searchHelp.invalidMessage(current), id: 'VALUE_NOT_FOUND' });
+    if (problem !== undefined && current === latest.committed) {
+      latest.onMessage(problem);
     }
   }, [localRows, loading]);
 
@@ -142,14 +158,13 @@ export function SearchHelpField<TData extends RowData>({
 
     setCommitted(normalized);
 
-    if (isValid(normalized)) {
-      setInvalid(false);
+    const problem = problemOf(normalized);
 
-      return;
+    setInvalid(problem !== undefined);
+
+    if (problem !== undefined) {
+      onMessage(problem);
     }
-
-    setInvalid(true);
-    onMessage({ type: 'E', text: searchHelp.invalidMessage(normalized), id: 'VALUE_NOT_FOUND' });
   };
 
   const openHelp = () => {
@@ -186,11 +201,19 @@ export function SearchHelpField<TData extends RowData>({
   const select = (row: TData) => {
     const selected = searchHelp.valueOf(row);
 
+    // El F4 ofrece también filas que el campo rechaza (un depósito en el que no se opera): se
+    // toman y se informan como al escribirlas.
+    const problem = searchHelp.rejectionOf?.(row);
+
     setText(selected);
-    setInvalid(false);
+    setInvalid(problem !== undefined);
     setCommitted(selected);
     setOpen(false);
-    onChange(selected, true);
+    onChange(selected, problem === undefined, problem);
+
+    if (problem !== undefined) {
+      onMessage(problem);
+    }
   };
 
   const currentRow = rowOf(normalize(text));
@@ -220,7 +243,9 @@ export function SearchHelpField<TData extends RowData>({
             setText(next);
             setInvalid(false);
             setSyncedValue(normalized);
-            onChange(normalized, isValid(normalized));
+            const problem = problemOf(normalized);
+
+            onChange(normalized, problem === undefined, rejection(problem));
           }}
           onKeyDown={onKeyDown}
           onBlur={onBlur}

@@ -1,5 +1,5 @@
 import type { ListFilterValue, ListPage, ListParams } from '@/shared/api/listing';
-import type { GridColumn } from '../grid/gridTypes';
+import type { GridColumn, GridMessage } from '../grid/gridTypes';
 
 // Fuente de servidor (E2.12): para las ayudas sobre miles de filas (ubicación, producto). Las
 // restricciones se traducen a filtros del listado y la grilla pagina en el servidor. No hay
@@ -42,6 +42,9 @@ export interface SearchHelp<TData> {
   normalize?: (text: string) => string;
   // Mensaje E cuando lo escrito no existe entre las filas.
   invalidMessage: (value: string) => string;
+  // Fila que existe y se ofrece en el F4, pero que el campo no acepta: un depósito visible en
+  // el que el usuario no opera (D16.3 de E3). Devuelve el mensaje E con su código.
+  rejectionOf?: (row: TData) => GridMessage | undefined;
   // Base del nombre del archivo si se exporta la lista.
   exportName: string;
 }

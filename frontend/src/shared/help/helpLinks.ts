@@ -143,6 +143,7 @@ const documentedMessageCodes = [
   'SUPPLIER_NOT_FOUND',
   'SUPPLIER_PRODUCT_NOT_FOUND',
   'USER_NOT_FOUND',
+  'WAREHOUSE_NOT_ASSIGNED',
 ] as const;
 
 const documentedStates = {

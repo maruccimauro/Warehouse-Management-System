@@ -150,7 +150,7 @@ Reglas de negocio que no son invariantes del inventario pero se aplican con el m
 | REG-002 | Una orden de compra solo se edita en estado `draft` | 409 `INVALID_STATE_TRANSITION` | E4 |
 | REG-003 | Crear o aprobar una orden de compra no modifica stock; solo la recepción confirmada lo hace | | E4 |
 | REG-004 | La cantidad rechazada en una recepción requiere motivo y no ingresa al stock | 422 de validación | E4 |
-| REG-005 | Un usuario solo opera sobre los depósitos que tiene asignados, salvo con `warehouses.operate_all`. Consulta los demás si tiene `warehouses.view_all`, como la actividad 03 sobre `WERKS` en SAP, para ubicar mercadería entre depósitos | 404 fuera del alcance de consulta; 403 `FORBIDDEN` al operar en un depósito visible no asignado | E2 |
+| REG-005 | Un usuario solo opera sobre los depósitos que tiene asignados, salvo con `warehouses.operate_all`. Consulta los demás si tiene `warehouses.view_all`, como la actividad 03 sobre `WERKS` en SAP, para ubicar mercadería entre depósitos | 404 fuera del alcance de consulta; 403 `WAREHOUSE_NOT_ASSIGNED` al operar en un depósito visible no asignado (desde E3.26; antes `FORBIDDEN`) | E2 |
 | REG-006 | Una ubicación no puede pertenecer a dos inventarios físicos activos | 409 `LOCATION_ALREADY_IN_STOCKTAKE` | E6 |
 | REG-007 | Un operador tiene como máximo una tarea de picking en curso | 409 `PICKING_TASK_IN_PROGRESS` | E5 |
 | REG-008 | El picking exige escanear la ubicación y el producto esperados | 422 `SCAN_MISMATCH` | E5 |
@@ -205,6 +205,7 @@ Reglas de negocio que no son invariantes del inventario pero se aplican con el m
 | `PRODUCT_NOT_OPERABLE` | 422 | REG-017 (desde E3) |
 | `SUPPLIER_INACTIVE` | 422 | REG-018 (desde E4) |
 | `PRODUCT_NOT_LINKED_TO_SUPPLIER` | 422 | REG-019 (desde E4) |
+| `WAREHOUSE_NOT_ASSIGNED` | 403 | REG-005 (código de la denegación de la Policy, `WarehouseAccess::NOT_ASSIGNED`) |
 | `USER_INACTIVE` | 403 | REG-020 |
 | `PASSWORD_CHANGE_REQUIRED` | 403 | REG-021 |
 | `LAST_ADMINISTRATOR` | 409 | REG-022 |

@@ -97,7 +97,7 @@ it('answers 403 to an operation in a visible warehouse that is not assigned', fu
     $this->actingAs(userWithAccess(Role::Supervisor, [$this->central]))
         ->postJson('/api/v1/locations/'.receivingLocationOf($this->norte)->id.'/block', ['reason' => 'Muelle fuera de servicio'])
         ->assertForbidden()
-        ->assertJsonPath('code', 'FORBIDDEN')
+        ->assertJsonPath('code', 'WAREHOUSE_NOT_ASSIGNED')
         ->assertJsonPath('detail', __('identity.warehouse_not_assigned'));
 });
 

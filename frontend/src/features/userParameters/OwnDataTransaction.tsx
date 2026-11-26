@@ -6,7 +6,7 @@ import { useTransactionForm } from '@/app/shell/useTransactionForm';
 import { PasswordChangeDialog } from '@/features/auth/PasswordChangeDialog';
 import { useAuthenticatedUser } from '@/features/auth/useAuthenticatedUser';
 import { useUserPreferences } from '@/features/preferences/userPreferences';
-import { WarehouseField } from '@/features/warehouses/WarehouseField';
+import { DefaultWarehouseField } from '@/features/warehouses/WarehouseField';
 import { fallbackLanguage, isSupportedLanguage, supportedLanguages } from '@/i18n/resources';
 import { Button } from '@/shared/ui/Button';
 import { FormSection } from '@/shared/ui/form/FormSection';
@@ -104,7 +104,7 @@ export function OwnDataTransaction() {
                   </th>
                   <td className={cellClass}>
                     {user.warehouses.length > 0 ? (
-                      <Field name="lgn" as={WarehouseField} labelledBy={lgnLabelId} describedBy={lgnDescriptionId} />
+                      <Field name="lgn" as={DefaultWarehouseField} labelledBy={lgnLabelId} describedBy={lgnDescriptionId} />
                     ) : (
                       <input
                         className="field-input w-40"
