@@ -6,7 +6,6 @@ use App\Modules\Identity\Models\User;
 use App\Modules\Inventory\Actions\TransferStock;
 use App\Modules\Inventory\Http\Requests\TransferStockRequest;
 use App\Modules\Inventory\Http\Resources\InventoryOperationResource;
-use App\Modules\Inventory\Models\InventoryOperation;
 use App\Shared\Http\Idempotency\Idempotency;
 use Illuminate\Http\JsonResponse;
 
@@ -29,19 +28,6 @@ final class TransferController
             Idempotency::keyOf($request),
         );
 
-        return (new InventoryOperationResource(self::withLines($operation)))->response()->setStatusCode(201);
-    }
-
-    /**
-     * Líneas por posición, la salida antes que la entrada, con el SKU y el
-     * código de ubicación.
-     */
-    public static function withLines(InventoryOperation $operation): InventoryOperation
-    {
-        return $operation->load([
-            'movements' => fn ($query) => $query->orderBy('item_number')->orderByDesc('direction')->orderBy('id'),
-            'movements.product:id,sku',
-            'movements.location:id,code',
-        ]);
+        return (new InventoryOperationResource($operation->load(InventoryOperationResource::relations())))->response()->setStatusCode(201);
     }
 }

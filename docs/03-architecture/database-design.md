@@ -27,7 +27,7 @@ El DDL de este documento es la referencia que reproducen las migraciones de Lara
 | Orden de compra | `4500000000` | `4599999999` | `purchase_order_number_seq` |
 | Operación de inventario | `4900000000` | `4999999999` | `inventory_operation_number_seq` |
 | Recepción | `5000000000` | `5099999999` | `goods_receipt_number_seq` |
-| Solicitud de ajuste | `5100000000` | `5199999999` | `stock_adjustment_request_number_seq` (E3.23) |
+| Ajuste de stock | `5100000000` | `5199999999` | `stock_adjustment_number_seq` |
 | Pedido de cliente | `0000000001` | `0079999999` | `customer_order_number_seq` |
 | Despacho | `0080000000` | `0089999999` | `dispatch_number_seq` |
 | Inventario físico | `0100000000` | `0109999999` | `stocktake_number_seq` |
@@ -206,10 +206,14 @@ CREATE TABLE product_warehouse_settings (
   product_id BIGINT NOT NULL REFERENCES products (id),
   warehouse_id BIGINT NOT NULL REFERENCES warehouses (id),
   min_stock BIGINT NOT NULL DEFAULT 0,
+  adjustment_in_approval_threshold BIGINT,
+  adjustment_out_approval_threshold BIGINT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (product_id, warehouse_id),
-  CONSTRAINT product_warehouse_settings_min_stock_check CHECK (min_stock >= 0)
+  CONSTRAINT product_warehouse_settings_min_stock_check CHECK (min_stock >= 0),
+  CONSTRAINT product_warehouse_settings_adjustment_in_approval_threshold_check CHECK (adjustment_in_approval_threshold > 0),
+  CONSTRAINT product_warehouse_settings_adjustment_out_approval_threshold_check CHECK (adjustment_out_approval_threshold > 0)
 );
 CREATE INDEX product_warehouse_settings_warehouse_id_index ON product_warehouse_settings (warehouse_id);
 
@@ -261,7 +265,7 @@ Notas:
 - La ubicación de sistema `dispatch` se crea con el depósito (E2.02) pero no recibe movimientos en el MVP: el despacho descuenta desde `packing`. Queda disponible para una etapa de preparación de carga.
 - `UNIQUE NULLS NOT DISTINCT (parent_id, name)` impide dos categorías raíz con el mismo nombre; un `UNIQUE` común lo permitiría. Los ciclos de más de un nivel y la profundidad máxima de 5 niveles los valida la Action con el árbol bloqueado (REG-016).
 - `products.barcode` admite `NULL` en varias filas: la API guarda un código vacío como nulo. No se normaliza a mayúsculas porque Code 128 las distingue; un código numérico con largo de GTIN exige dígito verificador válido.
-- `product_warehouse_settings` guarda lo que un producto tiene de propio en cada depósito, como los datos de centro (`MARC`) de SAP (DM-21). Sin fila, el producto usa los valores por defecto en ese depósito: `min_stock` 0, sin alerta de stock crítico. Reemplaza a la columna `products.min_stock` del diseño de E0.
+- `product_warehouse_settings` guarda lo que un producto tiene de propio en cada depósito, como los datos de centro (`MARC`) de SAP (DM-21). Sin fila, el producto usa los valores por defecto en ese depósito: `min_stock` 0, sin alerta de stock crítico y sin umbrales de aprobación de ajustes. Reemplaza a la columna `products.min_stock` del diseño de E0. Los umbrales `adjustment_in_approval_threshold` y `adjustment_out_approval_threshold` (E3.05) son cantidades en la unidad base, una por dirección del ajuste; `NULL` es sin umbral y el `CHECK (> 0)` impide usar 0 o un valor enorme como sustituto. Un cambio de umbral se audita (`product.adjustment_thresholds_changed`, con los valores anteriores y nuevos) porque decide qué ajustes pasan por aprobación.
 - `suppliers.number` es el número interno del proveedor (25/11/2026): lo asigna `CreateSupplier` desde `suppliers_number_seq` (`Supplier::nextNumber()`), sin `DEFAULT nextval` en la columna, porque las secuencias implícitas están reservadas por convención (las claves son `IDENTITY`). Es estable aunque cambie el `id` y la API lo muestra con diez dígitos (`0000000012`, `InternalNumber`), como el número de acreedor de SAP; hasta el 25/11/2026 se mostraba con seis.
 - `suppliers.tax_id` se guarda sin espacios, puntos, guiones ni barras y en mayúsculas, para que `30-71234567-1` y `30712345671` choquen en la unicidad. No se valida el dígito verificador de ningún país: el mismo campo sirve para CUIT, RUT, NIF o VAT. El email se guarda en minúsculas, como en `users`.
 - `product_supplier` es el registro info de compras (DM-22). `UNIQUE (supplier_id, supplier_sku)` impide que un código del proveedor apunte a dos productos; varios vínculos sin código (`NULL`) no chocan. Como el índice empieza por `supplier_id`, también resuelve los productos de un proveedor y reemplaza al índice `product_supplier_supplier_id_index` del diseño de E0. Se agregan `created_at` y `updated_at`, como en `product_warehouse_settings`, porque el vínculo se edita.
@@ -375,19 +379,22 @@ CREATE TABLE inventory_operations (
   CONSTRAINT inventory_operations_number_unique UNIQUE (number),
   CONSTRAINT inventory_operations_id_warehouse_id_unique UNIQUE (id, warehouse_id),
   CONSTRAINT inventory_operations_reverses_operation_id_foreign FOREIGN KEY (reverses_operation_id, warehouse_id) REFERENCES inventory_operations (id, warehouse_id),
-  CONSTRAINT inventory_operations_reference_unique UNIQUE (reference_type, reference_id),
   CONSTRAINT inventory_operations_performed_by_idempotency_key_unique UNIQUE (performed_by, idempotency_key),
   CONSTRAINT inventory_operations_number_check CHECK (number BETWEEN 4900000000 AND 4999999999),
   CONSTRAINT inventory_operations_type_check CHECK (type IN ('receipt', 'putaway', 'transfer', 'adjustment_in', 'adjustment_out', 'pick', 'dispatch', 'stocktake_adjustment', 'reversal')),
   CONSTRAINT inventory_operations_status_check CHECK (status = 'confirmed'),
   CONSTRAINT inventory_operations_reference_pair_check CHECK ((reference_type IS NULL) = (reference_id IS NULL)),
   CONSTRAINT inventory_operations_type_reference_check CHECK (
-    reference_type IS NOT DISTINCT FROM CASE type
-      WHEN 'receipt' THEN 'goods_receipt'
-      WHEN 'putaway' THEN 'putaway_task'
-      WHEN 'pick' THEN 'picking_task_line'
-      WHEN 'dispatch' THEN 'dispatch'
-      WHEN 'stocktake_adjustment' THEN 'stocktake'
+    CASE
+      WHEN type IN ('adjustment_in', 'adjustment_out') THEN
+        reference_type IS NULL OR (reference_type = 'stock_adjustment' AND reason_code <> 'initial_load')
+      ELSE reference_type IS NOT DISTINCT FROM CASE type
+        WHEN 'receipt' THEN 'goods_receipt'
+        WHEN 'putaway' THEN 'putaway_task'
+        WHEN 'pick' THEN 'picking_task_line'
+        WHEN 'dispatch' THEN 'dispatch'
+        WHEN 'stocktake_adjustment' THEN 'stocktake'
+      END
     END
   ),
   CONSTRAINT inventory_operations_reversal_check CHECK ((type = 'reversal') = (reverses_operation_id IS NOT NULL)),
@@ -395,6 +402,10 @@ CREATE TABLE inventory_operations (
   CONSTRAINT inventory_operations_reason_code_check CHECK (reason_code IN ('damage', 'loss', 'found', 'correction', 'initial_load')),
   CONSTRAINT inventory_operations_adjustment_reason_check CHECK (type NOT IN ('adjustment_in', 'adjustment_out') OR reason_code IS NOT NULL)
 );
+-- Un ajuste de stock origina varias operaciones (E3.05): queda fuera de la unicidad.
+CREATE UNIQUE INDEX inventory_operations_reference_unique ON inventory_operations (reference_type, reference_id)
+  WHERE reference_type <> 'stock_adjustment';
+CREATE INDEX inventory_operations_stock_adjustment_index ON inventory_operations (reference_id) WHERE reference_type = 'stock_adjustment';
 CREATE INDEX inventory_operations_warehouse_id_performed_at_index ON inventory_operations (warehouse_id, performed_at);
 CREATE INDEX inventory_operations_reverses_operation_id_index ON inventory_operations (reverses_operation_id) WHERE reverses_operation_id IS NOT NULL;
 
@@ -568,11 +579,95 @@ CREATE TRIGGER stock_movements_validate_reversal BEFORE INSERT ON stock_movement
   FOR EACH ROW EXECUTE FUNCTION validate_movement_reversal();
 CREATE TRIGGER audit_logs_prevent_mutation BEFORE UPDATE OR DELETE ON audit_logs
   FOR EACH ROW EXECUTE FUNCTION prevent_ledger_mutation();
+
+-- Ajustes de stock con aprobación por posición (E3.05).
+CREATE SEQUENCE stock_adjustment_number_seq AS BIGINT START WITH 5100000000 MINVALUE 5100000000 MAXVALUE 5199999999 NO CYCLE;
+
+CREATE TABLE stock_adjustments (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  number BIGINT NOT NULL,
+  warehouse_id BIGINT NOT NULL REFERENCES warehouses (id),
+  direction VARCHAR(3) NOT NULL,
+  reason_code VARCHAR(30) NOT NULL,
+  notes TEXT,
+  created_by BIGINT NOT NULL REFERENCES users (id),
+  created_at TIMESTAMPTZ NOT NULL,
+  CONSTRAINT stock_adjustments_number_unique UNIQUE (number),
+  CONSTRAINT stock_adjustments_id_warehouse_id_unique UNIQUE (id, warehouse_id),
+  CONSTRAINT stock_adjustments_number_check CHECK (number BETWEEN 5100000000 AND 5199999999),
+  CONSTRAINT stock_adjustments_direction_check CHECK (direction IN ('in', 'out')),
+  CONSTRAINT stock_adjustments_reason_code_check CHECK (
+    (direction = 'in' AND reason_code IN ('found', 'correction'))
+    OR (direction = 'out' AND reason_code IN ('damage', 'loss', 'correction'))
+  )
+);
+CREATE INDEX stock_adjustments_warehouse_id_created_at_index ON stock_adjustments (warehouse_id, created_at);
+CREATE TRIGGER stock_adjustments_prevent_mutation BEFORE UPDATE OR DELETE ON stock_adjustments
+  FOR EACH ROW EXECUTE FUNCTION prevent_ledger_mutation();
+
+CREATE TABLE stock_adjustment_items (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  adjustment_id BIGINT NOT NULL,
+  warehouse_id BIGINT NOT NULL,
+  item_number SMALLINT NOT NULL,
+  product_id BIGINT NOT NULL REFERENCES products (id),
+  location_id BIGINT NOT NULL,
+  quantity BIGINT NOT NULL,
+  approval_threshold BIGINT,
+  status VARCHAR(20) NOT NULL,
+  operation_id BIGINT,
+  decided_by BIGINT REFERENCES users (id),
+  decided_at TIMESTAMPTZ,
+  decision_notes TEXT,
+  CONSTRAINT stock_adjustment_items_adjustment_foreign FOREIGN KEY (adjustment_id, warehouse_id) REFERENCES stock_adjustments (id, warehouse_id),
+  CONSTRAINT stock_adjustment_items_location_foreign FOREIGN KEY (location_id, warehouse_id) REFERENCES locations (id, warehouse_id),
+  CONSTRAINT stock_adjustment_items_operation_foreign FOREIGN KEY (operation_id, warehouse_id) REFERENCES inventory_operations (id, warehouse_id),
+  CONSTRAINT stock_adjustment_items_adjustment_id_item_number_unique UNIQUE (adjustment_id, item_number),
+  CONSTRAINT stock_adjustment_items_adjustment_id_stock_unique UNIQUE (adjustment_id, product_id, location_id),
+  CONSTRAINT stock_adjustment_items_item_number_check CHECK (item_number >= 1),
+  CONSTRAINT stock_adjustment_items_quantity_check CHECK (quantity > 0),
+  CONSTRAINT stock_adjustment_items_approval_threshold_check CHECK (approval_threshold > 0),
+  CONSTRAINT stock_adjustment_items_status_check CHECK (status IN ('posted', 'pending', 'approved', 'rejected')),
+  CONSTRAINT stock_adjustment_items_threshold_status_check CHECK ((status = 'posted') = (approval_threshold IS NULL OR quantity <= approval_threshold)),
+  CONSTRAINT stock_adjustment_items_operation_check CHECK ((status IN ('posted', 'approved')) = (operation_id IS NOT NULL)),
+  CONSTRAINT stock_adjustment_items_decision_check CHECK (
+    (status IN ('approved', 'rejected')) = (decided_by IS NOT NULL)
+    AND (decided_by IS NULL) = (decided_at IS NULL)
+  ),
+  CONSTRAINT stock_adjustment_items_rejection_notes_check CHECK (status <> 'rejected' OR decision_notes IS NOT NULL)
+);
+CREATE INDEX stock_adjustment_items_pending_index ON stock_adjustment_items (warehouse_id, adjustment_id) WHERE status = 'pending';
+CREATE INDEX stock_adjustment_items_operation_id_index ON stock_adjustment_items (operation_id) WHERE operation_id IS NOT NULL;
+
+-- Una posición solo pasa de pending a approved o rejected, una vez, y sus datos no cambian.
+CREATE OR REPLACE FUNCTION validate_adjustment_item_transition() RETURNS trigger
+LANGUAGE plpgsql AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    RAISE EXCEPTION 'Table % does not allow DELETE', TG_TABLE_NAME USING ERRCODE = 'restrict_violation';
+  END IF;
+
+  IF OLD.status <> 'pending' OR NEW.status NOT IN ('approved', 'rejected') THEN
+    RAISE EXCEPTION 'ADJUSTMENT_ITEM_NOT_PENDING' USING ERRCODE = 'restrict_violation';
+  END IF;
+
+  IF (NEW.adjustment_id, NEW.warehouse_id, NEW.item_number, NEW.product_id, NEW.location_id, NEW.quantity, NEW.approval_threshold)
+    IS DISTINCT FROM (OLD.adjustment_id, OLD.warehouse_id, OLD.item_number, OLD.product_id, OLD.location_id, OLD.quantity, OLD.approval_threshold) THEN
+    RAISE EXCEPTION 'Only the decision of a stock adjustment item can change' USING ERRCODE = 'restrict_violation';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER stock_adjustment_items_validate_transition BEFORE UPDATE OR DELETE ON stock_adjustment_items
+  FOR EACH ROW EXECUTE FUNCTION validate_adjustment_item_transition();
 ```
 
 Notas:
 
-- **Unicidad de la referencia de una operación (INV-007).** `inventory_operations_reference_unique` impide que un mismo documento origine dos operaciones: una recepción, una tarea de putaway, una línea de picking, un despacho o un inventario físico tienen como máximo una. Es la garantía en base de datos contra la doble confirmación. El `operation_id UNIQUE` de los documentos solo impide que dos documentos apunten a la misma operación, no que un documento genere dos; se conserva como navegación directa. Las operaciones sin documento (`transfer`, ajustes, `reversal`) tienen referencia nula y no se ven afectadas, porque un `UNIQUE` común admite varias filas con nulos.
+- **Unicidad de la referencia de una operación (INV-007).** `inventory_operations_reference_unique` impide que un mismo documento origine dos operaciones: una recepción, una tarea de putaway, una línea de picking, un despacho o un inventario físico tienen como máximo una. Es la garantía en base de datos contra la doble confirmación. El `operation_id UNIQUE` de los documentos solo impide que dos documentos apunten a la misma operación, no que un documento genere dos; se conserva como navegación directa. Las operaciones sin documento (`transfer`, la carga inicial, el daño en packing, `reversal`) tienen referencia nula y no se ven afectadas, porque un índice único admite varias filas con nulos. Es un índice único parcial y no una restricción: excluye `stock_adjustment`, el único documento que origina varias operaciones (nota siguiente).
+- **Ajuste de stock con aprobación por posición (E3.05, decisión del usuario del 26/11/2026).** `stock_adjustments` es la cabecera, de solo inserción: depósito, dirección, un único motivo y notas. El `CHECK` de motivo por dirección deja fuera `initial_load`, porque la carga inicial es su propia operación (E3.06). Al crear el documento, cada posición de `stock_adjustment_items` se compara con el umbral de su artículo para esa dirección (`product_warehouse_settings`), que queda copiado en `approval_threshold`. Sin umbral, o sin superarlo, nace `posted` y se contabiliza; si lo supera, nace `pending` y no mueve stock hasta que otro usuario la aprueba (`approved`, con su operación) o la rechaza con motivo (`rejected`, E3.23). `stock_adjustment_items_threshold_status_check` ata el estado al umbral. Las `posted` se contabilizan juntas en una operación `adjustment_in` o `adjustment_out` con `reference_type = 'stock_adjustment'` y el mismo `item_number` de la posición; cada aprobación origina otra operación. Por eso la garantía de INV-007 para este documento pasa a la posición: `operation_id` se asigna una sola vez (`stock_adjustment_items_operation_check`) y `stock_adjustment_items_validate_transition` solo admite pasar de `pending` a `approved` o `rejected` sin tocar los demás datos, de modo que dos aprobaciones de la misma posición no pueden contabilizarse las dos. El estado del documento se deriva de sus posiciones y no se guarda.
 - **Tipo y referencia.** `inventory_operations_type_reference_check` fija qué documento corresponde a cada tipo y exige referencia nula en los tipos sin documento. Usa `IS NOT DISTINCT FROM` porque un `CHECK` que evalúa a `NULL` se considera cumplido: una versión con `OR` y comparaciones simples aceptaba una operación `receipt` sin documento (detectado al validar este DDL).
 - **Coherencia de depósito en el libro.** La clave foránea compuesta de `stock_movements` hacia `inventory_operations (id, warehouse_id)` y hacia `stocks (id, warehouse_id, product_id, location_id)` garantiza que todos los movimientos de una operación pertenezcan a su depósito y que las columnas desnormalizadas `product_id` y `location_id` coincidan con la existencia. El costo es un índice único adicional sobre `stocks`.
 - **Un movimiento por existencia y operación.** `stock_movements_operation_id_stock_id_unique` impide dos líneas sobre la misma fila en una operación; una transferencia con origen igual a destino falla también en la base (INV-004).
@@ -607,7 +702,11 @@ Notas:
 | `stocks_product_id_location_id_lot_id_unique` | Resolución de la fila destino en `StockLedger` y objetivo de `ON CONFLICT` |
 | `stocks_allocation_index` | Existencias por producto y depósito (E3.12, E3.15); asignación FIFO por `last_movement_at` al reservar (E5.02); stock crítico por producto y depósito (E7.04); productos inmovilizados (E7.05) |
 | `stocks_location_id_index` | Contenido de una ubicación (detalle de E2.12, validación de `max_units` en REG-010, foto de cantidades de sistema al iniciar un conteo en E6.02, validación de ubicación vacía antes de desactivarla) |
-| `inventory_operations_reference_unique` | Trazabilidad del documento a su operación (E3.16, E4 criterio de salida) y garantía de INV-007 |
+| `inventory_operations_reference_unique` | Trazabilidad del documento a su operación (E3.16, E4 criterio de salida) y garantía de INV-007; parcial, sin `stock_adjustment` |
+| `inventory_operations_stock_adjustment_index` | Operaciones de un ajuste de stock (detalle del documento) |
+| `stock_adjustments_warehouse_id_created_at_index` | Ajustes del depósito por fecha |
+| `stock_adjustment_items_pending_index` | Posiciones pendientes de aprobación del depósito (E3.23); parcial porque la mayoría se contabiliza al crearse |
+| `stock_adjustment_items_operation_id_index` | Posición de ajuste de una operación del libro |
 | `inventory_operations_warehouse_id_performed_at_index` | Listado de operaciones del depósito por fecha (`GET /inventory/operations`) |
 | `inventory_operations_performed_by_idempotency_key_unique` | Segunda barrera de INV-007 |
 | `stock_reservations_active_stock_id_index` | Conciliación de `quantity_reserved` (E3.13) y reservas a consumir de una fila; parcial porque las reservas resueltas son mayoría y no se consultan por fila |

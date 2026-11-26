@@ -12,7 +12,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class ProductWarehouseSettingResource extends JsonResource
 {
     /**
-     * @return array{product_id: int, warehouse_id: int, min_stock: int, created_at: string, updated_at: string}
+     * @return array{product_id: int, warehouse_id: int, min_stock: int, adjustment_in_approval_threshold: int|null, adjustment_out_approval_threshold: int|null, created_at: string, updated_at: string}
      */
     public function toArray(Request $request): array
     {
@@ -20,6 +20,8 @@ class ProductWarehouseSettingResource extends JsonResource
             'product_id' => $this->resource->product_id,
             'warehouse_id' => $this->resource->warehouse_id,
             'min_stock' => $this->resource->min_stock,
+            'adjustment_in_approval_threshold' => $this->resource->adjustment_in_approval_threshold,
+            'adjustment_out_approval_threshold' => $this->resource->adjustment_out_approval_threshold,
             'created_at' => $this->resource->created_at->toJSON(),
             'updated_at' => $this->resource->updated_at->toJSON(),
         ];

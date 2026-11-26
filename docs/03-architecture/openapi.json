@@ -11,6 +11,148 @@
         }
     ],
     "paths": {
+        "/inventory/adjustments": {
+            "post": {
+                "operationId": "inventory.adjustments.store",
+                "tags": [
+                    "Adjustment"
+                ],
+                "parameters": [
+                    {
+                        "name": "Idempotency-Key",
+                        "in": "header",
+                        "required": true,
+                        "description": "Clave que el cliente genera al iniciar el intento de operaci\u00f3n y repite en sus reintentos. Sin la cabecera, vac\u00eda o de m\u00e1s de 100 caracteres: 428 IDEMPOTENCY_KEY_REQUIRED. Misma clave y mismo cuerpo: se devuelve la respuesta almacenada, con la cabecera Idempotent-Replayed; misma clave con otro cuerpo: 422 IDEMPOTENCY_KEY_REUSED; misma clave con una petici\u00f3n en curso que no termina a tiempo: 409 IDEMPOTENCY_REQUEST_IN_PROGRESS.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AdjustStockRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "`WAREHOUSE_INACTIVE`: El dep\u00f3sito est\u00e1 inactivo.\n\n`SYSTEM_LOCATION_NOT_ALLOWED`: La ubicaci\u00f3n de sistema no admite esta operaci\u00f3n.\n\n`PRODUCT_NOT_OPERABLE`: El estado del art\u00edculo no admite la operaci\u00f3n.\n\n`LOCATION_BLOCKED`: La ubicaci\u00f3n no admite movimientos.\n\n`LOCATION_CAPACITY_EXCEEDED`: La operaci\u00f3n supera la capacidad de la ubicaci\u00f3n.\n\n`INSUFFICIENT_STOCK`: No hay stock suficiente.\n\n`RESERVED_STOCK_NOT_AVAILABLE`: El stock est\u00e1 reservado.\n\n`IDEMPOTENCY_KEY_REUSED`: La clave de idempotencia ya se us\u00f3 con otro contenido.\n\n`VALIDATION_FAILED`: Los datos enviados no son v\u00e1lidos.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsWarehouseInactive"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsSystemLocationNotAllowed"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsProductNotOperable"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsLocationBlocked"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsLocationCapacityExceeded"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsInsufficientStock"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsReservedStockNotAvailable"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsIdempotencyKeyReused"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsValidationFailed"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "419": {
+                        "description": "`CSRF_TOKEN_MISMATCH`: Page Expired",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsCsrfTokenMismatch"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "`PASSWORD_CHANGE_REQUIRED`: Debe cambiar la contrase\u00f1a antes de continuar.\n\n`FORBIDDEN`: Forbidden",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsPasswordChangeRequired"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsForbidden"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "428": {
+                        "description": "`IDEMPOTENCY_KEY_REQUIRED`: La operaci\u00f3n requiere una clave de idempotencia v\u00e1lida.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsIdempotencyKeyRequired"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "`IDEMPOTENCY_REQUEST_IN_PROGRESS`: Otra solicitud con la misma clave de idempotencia sigue en curso.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsIdempotencyRequestInProgress"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "`UNAUTHENTICATED`: Unauthorized",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsUnauthenticated"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sessionCookie": [],
+                        "xsrfToken": []
+                    }
+                ]
+            }
+        },
         "/auth/login": {
             "post": {
                 "operationId": "auth.login",
@@ -6752,6 +6894,64 @@
             }
         },
         "schemas": {
+            "AdjustStockRequest": {
+                "type": "object",
+                "description": "POST /inventory/adjustments (E3.05, CU-04). La direcci\u00f3n decide los motivos\nadmitidos (INV-008): found y correction suman; damage, loss y correction\nrestan. Las cantidades son positivas: el signo lo da la direcci\u00f3n. Las\nubicaciones se validan contra el dep\u00f3sito del cuerpo; la ubicaci\u00f3n de\nsistema la valida AdjustStock con su c\u00f3digo.",
+                "properties": {
+                    "warehouse_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "direction": {
+                        "$ref": "#/components/schemas/MovementDirection"
+                    },
+                    "reason_code": {
+                        "type": "string",
+                        "enum": [
+                            ""
+                        ]
+                    },
+                    "notes": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 500
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "product_id": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                },
+                                "location_id": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                },
+                                "quantity": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                }
+                            },
+                            "required": [
+                                "product_id",
+                                "location_id",
+                                "quantity"
+                            ]
+                        }
+                    }
+                },
+                "required": [
+                    "warehouse_id",
+                    "direction",
+                    "reason_code",
+                    "items"
+                ],
+                "title": "AdjustStockRequest"
+            },
             "AuthenticatedUserResource": {
                 "type": "object",
                 "properties": {
@@ -7205,6 +7405,15 @@
                     "password"
                 ],
                 "title": "LoginRequest"
+            },
+            "MovementDirection": {
+                "type": "string",
+                "description": "Sentido de un movimiento: entrada (delta positivo) o salida.\n",
+                "enum": [
+                    "in",
+                    "out"
+                ],
+                "title": "MovementDirection"
             },
             "ProblemDetails": {
                 "type": "object",
@@ -8360,6 +8569,18 @@
                     "min_stock": {
                         "type": "integer"
                     },
+                    "adjustment_in_approval_threshold": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "adjustment_out_approval_threshold": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
                     "created_at": {
                         "type": [
                             "string",
@@ -8377,6 +8598,8 @@
                     "product_id",
                     "warehouse_id",
                     "min_stock",
+                    "adjustment_in_approval_threshold",
+                    "adjustment_out_approval_threshold",
                     "created_at",
                     "updated_at"
                 ],
@@ -8419,6 +8642,174 @@
                     "E"
                 ],
                 "title": "SelectionSign"
+            },
+            "StockAdjustmentResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "number": {
+                        "type": "string"
+                    },
+                    "warehouse_id": {
+                        "type": "integer"
+                    },
+                    "direction": {
+                        "type": "string",
+                        "enum": [
+                            "in",
+                            "out"
+                        ]
+                    },
+                    "reason_code": {
+                        "type": "string",
+                        "enum": [
+                            "damage",
+                            "loss",
+                            "found",
+                            "correction",
+                            "initial_load"
+                        ]
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending_approval",
+                            "completed"
+                        ]
+                    },
+                    "notes": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "created_by": {
+                        "type": "integer"
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "item_number": {
+                                    "type": "integer"
+                                },
+                                "product_id": {
+                                    "type": "integer"
+                                },
+                                "sku": {
+                                    "type": "string"
+                                },
+                                "location_id": {
+                                    "type": "integer"
+                                },
+                                "location_code": {
+                                    "type": "string"
+                                },
+                                "quantity": {
+                                    "type": "integer"
+                                },
+                                "approval_threshold": {
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "posted",
+                                        "pending",
+                                        "approved",
+                                        "rejected"
+                                    ]
+                                },
+                                "operation_id": {
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
+                                },
+                                "operation_number": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "decided_by": {
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
+                                },
+                                "decided_at": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "decision_notes": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "item_number",
+                                "product_id",
+                                "sku",
+                                "location_id",
+                                "location_code",
+                                "quantity",
+                                "approval_threshold",
+                                "status",
+                                "operation_id",
+                                "operation_number",
+                                "decided_by",
+                                "decided_at",
+                                "decision_notes"
+                            ]
+                        }
+                    },
+                    "operations": {
+                        "type": "array",
+                        "items": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/components/schemas/InventoryOperationResource"
+                                },
+                                {
+                                    "type": "object",
+                                    "required": [
+                                        "movements"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "required": [
+                    "id",
+                    "number",
+                    "warehouse_id",
+                    "direction",
+                    "reason_code",
+                    "status",
+                    "notes",
+                    "created_by",
+                    "created_at",
+                    "items"
+                ],
+                "title": "StockAdjustmentResource"
             },
             "StockMovementResource": {
                 "type": "object",
@@ -9146,16 +9537,34 @@
             },
             "UpdateProductWarehouseSettingsRequest": {
                 "type": "object",
-                "description": "Datos de un producto en un dep\u00f3sito (DM-21) con catalog.manage y el alcance\nde operaci\u00f3n sobre ese dep\u00f3sito (REG-005). El stock m\u00ednimo es una cantidad\nen la unidad base, entera y dentro del rango exacto de un number de\nJavaScript (ADR-005).",
+                "description": "Datos de un producto en un dep\u00f3sito (DM-21) con catalog.manage y el alcance\nde operaci\u00f3n sobre ese dep\u00f3sito (REG-005). El stock m\u00ednimo y los umbrales\nde aprobaci\u00f3n de ajustes (E3.05) son cantidades en la unidad base, enteras y\ndentro del rango exacto de un number de JavaScript (ADR-005). Es un PUT: los\numbrales son obligatorios en el cuerpo y null significa \"sin umbral\"\n(decisi\u00f3n del usuario del 26/11/2026).",
                 "properties": {
                     "min_stock": {
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 9007199254740991
+                    },
+                    "adjustment_in_approval_threshold": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                    },
+                    "adjustment_out_approval_threshold": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 1,
+                        "maximum": 9007199254740991
                     }
                 },
                 "required": [
-                    "min_stock"
+                    "min_stock",
+                    "adjustment_in_approval_threshold",
+                    "adjustment_out_approval_threshold"
                 ],
                 "title": "UpdateProductWarehouseSettingsRequest"
             },

@@ -123,7 +123,7 @@ class CatalogSeeder extends Seeder
                 $product = Product::query()->where('sku', $sku)->sole();
 
                 if ($product->warehouseSettings()->where('warehouse_id', $warehouse->id)->doesntExist()) {
-                    ($this->setSettings)($product, $warehouse, $minStock);
+                    ($this->setSettings)($product, $warehouse, $minStock, null, null);
                 }
             }
         }

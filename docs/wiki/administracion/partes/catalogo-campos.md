@@ -10,7 +10,7 @@ Para modificar o visualizar, <kbd>F4</kbd> busca en el catálogo por fragmento d
 
 ### Depósito {#warehouse}
 
-Opcional. Con un depósito, la ficha suma la sección **Datos del depósito**, con el stock mínimo del artículo en ese depósito. Se elige con la [ayuda de búsqueda](/primeros-pasos/ayuda-de-busqueda#deposito) (<kbd>F4</kbd>) y se completa con el parámetro de usuario [`LGN`](/primeros-pasos/parametros-de-usuario#lgn); vacíelo para trabajar solo con los datos generales. Para crear o modificar, el campo ofrece los depósitos donde el usuario opera; para visualizar, todos los que puede consultar.
+Opcional. Con un depósito, la ficha suma la sección **Datos del depósito**, con el stock mínimo y los umbrales de aprobación de ajustes del artículo en ese depósito. Se elige con la [ayuda de búsqueda](/primeros-pasos/ayuda-de-busqueda#deposito) (<kbd>F4</kbd>) y se completa con el parámetro de usuario [`LGN`](/primeros-pasos/parametros-de-usuario#lgn); vacíelo para trabajar solo con los datos generales. Para crear o modificar, el campo ofrece los depósitos donde el usuario opera; para visualizar, todos los que puede consultar.
 
 ## Datos generales {#datos-generales}
 
@@ -66,6 +66,18 @@ Aparece cuando la pantalla inicial tiene un depósito.
 
 ### Stock mínimo {#min-stock}
 
-Cantidad mínima del artículo que se quiere tener en el depósito, en la unidad base. `0` indica sin stock mínimo, que es el valor de un depósito donde todavía no se cargó. Modificarlo exige operar en el depósito.
+Cantidad mínima del artículo que se quiere tener en el depósito, en la unidad base. `0` indica sin stock mínimo, que es el valor de un depósito donde todavía no se cargó.
 
-El stock mínimo se graba junto con la ficha, como un dato aparte. Si los datos generales se graban y el stock mínimo no, la barra de estado lo informa con [`WAREHOUSE_SETTING_NOT_SAVED`](/referencia/mensajes#warehouse-setting-not-saved).
+### Umbral de aprobación de ajuste positivo {#adjustment-in-threshold}
+
+Opcional. Cantidad máxima del artículo, en la unidad base, que una posición de un ajuste de stock positivo (un sobrante encontrado o una corrección en más) suma en el depósito sin necesitar aprobación. Una posición que la supera no mueve stock: queda pendiente de aprobación. Una posición igual al umbral no lo supera. Vacío indica sin umbral: todos los ajustes positivos del artículo se registran en el momento. Si se completa, es un número entero mayor que cero.
+
+### Umbral de aprobación de ajuste negativo {#adjustment-out-threshold}
+
+Opcional. Igual que el anterior, para los ajustes negativos (daño, pérdida o corrección en menos). Los dos umbrales son independientes: un artículo puede tener umbral para las salidas y no para las entradas.
+
+::: info
+Cada artículo tiene sus propios umbrales en cada depósito, porque no pesa lo mismo la diferencia de un motor que la de un tornillo. Los cambios de umbral quedan registrados en la auditoría con el valor anterior y el nuevo.
+:::
+
+Los datos del depósito se graban junto con la ficha, como un dato aparte, y solo si cambiaron. Modificarlos exige operar en el depósito. Si los datos generales se graban y los del depósito no, la barra de estado lo informa con [`WAREHOUSE_SETTING_NOT_SAVED`](/referencia/mensajes#warehouse-setting-not-saved).

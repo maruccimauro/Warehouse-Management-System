@@ -195,9 +195,9 @@ El artículo existe, pero no está vinculado al proveedor indicado. La ficha no 
 
 ### `WAREHOUSE_SETTING_NOT_SAVED` {#warehouse-setting-not-saved}
 
-Mensaje W. Al grabar un artículo con un depósito en la pantalla inicial, los datos generales se grabaron, pero el stock mínimo del depósito no. El mensaje indica el motivo, por ejemplo que el usuario no opera en ese depósito.
+Mensaje W. Al grabar un artículo con un depósito en la pantalla inicial, los datos generales se grabaron, pero los datos del depósito (stock mínimo y umbrales de aprobación de ajustes) no. El mensaje indica el motivo, por ejemplo que el usuario no opera en ese depósito.
 
-**Qué hacer:** corrija la causa y cargue el stock mínimo en [Modificar catálogo](/administracion/modificar-catalogo) con el mismo depósito.
+**Qué hacer:** corrija la causa y vuelva a cargar los datos del depósito en [Modificar catálogo](/administracion/modificar-catalogo) con el mismo depósito.
 
 ## Errores técnicos {#errores-tecnicos}
 

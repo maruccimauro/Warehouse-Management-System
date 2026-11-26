@@ -40,6 +40,8 @@ final class ProductWarehouseSettingController
             $request->product(),
             $request->warehouse(),
             $request->integer('min_stock'),
+            $request->threshold('adjustment_in_approval_threshold'),
+            $request->threshold('adjustment_out_approval_threshold'),
         ));
     }
 }

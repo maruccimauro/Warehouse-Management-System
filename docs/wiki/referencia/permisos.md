@@ -46,7 +46,7 @@ Consultar el catálogo no exige permiso: alcanza con la sesión.
 
 ### `catalog.manage` {#catalog-manage}
 
-Crear y modificar categorías, unidades de medida y artículos, incluido el estado del artículo. Los datos de un artículo en un depósito, como el stock mínimo, exigen además operar en ese depósito. Solo lo tiene el Administrador.
+Crear y modificar categorías, unidades de medida y artículos, incluido el estado del artículo. Los datos de un artículo en un depósito, como el stock mínimo y los umbrales de aprobación de ajustes, exigen además operar en ese depósito. Solo lo tiene el Administrador.
 
 ### `suppliers.manage` {#suppliers-manage}
 

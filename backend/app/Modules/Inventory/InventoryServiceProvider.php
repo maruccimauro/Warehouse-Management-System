@@ -5,6 +5,8 @@ namespace App\Modules\Inventory;
 use App\Modules\Inventory\Exceptions\ReversalExceedsRemaining;
 use App\Modules\Inventory\Models\InventoryOperation;
 use App\Modules\Inventory\Models\Stock;
+use App\Modules\Inventory\Models\StockAdjustment;
+use App\Modules\Inventory\Models\StockAdjustmentItem;
 use App\Modules\Inventory\Models\StockBlock;
 use App\Modules\Inventory\Models\StockMovement;
 use App\Modules\Inventory\Models\StockReservation;
@@ -42,6 +44,8 @@ class InventoryServiceProvider extends ModuleServiceProvider
             'stock_movement' => StockMovement::class,
             'stock_reservation' => StockReservation::class,
             'stock_block' => StockBlock::class,
+            StockAdjustment::REFERENCE_TYPE => StockAdjustment::class,
+            'stock_adjustment_item' => StockAdjustmentItem::class,
         ]);
     }
 }

@@ -70,6 +70,7 @@ function writeEndpointPermissions(): array
         'DELETE api/v1/suppliers/{supplier}/products/{product}' => Permission::SuppliersManage,
         'POST api/v1/users' => Permission::UsersManage,
         'PATCH api/v1/users/{user}' => Permission::UsersManage,
+        'POST api/v1/inventory/adjustments' => Permission::InventoryAdjust,
         'POST api/v1/inventory/transfers' => Permission::InventoryTransfer,
     ];
 }

@@ -8,6 +8,7 @@ use App\Modules\Inventory\Exceptions\ReversalExceedsRemaining;
 use App\Modules\Inventory\Models\InventoryOperation;
 use App\Modules\Inventory\Models\MovementType;
 use App\Modules\Inventory\Models\Stock;
+use App\Modules\Inventory\Models\StockAdjustment;
 use App\Modules\Inventory\Models\StockMovement;
 use App\Modules\Warehouse\Enums\ZoneType;
 use App\Modules\Warehouse\Models\Location;
@@ -317,5 +318,129 @@ describe('partial reversal by line (ADR-013)', function () {
 
         expect($error->getMessage())->toContain('REVERSAL_LINE_WITHOUT_ORIGINAL')
             ->and(app(DatabaseErrorTranslator::class)->translate($error))->toBeNull();
+    });
+});
+
+describe('stock adjustment documents (E3.05)', function () {
+    beforeEach(function () {
+        $this->adjustment = StockAdjustment::query()->create([
+            'number' => StockAdjustment::nextNumber(),
+            'warehouse_id' => $this->warehouse->id,
+            'direction' => MovementDirection::Out,
+            'reason_code' => 'loss',
+            'created_by' => $this->user->id,
+            'created_at' => now(),
+        ]);
+        $this->adjustmentItem = fn (array $attributes = []): int => DB::table('stock_adjustment_items')->insertGetId([
+            'adjustment_id' => $this->adjustment->id,
+            'warehouse_id' => $this->warehouse->id,
+            'item_number' => 1,
+            'product_id' => $this->product->id,
+            'location_id' => $this->location->id,
+            'quantity' => 10,
+            'approval_threshold' => 5,
+            'status' => 'pending',
+            ...$attributes,
+        ]);
+        $this->adjustmentOperation = fn (): InventoryOperation => ledgerOperation($this->warehouse, $this->user, OperationType::AdjustmentOut, [
+            'reason_code' => 'loss',
+            'reference_type' => 'stock_adjustment',
+            'reference_id' => $this->adjustment->id,
+        ]);
+    });
+
+    it('numbers the documents in their own range', function () {
+        $error = databaseErrorOf(fn () => DB::table('stock_adjustments')->insert([
+            'number' => 4900000001,
+            'warehouse_id' => $this->warehouse->id,
+            'direction' => 'out',
+            'reason_code' => 'loss',
+            'created_by' => $this->user->id,
+            'created_at' => now(),
+        ]));
+
+        expect($this->adjustment->number)->toBeGreaterThanOrEqual(5100000000)->toBeLessThanOrEqual(5199999999)
+            ->and($error->getMessage())->toContain('stock_adjustments_number_check');
+    });
+
+    it('admits only the reasons of the direction', function (string $direction, string $reason) {
+        $error = databaseErrorOf(fn () => DB::table('stock_adjustments')->insert([
+            'number' => StockAdjustment::nextNumber(),
+            'warehouse_id' => $this->warehouse->id,
+            'direction' => $direction,
+            'reason_code' => $reason,
+            'created_by' => $this->user->id,
+            'created_at' => now(),
+        ]));
+
+        expect($error->getMessage())->toContain('stock_adjustments_reason_code_check');
+    })->with([['in', 'damage'], ['in', 'loss'], ['out', 'found'], ['in', 'initial_load']]);
+
+    it('keeps the header append only', function () {
+        $error = databaseErrorOf(fn () => DB::table('stock_adjustments')->where('id', $this->adjustment->id)->update(['notes' => 'Otra nota']));
+
+        expect($error->getMessage())->toContain('stock_adjustments is append only');
+    });
+
+    it('ties the status of an item to its threshold and its operation', function (array $attributes, string $constraint) {
+        expect(databaseErrorOf(fn () => ($this->adjustmentItem)($attributes))->getMessage())->toContain($constraint);
+    })->with([
+        'pending within the threshold' => [['quantity' => 5], 'stock_adjustment_items_threshold_status_check'],
+        'pending without threshold' => [['approval_threshold' => null], 'stock_adjustment_items_threshold_status_check'],
+        'posted without operation' => [['status' => 'posted', 'approval_threshold' => null], 'stock_adjustment_items_operation_check'],
+        'zero threshold' => [['approval_threshold' => 0], 'stock_adjustment_items_approval_threshold_check'],
+    ]);
+
+    it('rejects a posted item above its threshold', function () {
+        $operation = ($this->adjustmentOperation)();
+
+        expect(databaseErrorOf(fn () => ($this->adjustmentItem)(['status' => 'posted', 'operation_id' => $operation->id]))->getMessage())
+            ->toContain('stock_adjustment_items_threshold_status_check');
+    });
+
+    it('lets a pending item change once, to approved or rejected, and nothing else', function () {
+        $id = ($this->adjustmentItem)();
+        $operation = ($this->adjustmentOperation)();
+        $decision = ['decided_by' => $this->user->id, 'decided_at' => now()];
+        $item = fn () => DB::table('stock_adjustment_items')->where('id', $id);
+
+        expect(databaseErrorOf(fn () => $item()->update(['quantity' => 11, 'status' => 'rejected', 'decision_notes' => 'Conteo dudoso', ...$decision]))->getMessage())
+            ->toContain('Only the decision')
+            ->and(databaseErrorOf(fn () => $item()->update(['status' => 'rejected', ...$decision]))->getMessage())
+            ->toContain('stock_adjustment_items_rejection_notes_check');
+
+        $item()->update(['status' => 'approved', 'operation_id' => $operation->id, ...$decision]);
+
+        expect(databaseErrorOf(fn () => $item()->update(['status' => 'rejected', 'operation_id' => null, 'decision_notes' => 'Tarde']))->getMessage())
+            ->toContain('ADJUSTMENT_ITEM_NOT_PENDING')
+            ->and(databaseErrorOf(fn () => $item()->delete())->getMessage())
+            ->toContain('does not allow DELETE');
+    });
+
+    it('lets one document originate several operations, unlike the other references (INV-007)', function () {
+        ($this->adjustmentOperation)();
+        ($this->adjustmentOperation)();
+        ledgerOperation($this->warehouse, $this->user, OperationType::Receipt, ['reference_type' => 'goods_receipt', 'reference_id' => 1]);
+
+        $error = databaseErrorOf(fn () => ledgerOperation($this->warehouse, $this->user, OperationType::Receipt, ['reference_type' => 'goods_receipt', 'reference_id' => 1]));
+
+        expect($error->getMessage())->toContain('inventory_operations_reference_unique');
+    });
+
+    it('admits an adjustment without document and a document reference only on manual adjustments', function () {
+        ledgerOperation($this->warehouse, $this->user, OperationType::AdjustmentOut, ['reason_code' => 'damage']);
+
+        $initialLoad = databaseErrorOf(fn () => ledgerOperation($this->warehouse, $this->user, OperationType::AdjustmentIn, [
+            'reason_code' => 'initial_load',
+            'reference_type' => 'stock_adjustment',
+            'reference_id' => $this->adjustment->id,
+        ]));
+        $transfer = databaseErrorOf(fn () => ledgerOperation($this->warehouse, $this->user, OperationType::Transfer, [
+            'reference_type' => 'stock_adjustment',
+            'reference_id' => $this->adjustment->id,
+        ]));
+
+        expect($initialLoad->getMessage())->toContain('inventory_operations_type_reference_check')
+            ->and($transfer->getMessage())->toContain('inventory_operations_type_reference_check');
     });
 });

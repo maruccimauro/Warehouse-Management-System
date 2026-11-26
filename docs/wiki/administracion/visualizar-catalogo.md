@@ -4,7 +4,7 @@ La transacción `MM03` muestra los datos de un artículo sin modificarlos. Cualq
 
 ## Visualizar un artículo {#visualizar}
 
-1. Ingrese el **SKU** y, si quiere ver el stock mínimo de un depósito, el **Depósito (stock mínimo)**. Presione <kbd>F8</kbd>. Si el artículo no existe, la barra de estado lo informa con [`PRODUCT_NOT_FOUND`](/referencia/mensajes#product-not-found).
+1. Ingrese el **SKU** y, si quiere ver sus datos en un depósito, el **Depósito**. Presione <kbd>F8</kbd>. Si el artículo no existe, la barra de estado lo informa con [`PRODUCT_NOT_FOUND`](/referencia/mensajes#product-not-found).
 2. La ficha muestra los datos en solo lectura, con el estado y si el artículo tiene seguimiento por lote.
 3. <kbd>F3</kbd> vuelve a la pantalla inicial.
 

@@ -3,11 +3,14 @@
 namespace Tests\Support\Concurrency;
 
 use App\Modules\Identity\Models\User;
+use App\Modules\Inventory\Actions\AdjustStock;
 use App\Modules\Inventory\Actions\TransferStock;
+use App\Modules\Inventory\Data\AdjustmentItem;
 use App\Modules\Inventory\Data\MovementLine;
 use App\Modules\Inventory\Data\OperationDraft;
 use App\Modules\Inventory\Data\TransferItem;
 use App\Modules\Inventory\Enums\AdjustmentReason;
+use App\Modules\Inventory\Enums\MovementDirection;
 use App\Modules\Inventory\Enums\OperationType;
 use App\Modules\Inventory\Models\StockMovement;
 use App\Modules\Inventory\Services\StockLedger;
@@ -64,6 +67,8 @@ final class ConcurrencyScenarioCommand extends Command
         $work = match ($scenario) {
             'deadlock' => fn (): ?int => $this->crossLocks($payload),
             'transfer' => fn (): ?int => $this->transfer($payload),
+            'withdraw' => fn (): ?int => $this->adjust($payload, MovementDirection::Out, AdjustmentReason::Loss),
+            'enter' => fn (): ?int => $this->adjust($payload, MovementDirection::In, AdjustmentReason::Found),
             default => fn (): ?int => $ledger->apply($this->draft($scenario, $payload))->id,
         };
         $attempts = 0;
@@ -150,9 +155,9 @@ final class ConcurrencyScenarioCommand extends Command
     }
 
     /**
-     * Escenarios sobre StockLedger. A medida que existen las Actions de E3.05
+     * Escenarios sobre StockLedger. A medida que existen las Actions de E3.06
      * a E3.09, los escenarios las invocan en lugar de armar el borrador (la
-     * transferencia ya usa TransferStock).
+     * transferencia usa TransferStock y los ajustes, AdjustStock).
      *
      * @param  array<array-key, mixed>  $payload
      */
@@ -164,12 +169,6 @@ final class ConcurrencyScenarioCommand extends Command
         $user = $int('user');
 
         return match ($scenario) {
-            'withdraw' => new OperationDraft(OperationType::AdjustmentOut, $warehouse, $user, [
-                new MovementLine($int('product'), $int('location'), 711, -$int('quantity')),
-            ], reasonCode: AdjustmentReason::Loss),
-            'enter' => new OperationDraft(OperationType::AdjustmentIn, $warehouse, $user, [
-                new MovementLine($int('product'), $int('location'), 712, $int('quantity')),
-            ], reasonCode: AdjustmentReason::Found),
             'reverse' => new OperationDraft(OperationType::Reversal, $warehouse, $user, StockMovement::query()
                 ->where('operation_id', $int('operation'))
                 ->orderBy('id')
@@ -184,6 +183,20 @@ final class ConcurrencyScenarioCommand extends Command
                 ->all(), reversesOperationId: $int('operation'), notes: 'Reversión concurrente'),
             default => throw new InvalidArgumentException("Escenario desconocido: {$scenario}."),
         };
+    }
+
+    /**
+     * Ajuste de una posición con la Action de E3.05, sin umbral: se
+     * contabiliza en el momento. Devuelve la operación del libro.
+     *
+     * @param  array<array-key, mixed>  $payload
+     */
+    private function adjust(array $payload, MovementDirection $direction, AdjustmentReason $reason): ?int
+    {
+        $item = new AdjustmentItem(self::int($payload, 'product'), self::int($payload, 'location'), self::int($payload, 'quantity'));
+        $adjustment = app(AdjustStock::class)(self::int($payload, 'warehouse'), $direction, $reason, [$item], self::int($payload, 'user'));
+
+        return $adjustment->items()->value('operation_id');
     }
 
     /**

@@ -13,7 +13,8 @@ use Illuminate\Support\Carbon;
 /**
  * Datos de un producto propios de un depósito, como los datos de centro (MARC)
  * de SAP (DM-21). Sin fila, el producto usa los valores por defecto en ese
- * depósito: stock mínimo 0, sin alerta de stock crítico.
+ * depósito: stock mínimo 0, sin alerta de stock crítico y sin umbrales de
+ * aprobación de ajustes (E3.05).
  *
  * La clave es compuesta (product_id, warehouse_id), que Eloquent no admite:
  * el modelo sirve para leer, y SetProductWarehouseSettings escribe con upsert.
@@ -21,10 +22,12 @@ use Illuminate\Support\Carbon;
  * @property int $product_id
  * @property int $warehouse_id
  * @property int $min_stock
+ * @property int|null $adjustment_in_approval_threshold
+ * @property int|null $adjustment_out_approval_threshold
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-#[Fillable(['product_id', 'warehouse_id', 'min_stock'])]
+#[Fillable(['product_id', 'warehouse_id', 'min_stock', 'adjustment_in_approval_threshold', 'adjustment_out_approval_threshold'])]
 #[Table('product_warehouse_settings', key: false, incrementing: false)]
 class ProductWarehouseSetting extends Model
 {
@@ -35,7 +38,11 @@ class ProductWarehouseSetting extends Model
      */
     protected function casts(): array
     {
-        return ['min_stock' => 'integer'];
+        return [
+            'min_stock' => 'integer',
+            'adjustment_in_approval_threshold' => 'integer',
+            'adjustment_out_approval_threshold' => 'integer',
+        ];
     }
 
     /**

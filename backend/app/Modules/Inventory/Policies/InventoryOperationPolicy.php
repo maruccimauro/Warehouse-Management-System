@@ -24,6 +24,11 @@ final class InventoryOperationPolicy
         return $this->operate($user, $warehouseId, Permission::InventoryTransfer);
     }
 
+    public function adjust(User $user, ?int $warehouseId): Response
+    {
+        return $this->operate($user, $warehouseId, Permission::InventoryAdjust);
+    }
+
     private function operate(User $user, ?int $warehouseId, Permission $permission): Response
     {
         $response = $this->access->authorizePermission($user, $permission);

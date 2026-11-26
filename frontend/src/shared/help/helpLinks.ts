@@ -74,6 +74,8 @@ const productFields = [
   'widthMm',
   'heightMm',
   'minStock',
+  'adjustmentInThreshold',
+  'adjustmentOutThreshold',
 ] as const;
 const supplierFields = ['number', 'taxId', 'name', 'status', 'email', 'phone'] as const;
 // Campos de la ficha de usuario (E2.14), incluidos desde un fragmento en SU01 y ZW91 a ZW93.

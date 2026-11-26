@@ -245,42 +245,46 @@ Ejemplo completo:
 | Campo | Valor |
 | - | - |
 | Actor | Supervisor u operador autorizado |
-| Objetivo | Corregir el stock de una ubicación por daño, pérdida, hallazgo, corrección o carga inicial |
-| Permisos | `inventory.adjust`; `inventory.adjust.approve` para salidas sobre el umbral; `inventory.reverse` para revertir |
+| Objetivo | Corregir el stock de una o más ubicaciones por daño, pérdida, hallazgo o corrección |
+| Permisos | `inventory.adjust`; `inventory.adjust.approve` para aprobar o rechazar las posiciones sobre el umbral (E3.23); `inventory.reverse` para revertir |
 | Endpoints | `POST /inventory/adjustments`, `POST /inventory/operations/{id}/reverse` |
-| Movimiento | 551 `damage`, 711 `loss`, 712 `found`, 711 o 712 `correction`, 561 `initial_load` |
-| Reglas | INV-001, INV-005, INV-008, INV-009 |
+| Movimiento | 551 `damage`, 711 `loss`, 712 `found`, 711 o 712 `correction` |
+| Reglas | INV-001, INV-005, INV-007, INV-008, INV-009, REG-014, REG-024 |
 | Etapa | E3 |
+
+La carga inicial de stock (`initial_load`, 561) no es un ajuste de este caso de uso: tiene su propio endpoint y permiso (E3.06).
 
 **Precondiciones**
 
-- La ubicación está `active`.
+- El depósito está activo y las ubicaciones, `active`.
 
 **Flujo principal**
 
-1. El usuario indica ubicación, producto, cantidad con signo, motivo de la lista cerrada y observación.
-2. La interfaz muestra el stock actual y el resultante; el usuario confirma.
-3. El sistema bloquea la ubicación y la existencia, y valida el motivo y el signo: `damage` y `loss` solo restan, `found` e `initial_load` solo suman, `correction` admite ambos.
-4. En un ajuste negativo, el sistema valida que la cantidad no supere el stock libre y, si supera el umbral configurado, que el usuario tenga `inventory.adjust.approve`.
-5. El sistema registra una operación `adjustment_in` o `adjustment_out` con el código de movimiento que corresponde al motivo.
+1. El usuario elige la dirección (ajuste positivo o negativo), un motivo de la lista cerrada para esa dirección, la observación y hasta 100 posiciones, cada una con artículo, ubicación y cantidad positiva en la unidad base.
+2. La interfaz muestra el stock actual y el resultante de cada posición; el usuario confirma.
+3. El sistema bloquea el depósito y valida el motivo por dirección: `found` y `correction` suman; `damage`, `loss` y `correction` restan.
+4. El sistema crea el documento de ajuste (número del intervalo 5100000000) y compara cada posición con el umbral de su artículo en el depósito para esa dirección (REG-024).
+5. Las posiciones sin umbral o que no lo superan se contabilizan juntas en una operación `adjustment_in` o `adjustment_out` con el código del motivo, que referencia al documento; en una salida, el sistema valida bajo bloqueo que la cantidad no supere el stock libre.
+6. Las posiciones que superan el umbral quedan `pending` y no mueven stock. La respuesta es 201 si todas se contabilizaron y 202 si alguna espera aprobación.
 
 **Flujos alternativos**
 
 | ID | Paso | Condición | Resultado |
 | - | - | - | - |
 | FA-04.1 | 1 | Sin motivo o con un motivo fuera de la lista | 422 de validación (INV-008) |
-| FA-04.2 | 3 | El signo no corresponde al motivo | 422 de validación |
-| FA-04.3 | 4 | La salida deja el físico por debajo de lo reservado más lo bloqueado | 422 `RESERVED_STOCK_NOT_AVAILABLE`; primero se liberan reservas o bloqueos |
-| FA-04.4 | 4 | La salida supera el físico | 422 `INSUFFICIENT_STOCK` |
-| FA-04.5 | 4 | La salida supera el umbral y el usuario no tiene `inventory.adjust.approve` | 403; la diferencia se escala a un supervisor |
-| FA-04.7 | 3 | Ajuste positivo en una ubicación de sistema (RECEPCION, PACKING o DESPACHO) | 422 `SYSTEM_LOCATION_NOT_ALLOWED` (REG-014). Un sobrante en RECEPCION se registra con una recepción sin orden (FA-01.1) |
-| FA-04.6 | 3 | Ubicación bloqueada o en conteo | FC-9. Las diferencias de una ubicación en conteo se resuelven aprobando el inventario físico |
+| FA-04.2 | 3 | El motivo no corresponde a la dirección | 422 de validación |
+| FA-04.3 | 5 | La salida deja el físico por debajo de lo reservado más lo bloqueado | 422 `RESERVED_STOCK_NOT_AVAILABLE`; primero se liberan reservas o bloqueos. No se crea el documento |
+| FA-04.4 | 5 | La salida supera el físico | 422 `INSUFFICIENT_STOCK`. No se crea el documento |
+| FA-04.5 | 6 | Una posición supera el umbral de su artículo | 202: la posición queda `pending`; otro usuario con `inventory.adjust.approve` la aprueba, y entonces se revalida el stock y se contabiliza, o la rechaza con motivo (E3.23). El resto del documento ya está contabilizado |
+| FA-04.7 | 5 | Ajuste positivo en una ubicación de sistema (RECEPCION, PACKING o DESPACHO) | 422 `SYSTEM_LOCATION_NOT_ALLOWED` (REG-014). Un sobrante en RECEPCION se registra con una recepción sin orden (FA-01.1) |
+| FA-04.6 | 5 | Ubicación bloqueada o en conteo | FC-9. Las diferencias de una ubicación en conteo se resuelven aprobando el inventario físico |
+| FA-04.8 | 1 | Dos posiciones sobre el mismo artículo y ubicación | 422 de validación (INV-004) |
 
 **Flujo de reversión**
 
 | ID | Condición | Resultado |
 | - | - | - |
-| FR-04.1 | Ajuste confirmado y la reversión no deja stock negativo | `POST /inventory/operations/{id}/reverse` con líneas y cantidades: operación `reversal` con el código de reversión de cada línea (552, 562, 711 o 712), en todo o en parte |
+| FR-04.1 | Operación de ajuste contabilizada y la reversión no deja stock negativo | `POST /inventory/operations/{id}/reverse` con líneas y cantidades: operación `reversal` con el código de reversión de cada línea (552, 711 o 712), en todo o en parte. La reversión no pasa por el umbral |
 | FR-04.2 | Revertir un ajuste positivo dejaría stock negativo o por debajo de lo comprometido | 422 `INSUFFICIENT_STOCK` |
 | FR-04.3 | Se pide revertir más que el saldo de la línea | 422 `REVERSAL_EXCEEDS_REMAINING` |
 

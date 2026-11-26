@@ -1,7 +1,7 @@
 {
   "fields": {
     "sku": "SKU",
-    "warehouse": "Depósito (stock mínimo)",
+    "warehouse": "Depósito",
     "name": "Nombre",
     "description": "Descripción",
     "barcode": "Código de barras",
@@ -12,7 +12,9 @@
     "lengthMm": "Largo (mm)",
     "widthMm": "Ancho (mm)",
     "heightMm": "Alto (mm)",
-    "minStock": "Stock mínimo"
+    "minStock": "Stock mínimo",
+    "adjustmentInThreshold": "Umbral de aprobación de ajuste positivo",
+    "adjustmentOutThreshold": "Umbral de aprobación de ajuste negativo"
   },
   "sections": {
     "general": "Datos generales",
@@ -42,7 +44,7 @@
     "create": "Crear catálogo",
     "change": "Modificar catálogo",
     "display": "Visualizar catálogo",
-    "hint": "Ingrese el SKU y continúe con F8. El depósito es opcional: con él, la ficha muestra también el stock mínimo de ese depósito."
+    "hint": "Ingrese el SKU y continúe con F8. El depósito es opcional: con él, la ficha muestra también el stock mínimo y los umbrales de aprobación de ajustes de ese depósito."
   },
   "detail": {
     "loading": "Leyendo los datos del artículo...",
@@ -51,6 +53,7 @@
     "no": "no",
     "fixedAfterCreate": "No cambia después del alta.",
     "minStockHint": "Cantidad en la unidad base para el depósito {{code}}. 0 indica sin stock mínimo.",
+    "adjustmentThresholdHint": "Cantidad en la unidad base para el depósito {{code}}. Una posición de ajuste que la supera espera aprobación. Vacío indica sin umbral.",
     "saveHint": "Grabe con Ctrl+S. F3 vuelve a la pantalla inicial.",
     "suppliers": "Proveedores del artículo",
     "noSuppliers": "El artículo no tiene proveedores vinculados.",
@@ -68,7 +71,7 @@
     "alreadyExists": "El artículo {{sku}} ya existe.",
     "notFound": "El artículo {{sku}} no existe.",
     "loadFailed": "No se pudo leer el artículo.",
-    "settingNotSaved": "Artículo {{sku}} grabado, pero el stock mínimo del depósito {{warehouse}} no se grabó: {{reason}} Corríjalo en Modificar catálogo."
+    "settingNotSaved": "Artículo {{sku}} grabado, pero los datos del depósito {{warehouse}} no se grabaron: {{reason}} Corríjalos en Modificar catálogo."
   },
   "list": {
     "selection": "Lista del catálogo",

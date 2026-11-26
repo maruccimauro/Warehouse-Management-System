@@ -3,6 +3,8 @@
 namespace App\Modules\Inventory\Http\Resources;
 
 use App\Modules\Inventory\Models\InventoryOperation;
+use Closure;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -15,6 +17,22 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class InventoryOperationResource extends JsonResource
 {
+    /**
+     * Relaciones que el recurso muestra: líneas por posición, la salida antes
+     * que la entrada, con el SKU y el código de ubicación. Con prefijo, para
+     * cargarlas desde un documento ('operations.').
+     *
+     * @return array<int|string, string|(Closure(Relation<*, *, *>): mixed)>
+     */
+    public static function relations(string $prefix = ''): array
+    {
+        return [
+            $prefix.'movements' => fn (Relation $query) => $query->orderBy('item_number')->orderByDesc('direction')->orderBy('id'),
+            $prefix.'movements.product:id,sku',
+            $prefix.'movements.location:id,code',
+        ];
+    }
+
     /**
      * @return array<string, mixed>
      */

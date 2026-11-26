@@ -60,6 +60,8 @@ export const warehouseSettingSchema = z.object({
   product_id: z.number().int(),
   warehouse_id: z.number().int(),
   min_stock: z.number().int(),
+  adjustment_in_approval_threshold: z.number().int().nullable(),
+  adjustment_out_approval_threshold: z.number().int().nullable(),
 });
 
 // Diez dígitos, como InternalNumber en el backend.
@@ -163,9 +165,16 @@ export function fetchWarehouseSettings(productId: number, signal?: AbortSignal):
   return api.request('GET', `/products/${String(productId)}/warehouse-settings`, { schema: warehouseSettingList, signal });
 }
 
-export function setWarehouseSetting(productId: number, warehouseId: number, minStock: number): Promise<WarehouseSetting> {
+// Datos editables de un producto en un depósito. Es un PUT: se envían todos y un umbral nulo
+// es "sin umbral" (E3.05).
+export type WarehouseSettingInput = Pick<
+  WarehouseSetting,
+  'min_stock' | 'adjustment_in_approval_threshold' | 'adjustment_out_approval_threshold'
+>;
+
+export function setWarehouseSetting(productId: number, warehouseId: number, input: WarehouseSettingInput): Promise<WarehouseSetting> {
   return api.request('PUT', `/products/${String(productId)}/warehouse-settings/${String(warehouseId)}`, {
-    body: { min_stock: minStock },
+    body: input,
     schema: warehouseSettingResponse,
   });
 }

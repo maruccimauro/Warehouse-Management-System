@@ -82,7 +82,7 @@ Las invariantes son condiciones que el sistema garantiza en todo momento, sin ex
 | Aspecto | Detalle |
 | - | - |
 | Enunciado | Reintentos de una misma petición o confirmaciones repetidas de un documento no generan operaciones adicionales |
-| Garantía en base de datos | `UNIQUE (reference_type, reference_id)` en operaciones: un documento origina como máximo una operación, aunque fallen los controles de la aplicación. `UNIQUE (performed_by, idempotency_key)` en operaciones. Trigger `stock_movements_validate_reversal`: lo revertido de cada línea no supera su cantidad original, aunque lleguen reversiones concurrentes. `operation_id UNIQUE` en los documentos, que solo impide que dos documentos apunten a la misma operación. Índice único parcial de un despacho vigente por pedido |
+| Garantía en base de datos | Índice único `(reference_type, reference_id)` en operaciones: un documento origina como máximo una operación, aunque fallen los controles de la aplicación. La excepción es el ajuste de stock, que origina una operación al crearse y una por cada posición aprobada (decisión del usuario del 26/11/2026): el índice es parcial y lo excluye, y la garantía pasa a la posición, cuyo `operation_id` se asigna una sola vez y cuyo trigger `stock_adjustment_items_validate_transition` solo admite pasar de `pending` a `approved` o `rejected`. `UNIQUE (performed_by, idempotency_key)` en operaciones. Trigger `stock_movements_validate_reversal`: lo revertido de cada línea no supera su cantidad original, aunque lleguen reversiones concurrentes. `operation_id UNIQUE` en los documentos, que solo impide que dos documentos apunten a la misma operación. Índice único parcial de un despacho vigente por pedido |
 | Garantía en aplicación | Middleware de idempotencia ([ADR-007](../03-architecture/adr/007-idempotency.md)) |
 | Errores | 428 `IDEMPOTENCY_KEY_REQUIRED` (sin la cabecera, vacía o de más de 100 caracteres). 422 `IDEMPOTENCY_KEY_REUSED` (misma clave, otro contenido). 409 `IDEMPOTENCY_REQUEST_IN_PROGRESS`. 409 `OPERATION_ALREADY_CONFIRMED`. 422 `REVERSAL_EXCEEDS_REMAINING` |
 | Pruebas | Misma clave enviada 10 veces en paralelo: una sola operación. Despacho confirmado dos veces: una sola salida. Dos reversiones parciales concurrentes de la misma línea que juntas superan el original: una falla |
@@ -92,11 +92,11 @@ Las invariantes son condiciones que el sistema garantiza en todo momento, sin ex
 
 | Aspecto | Detalle |
 | - | - |
-| Enunciado | Los ajustes de inventario registran un motivo de una lista cerrada: `damage` (551), `loss` (711), `found` (712), `correction` (711 o 712) e `initial_load` (561, carga inicial). Los ajustes negativos por encima de un umbral requieren el permiso `inventory.adjust.approve` |
-| Garantía en base de datos | `reason_code` obligatorio para operaciones de tipo ajuste (`CHECK` condicional) |
+| Enunciado | Los ajustes de inventario registran un motivo de una lista cerrada: `damage` (551), `loss` (711), `found` (712), `correction` (711 o 712) e `initial_load` (561, carga inicial). Un documento de ajuste tiene una dirección y un único motivo: los positivos admiten `found` y `correction`, los negativos `damage`, `loss` y `correction`; `initial_load` es la carga inicial, con su propia operación. Las posiciones que superan el umbral de aprobación de su artículo esperan aprobación (REG-024) |
+| Garantía en base de datos | `reason_code` obligatorio para operaciones de tipo ajuste (`CHECK` condicional). `stock_adjustments_reason_code_check`: motivo admitido por la dirección del documento |
 | Garantía en aplicación | Validación del Form Request y de la Action |
-| Errores | 422 de validación sin motivo. 403 si supera el umbral sin permiso |
-| Pruebas | Ajuste sin motivo rechazado. Ajuste negativo grande sin permiso rechazado |
+| Errores | 422 de validación sin motivo o con un motivo que no corresponde a la dirección |
+| Pruebas | Ajuste sin motivo rechazado. Motivo de la otra dirección rechazado. Cada motivo con su código de movimiento |
 | Etapa | E3 |
 
 ### INV-009. Una ubicación bloqueada o en conteo no admite movimientos
@@ -169,6 +169,7 @@ Reglas de negocio que no son invariantes del inventario pero se aplican con el m
 | REG-021 | La contraseña que fija el administrador, en el alta o al resetearla, es inicial: hasta cambiarla con `PUT /me/password`, la sesión solo admite `GET /auth/me`, que lo informa en `password_change_required`, y el cierre de sesión, como la clave inicial de SU01 en SAP. El cambio exige la contraseña actual, no la repite, tiene al menos 12 caracteres y cierra las demás sesiones del usuario | 403 `PASSWORD_CHANGE_REQUIRED` | E2 |
 | REG-022 | Siempre queda al menos un administrador activo, y nadie se desactiva a sí mismo. Toda operación que puede achicar el conjunto de administradores activos (cambiar roles, desactivar) toma el bloqueo consultivo `209001` ([ADR-003](../03-architecture/adr/003-pessimistic-concurrency-control.md)) y cuenta lo que queda después de aplicar el cambio; dos administradores que se quitan el rol mutuamente no pueden dejar el sistema sin ninguno | 409 `LAST_ADMINISTRATOR`. 422 `SELF_DEACTIVATION_NOT_ALLOWED` | E2 |
 | REG-023 | Sin escalada de privilegios, como `S_USER_GRP` y `S_USER_AGR` en SAP: nadie cambia sus propios roles, solo se asignan o quitan roles cuyos permisos tiene quien opera, y solo se administra a un usuario cuyos permisos efectivos tiene quien opera (resetear su contraseña sería tomar su cuenta). La regla compara permisos, no nombres de rol (ADR-009) | 403 `FORBIDDEN` | E2 |
+| REG-024 | Cada artículo tiene en cada depósito un umbral de aprobación para los ajustes positivos y otro para los negativos (`product_warehouse_settings`), opcionales y mayores que cero; vacío es sin umbral. Al crear un ajuste, cada posición se compara con el umbral de su dirección: sin umbral, o con una cantidad que no lo supera, se contabiliza en el momento; si lo supera, queda `pending` en el mismo documento y no mueve stock (respuesta 202). El umbral vigente queda copiado en la posición. La aprobación por posición es de otro usuario con `inventory.adjust.approve`, también cuando el que ajusta es aprobador; el rechazo exige motivo; al aprobar se revalida el stock (E3.23). El cambio de un umbral se audita (`product.adjustment_thresholds_changed`) | Sin error: 202 con la posición `pending` | E3 |
 
 ## Catálogo de códigos de error de dominio
 

@@ -36,6 +36,7 @@ import {
   type ProductInput,
   type ProductSupplier,
   type Unit,
+  type WarehouseSettingInput,
 } from './catalogApi';
 import { CategoryField, UnitField } from './CatalogFields';
 import { categoryPaths, useCategories, useUnits } from './catalogQueries';
@@ -81,6 +82,8 @@ const productFormSchema = z.object({
   widthMm: optionalPositiveInteger(dimensionMax),
   heightMm: optionalPositiveInteger(dimensionMax),
   minStock: nonNegativeInteger(maxQuantity),
+  adjustmentInThreshold: optionalPositiveInteger(maxQuantity),
+  adjustmentOutThreshold: optionalPositiveInteger(maxQuantity),
 });
 
 type ProductFormValues = z.input<typeof productFormSchema>;
@@ -96,7 +99,7 @@ interface ProductDetailProps {
 }
 
 // Lee lo que la ficha necesita antes de montar el formulario (categorías, unidades y, con
-// depósito, el stock mínimo), para que los valores por defecto no cambien después.
+// depósito, sus datos), para que los valores por defecto no cambien después.
 function ProductDetail({ activity, target, onDone }: ProductDetailProps) {
   const { t } = useTranslation('products');
   const categories = useCategories();
@@ -117,8 +120,13 @@ function ProductDetail({ activity, target, onDone }: ProductDetailProps) {
     return <p className="text-ink-muted">{t('detail.loading')}</p>;
   }
 
-  // Un depósito sin fila usa el valor por defecto: sin stock mínimo.
-  const minStock = settings.data?.find((setting) => setting.warehouse_id === warehouse?.id)?.min_stock ?? 0;
+  // Un depósito sin fila usa los valores por defecto: sin stock mínimo y sin umbrales.
+  const setting = settings.data?.find((candidate) => candidate.warehouse_id === warehouse?.id);
+  const warehouseSetting: WarehouseSettingInput = {
+    min_stock: setting?.min_stock ?? 0,
+    adjustment_in_approval_threshold: setting?.adjustment_in_approval_threshold ?? null,
+    adjustment_out_approval_threshold: setting?.adjustment_out_approval_threshold ?? null,
+  };
 
   return (
     <>
@@ -127,7 +135,7 @@ function ProductDetail({ activity, target, onDone }: ProductDetailProps) {
         target={target}
         categories={categories.data}
         units={units.data}
-        minStock={minStock}
+        warehouseSetting={warehouseSetting}
         onDone={onDone}
       />
       {activity === 'display' && product !== undefined && <ProductSuppliers productId={product.id} />}
@@ -140,11 +148,11 @@ interface ProductFormProps {
   target: ProductTarget;
   categories: readonly Category[];
   units: readonly Unit[];
-  minStock: number;
+  warehouseSetting: WarehouseSettingInput;
   onDone: () => void;
 }
 
-function ProductForm({ activity, target, categories, units, minStock, onDone }: ProductFormProps) {
+function ProductForm({ activity, target, categories, units, warehouseSetting, onDone }: ProductFormProps) {
   const { t } = useTranslation('products');
   const queryClient = useQueryClient();
   const { product, warehouse, sku } = target;
@@ -163,20 +171,30 @@ function ProductForm({ activity, target, categories, units, minStock, onDone }: 
       lengthMm: numberText(product?.length_mm),
       widthMm: numberText(product?.width_mm),
       heightMm: numberText(product?.height_mm),
-      minStock: String(minStock),
+      minStock: String(warehouseSetting.min_stock),
+      adjustmentInThreshold: numberText(warehouseSetting.adjustment_in_approval_threshold),
+      adjustmentOutThreshold: numberText(warehouseSetting.adjustment_out_approval_threshold),
     }),
-    [sku, product, paths, units, minStock],
+    [sku, product, paths, units, warehouseSetting],
   );
 
   const categoryIdOf = (path: string) => [...paths.entries()].find(([, candidate]) => candidate === path)?.[0];
 
-  const saveMinStock = async (saved: Product, text: string): Promise<StatusMessage | undefined> => {
-    if (warehouse === undefined || Number(text) === minStock) {
+  // Graba los datos del depósito solo si cambiaron.
+  const saveWarehouseSetting = async (saved: Product, form: ProductFormValues): Promise<StatusMessage | undefined> => {
+    const input: WarehouseSettingInput = {
+      min_stock: Number(form.minStock),
+      adjustment_in_approval_threshold: optionalNumber(form.adjustmentInThreshold),
+      adjustment_out_approval_threshold: optionalNumber(form.adjustmentOutThreshold),
+    };
+    const unchanged = (Object.keys(input) as (keyof WarehouseSettingInput)[]).every((key) => input[key] === warehouseSetting[key]);
+
+    if (warehouse === undefined || unchanged) {
       return undefined;
     }
 
     try {
-      await setWarehouseSetting(saved.id, warehouse.id, Number(text));
+      await setWarehouseSetting(saved.id, warehouse.id, input);
 
       return undefined;
     } catch (error) {
@@ -203,6 +221,8 @@ function ProductForm({ activity, target, categories, units, minStock, onDone }: 
       width_mm: 'widthMm',
       height_mm: 'heightMm',
       min_stock: 'minStock',
+      adjustment_in_approval_threshold: 'adjustmentInThreshold',
+      adjustment_out_approval_threshold: 'adjustmentOutThreshold',
     },
     onBack: onDone,
     onSave: async (form) => {
@@ -227,10 +247,10 @@ function ProductForm({ activity, target, categories, units, minStock, onDone }: 
             })
           : await updateProduct(product?.id ?? 0, { ...input, status: form.status });
 
-      // El producto ya quedó grabado: si falla el stock mínimo, la ficha vuelve igual a la
-      // pantalla inicial y el W lo informa (son dos recursos del backend, sin una transacción
-      // que los una; D4).
-      const outcome = await saveMinStock(saved, form.minStock);
+      // El producto ya quedó grabado: si fallan los datos del depósito, la ficha vuelve igual a
+      // la pantalla inicial y el W lo informa (son dos recursos del backend, sin una
+      // transacción que los una; D4).
+      const outcome = await saveWarehouseSetting(saved, form);
 
       void queryClient.invalidateQueries({ queryKey: productsQueryKey });
       onDone();
@@ -269,6 +289,18 @@ function ProductForm({ activity, target, categories, units, minStock, onDone }: 
         {warehouse !== undefined && (
           <Section name="warehouse">
             <Field name="minStock" inputMode="numeric" required className="w-40" description={t('detail.minStockHint', { code: warehouse.code })} />
+            <Field
+              name="adjustmentInThreshold"
+              inputMode="numeric"
+              className="w-40"
+              description={t('detail.adjustmentThresholdHint', { code: warehouse.code })}
+            />
+            <Field
+              name="adjustmentOutThreshold"
+              inputMode="numeric"
+              className="w-40"
+              description={t('detail.adjustmentThresholdHint', { code: warehouse.code })}
+            />
           </Section>
         )}
       </Form>
