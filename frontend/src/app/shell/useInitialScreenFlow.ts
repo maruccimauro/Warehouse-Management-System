@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useScreenContext } from './useScreenContext';
 
 // Actividad de una transacción de datos maestros con trío (crear, modificar, visualizar),
 // como los códigos 01, 02 y 03 de SAP.
@@ -20,6 +21,8 @@ export interface InitialScreenFlow<TTarget, TEntry> {
 export function useInitialScreenFlow<TTarget, TEntry>(entryOf: (target: TTarget) => TEntry): InitialScreenFlow<TTarget, TEntry> {
   const [target, setTarget] = useState<TTarget>();
   const [last, setLast] = useState<TEntry>();
+
+  useScreenContext(target === undefined ? 'initial' : 'detail');
 
   return {
     target,

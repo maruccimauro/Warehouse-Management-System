@@ -69,6 +69,7 @@
     "title": "Salir sin grabar",
     "message": "Los datos que no se grabaron se perderán. ¿Desea salir de todos modos?",
     "discard": "Salir sin grabar",
-    "keepEditing": "Seguir editando"
+    "keepEditing": "Seguir editando",
+    "indicator": "Cambios sin grabar"
   }
 }

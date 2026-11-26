@@ -99,6 +99,7 @@ function Shell({ setDirty, ...props }: HarnessProps & { setDirty: (dirty: boolea
       <ShellActionsProvider>
         <UnsavedChangesContext
           value={{
+            dirty: false,
             setDirty,
             confirmDiscard: (proceed) => {
               proceed();

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useTransactionActions } from '@/app/shell/shellActions';
 import { useStatusBar } from '@/app/shell/statusMessages';
+import { useScreenContext } from '@/app/shell/useScreenContext';
 import { VisibleWarehouseField } from '@/features/warehouses/WarehouseField';
 import { useVisibleWarehouses } from '@/features/warehouses/warehouseQueries';
 import { normalizeCode } from '@/features/warehouses/warehousesApi';
@@ -30,6 +31,7 @@ export function UserListTransaction() {
   const { show } = useStatusBar();
   const warehouses = useVisibleWarehouses();
   const [values, setValues] = useState<SelectionValues>();
+  useScreenContext(values === undefined ? 'selection' : 'list');
 
   const fields = useMemo(
     (): SelectionField[] => [

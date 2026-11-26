@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { useTransactionActions } from '@/app/shell/shellActions';
 import { useStatusBar } from '@/app/shell/statusMessages';
+import { useScreenContext } from '@/app/shell/useScreenContext';
 import { useTransactionForm } from '@/app/shell/useTransactionForm';
 import type { WarehouseSummary } from '@/features/auth/authApi';
 import { useAuthenticatedUser } from '@/features/auth/useAuthenticatedUser';
@@ -36,6 +37,7 @@ export function ZonesTransaction() {
   const user = useAuthenticatedUser();
   const defaultWarehouse = useDefaultWarehouse();
   const [screen, setScreen] = useState<Screen>({ kind: 'selection' });
+  useScreenContext(screen.kind);
 
   const fields = useMemo(
     (): SelectionField[] => [{ kind: 'parameter', id: 'warehouse', label: t('fields.warehouse'), as: WarehouseField, required: true }],

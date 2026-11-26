@@ -16,19 +16,17 @@ Código del usuario. <kbd>F4</kbd> busca por código, por nombre o por email; en
 
 Cambie los datos y grabe con <kbd>Ctrl</kbd>+<kbd>S</kbd>: el sistema informa **Usuario JPEREZ grabado.** y vuelve a la pantalla inicial. El código no se modifica. <kbd>F3</kbd> vuelve sin grabar, con confirmación si hay datos sin grabar.
 
-## Asignar contraseña inicial {#contrasena-inicial}
+## Restablecer contraseña {#contrasena-inicial}
 
-Cuando el usuario olvidó su contraseña, o hay que quitarle el acceso con la contraseña actual, asígnele una contraseña inicial:
+Cuando el usuario olvidó su contraseña, o hay que quitarle el acceso con la contraseña actual, asígnele una contraseña inicial nueva en la sección **Restablecer contraseña** de la ficha:
 
-1. Elija **Asignar contraseña inicial** en la barra de la ficha.
-2. Ingrese la **Contraseña inicial** y repítala en **Repetir contraseña**.
-3. Elija **Aplicar**. **Cancelar** cierra el diálogo sin cambios.
-4. Grabe la ficha con <kbd>Ctrl</kbd>+<kbd>S</kbd>.
+1. Ingrese la **Contraseña inicial** y repítala en **Repetir contraseña**.
+2. Grabe la ficha con <kbd>Ctrl</kbd>+<kbd>S</kbd>.
 
-Si las dos contraseñas no coinciden, el diálogo lo informa con [`PASSWORD_MISMATCH`](/referencia/mensajes#password-mismatch) y queda abierto para corregirlas. Una contraseña de menos de 12 caracteres se informa con [`VALIDATION_FAILED`](/referencia/mensajes#validation-failed).
+Si deja los dos campos vacíos, la contraseña no cambia. Si las dos contraseñas no coinciden, o la contraseña tiene menos de 12 caracteres, el sistema no graba e informa el campo con [`VALIDATION_FAILED`](/referencia/mensajes#validation-failed).
 
 ::: warning
-La contraseña se asigna al grabar la ficha, no al elegir **Aplicar**. Al grabar se cierran todas las sesiones abiertas del usuario, y en su próximo ingreso debe cambiar la contraseña antes de operar.
+Al grabar se cierran todas las sesiones abiertas del usuario, y en su próximo ingreso debe cambiar la contraseña antes de operar. Mientras haya una contraseña escrita sin grabar, la ficha lo recuerda con un aviso.
 :::
 
 <!--@include: ./partes/usuario-campos.md-->

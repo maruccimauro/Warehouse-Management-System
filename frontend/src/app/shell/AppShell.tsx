@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Outlet, useMatch, useNavigate } from 'react-router';
+import { Outlet, useLocation, useMatch, useNavigate } from 'react-router';
 import { useLogout } from '@/features/auth/session';
 import { useAuthenticatedUser } from '@/features/auth/useAuthenticatedUser';
 import { useUserPreferences } from '@/features/preferences/userPreferences';
@@ -69,7 +69,7 @@ function ShellLayout() {
   const { t, i18n } = useTranslation(['shell', 'transactions', 'common']);
   const navigate = useNavigate();
   const { available, run } = useShellActions();
-  const { confirmDiscard } = useUnsavedChangesContext();
+  const { dirty, confirmDiscard } = useUnsavedChangesContext();
   const { preferences } = useUserPreferences();
   const { allowed } = useTransactionAccess();
   const toggleFavorite = useFavoriteToggle();
@@ -124,6 +124,21 @@ function ShellLayout() {
       showHelp(document.activeElement);
     },
   });
+
+  // Abrir otra transacción (árbol, campo de comando, historial, F3 o Mayús+F3 al menú) es un
+  // cambio de contexto: la barra de estado borra el mensaje de la anterior (D16.2 de E3).
+  const { pathname } = useLocation();
+  const { contextChanged } = useStatusBar();
+  const shownPathname = useRef(pathname);
+
+  useEffect(() => {
+    if (shownPathname.current === pathname) {
+      return;
+    }
+
+    shownPathname.current = pathname;
+    contextChanged();
+  }, [pathname, contextChanged]);
 
   // Un menú abierto pierde sentido al cambiar de pantalla (por ejemplo, con F3).
   const closeWorkAreaMenu = workAreaMenu.close;
@@ -286,9 +301,18 @@ function ShellLayout() {
           }}
         >
           <div className="border-b border-border bg-surface px-4 py-2">
-            <h1 id={headingId} ref={headingRef} tabIndex={-1} className="text-base font-semibold">
-              {title}
-            </h1>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <h1 id={headingId} ref={headingRef} tabIndex={-1} className="text-base font-semibold">
+                {title}
+              </h1>
+              {/* Indicador de cambios sin grabar (D16.1 de E3): se apaga al grabar o al salir. */}
+              {inTransaction && dirty && (
+                <span role="status" className="inline-flex items-center gap-1 text-xs font-medium text-warning">
+                  <Icon name="warning" />
+                  {t('unsavedChanges.indicator')}
+                </span>
+              )}
+            </div>
           </div>
           <div className="p-4">
             <Outlet context={outletContext} />

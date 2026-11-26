@@ -16,7 +16,7 @@ La wiki es el manual de usuario. La aplicación enlaza a ella con claves de ayud
 | Supervisor | `supervisor/` | Aprobaciones, reversiones, bloqueos e inventario físico |
 | Compras | `compras/` | Proveedores y órdenes de compra |
 | Administración | `administracion/` | Depósitos, zonas y ubicaciones, catálogo, usuarios y roles |
-| Referencia | `referencia/` | Transacciones, teclas, estados, movimientos, mensajes y permisos |
+| Referencia | `referencia/` | Transacciones, teclas, estados, movimientos, mensajes, permisos y reglas de negocio |
 
 - Una sección se publica (carpeta, `sidebar` y `nav` en `.vitepress/config.ts`) cuando tiene su primera página real. No hay páginas "en construcción".
 - Cada transacción tiene una página propia en la sección del puesto que la usa y una fila en `referencia/transacciones.md`.
@@ -56,6 +56,7 @@ Atajo o buena práctica.
 
 - Página de transacción: párrafo inicial con código, permiso y ruta en el menú (**Sistema ▸ Datos de usuario**); un `##` por bloque de la pantalla y un `###` con ancla por campo; mensajes y errores posibles con enlace a `referencia/mensajes`. Todo aviso o error que la pantalla puede mostrar (límites, valores inexistentes, rangos) se explica en la página de la transacción y tiene su entrada con código en `referencia/mensajes`, para que el usuario sepa qué pasó, por qué y cómo seguir.
 - Página de transacción que mueve stock: lleva una sección `## Movimientos que genera {#movimientos}` con una tabla de los códigos que registra (código con enlace a `referencia/movimientos#mov-NNN`, dirección y cuándo se genera) y el código con que se revierte. En el mismo lote, la fila del código en `referencia/movimientos` nombra la transacción en la columna **Lo genera**, con enlace a su página. Un código entra en `referencia/movimientos` en el lote que implementa la operación que lo genera, no antes.
+- Reglas de negocio: `referencia/reglas-de-negocio` reúne las reglas que el sistema controla siempre, agrupadas por tema, cada una con un `###` y ancla descriptiva en español (`{#deposito-inactivo}`, nunca el identificador interno REG o INV), qué dice, **Por qué:** y **Mensajes:** con enlace a `referencia/mensajes`. Una regla entra en el lote que la hace visible desde la interfaz, no antes; el lote que la cambia actualiza su entrada. La tabla de temas al principio de la página nombra cada regla.
 - Página de referencia: tabla de cambios posibles al principio y un `###` con ancla por entrada, con **Qué hacer:** en los errores.
 
 ## 4. Estilo

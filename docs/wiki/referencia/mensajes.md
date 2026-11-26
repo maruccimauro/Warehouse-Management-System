@@ -189,12 +189,6 @@ No existe un usuario con el código indicado. La ficha no se abre.
 
 **Qué hacer:** verifique el código o busque el usuario con <kbd>F4</kbd> por nombre o email. Para darlo de alta, use [Crear usuario](/administracion/crear-usuario).
 
-### `PASSWORD_MISMATCH` {#password-mismatch}
-
-Al [asignar una contraseña inicial](/administracion/modificar-usuario#contrasena-inicial), la repetición no coincide con la contraseña. El diálogo queda abierto y la contraseña no se asigna.
-
-**Qué hacer:** ingrese la misma contraseña en los dos campos y elija **Aplicar**.
-
 ### `SUPPLIER_PRODUCT_NOT_FOUND` {#supplier-product-not-found}
 
 El artículo existe, pero no está vinculado al proveedor indicado. La ficha no se abre.

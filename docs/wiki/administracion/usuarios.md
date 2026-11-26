@@ -26,6 +26,6 @@ En modo visualizar los datos son de solo lectura y **Modificar** habilita el cam
 
 En modo crear o modificar se graba con <kbd>Ctrl</kbd>+<kbd>S</kbd>: la ficha vuelve a modo visualizar con lo grabado. <kbd>F3</kbd> vuelve a la pantalla inicial; si hay datos sin grabar, el sistema pide confirmación. Datos, estado, roles, depósitos y contraseña inicial se graban juntos: si algo no se puede grabar, no se graba nada.
 
-En modo modificar, el botón **Asignar contraseña inicial** fija una contraseña nueva, como se explica en [Modificar usuario](./modificar-usuario#contrasena-inicial).
+En modo modificar, la sección **Restablecer contraseña** fija una contraseña nueva, como se explica en [Modificar usuario](./modificar-usuario#contrasena-inicial).
 
 <!--@include: ./partes/usuario-campos.md-->

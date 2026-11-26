@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useTransactionActions } from '@/app/shell/shellActions';
 import { useStatusBar } from '@/app/shell/statusMessages';
+import { useScreenContext } from '@/app/shell/useScreenContext';
 import type { ListFilterValue } from '@/shared/api/listing';
 import { DataGrid } from '@/shared/ui/grid/DataGrid';
 import type { GridColumn, GridSort, GridSource } from '@/shared/ui/grid/gridTypes';
@@ -26,6 +27,7 @@ export function ProductListTransaction() {
   const { show } = useStatusBar();
   const categories = useCategories();
   const [values, setValues] = useState<SelectionValues>();
+  useScreenContext(values === undefined ? 'selection' : 'list');
 
   const fields = useMemo(
     (): SelectionField[] => [

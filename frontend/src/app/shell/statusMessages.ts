@@ -19,6 +19,9 @@ export interface StatusBarContextValue {
   sequence: number;
   show: (message: StatusMessage) => void;
   clear: () => void;
+  // Cambio de contexto (otra transacción u otra pantalla de la misma): borra el mensaje,
+  // salvo que lo haya mostrado la acción del usuario que provocó el cambio (D16.2 de E3).
+  contextChanged: () => void;
 }
 
 export const StatusBarContext = createContext<StatusBarContextValue | undefined>(undefined);

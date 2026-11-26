@@ -24,7 +24,7 @@ Indica si la contraseña del usuario es **Inicial: el usuario debe cambiarla al 
 
 ### Contraseña inicial {#password}
 
-Contraseña con la que el usuario ingresa la primera vez, de al menos 12 caracteres. Es obligatoria en el alta. El sistema le pide cambiarla antes de operar.
+Contraseña con la que el usuario ingresa la próxima vez, de al menos 12 caracteres. El sistema le pide cambiarla antes de operar. En el alta es obligatoria y está en la sección **Ingreso**. Al modificar está en la sección **Restablecer contraseña** y es opcional: vacía, la contraseña del usuario no cambia.
 
 ### Repetir contraseña {#password-repeat}
 

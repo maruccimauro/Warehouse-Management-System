@@ -1,18 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useId, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import { useStatusBar } from '@/app/shell/statusMessages';
 import type { TransactionFieldControlProps } from '@/app/shell/useTransactionForm';
 import { useTransactionForm } from '@/app/shell/useTransactionForm';
 import { useVisibleWarehouses } from '@/features/warehouses/warehouseQueries';
 import { HelpLink } from '@/shared/help/HelpLink';
 import { ApplicationToolbar, type ApplicationAction } from '@/shared/ui/ApplicationToolbar';
-import { Button } from '@/shared/ui/Button';
 import { InfoNotice } from '@/shared/ui/InfoNotice';
-import { FormFieldLayout } from '@/shared/ui/form/FormFieldLayout';
 import { passwordMismatchMessage, passwordRule, requiredEmail, requiredText, usernameRule } from '@/shared/ui/form/fieldRules';
-import { GridDialog, GridDialogForm } from '@/shared/ui/grid/GridDialog';
 import { CheckList } from './UserFields';
 import { checkListValue, checkListValues, useRoleLabel } from './userValues';
 import {
@@ -47,15 +43,27 @@ function userFormSchema(mode: UserMode) {
       warehouses: z.string(),
     })
     .superRefine((values, context) => {
-      // Código y contraseña se validan solo en el alta: después no se editan en la ficha.
-      if (mode !== 'create') {
+      // El código se valida solo en el alta. La contraseña es obligatoria en el alta; al
+      // modificar es opcional (Restablecer contraseña) y se valida si se escribe alguna de las dos.
+      if (mode === 'display') {
         return;
       }
 
-      for (const [path, rule, value] of [
-        ['username', usernameRule(), values.username],
-        ['password', passwordRule(passwordMinLength, passwordMaxLength), values.password],
-      ] as const) {
+      const resetsPassword = mode === 'create' || values.password !== '' || values.passwordRepeat !== '';
+
+      if (!resetsPassword) {
+        return;
+      }
+
+      const rules =
+        mode === 'create'
+          ? ([
+              ['username', usernameRule(), values.username],
+              ['password', passwordRule(passwordMinLength, passwordMaxLength), values.password],
+            ] as const)
+          : ([['password', passwordRule(passwordMinLength, passwordMaxLength), values.password]] as const);
+
+      for (const [path, rule, value] of rules) {
         const result = rule.safeParse(value);
 
         if (!result.success) {
@@ -82,12 +90,13 @@ interface UserDetailProps {
 }
 
 // Ficha del usuario (SU01, ZW91 a ZW93): datos, estado, roles, depósitos y contraseña inicial,
-// grabados en una sola petición (DM-23). Los mensajes del servidor (LAST_ADMINISTRATOR,
+// grabados en una sola petición (DM-23). Al modificar, la contraseña se restablece en su propia
+// sección y se graba con la ficha (D16.1 de E3): cierra las sesiones del usuario (REG-020) y
+// el usuario debe cambiarla en su próximo ingreso (REG-021). Los mensajes del servidor (LAST_ADMINISTRATOR,
 // SELF_DEACTIVATION_NOT_ALLOWED, FORBIDDEN) llegan a la barra de estado con su código.
 export function UserDetail({ mode, user, username, standalone = false, onModeChange, onBack }: UserDetailProps) {
   const { t } = useTranslation('users');
   const queryClient = useQueryClient();
-  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
 
   const schema = useMemo(() => userFormSchema(mode), [mode]);
   const defaultValues = useMemo(
@@ -105,7 +114,7 @@ export function UserDetail({ mode, user, username, standalone = false, onModeCha
     [user, username, t],
   );
 
-  const { Form, Section, Field, values, setValue } = useTransactionForm({
+  const { Form, Section, Field, values } = useTransactionForm({
     schema,
     defaultValues,
     namespace: 'users',
@@ -158,16 +167,6 @@ export function UserDetail({ mode, user, username, standalone = false, onModeCha
     });
   }
 
-  if (mode === 'change') {
-    actions.push({
-      id: 'assignPassword',
-      label: t('actions.assignPassword'),
-      onClick: () => {
-        setPasswordDialogOpen(true);
-      },
-    });
-  }
-
   const statusOptions = [
     { value: 'active', label: t('statuses.active') },
     { value: 'inactive', label: t('statuses.inactive') },
@@ -204,6 +203,12 @@ export function UserDetail({ mode, user, username, standalone = false, onModeCha
           <Field name="roles" as={RolesControl} />
           <Field name="warehouses" as={WarehousesControl} />
         </Section>
+        {mode === 'change' && (
+          <Section name="resetPassword">
+            <Field name="password" type="password" autoComplete="new-password" className="w-64" description={t('detail.resetPasswordHint')} />
+            <Field name="passwordRepeat" type="password" autoComplete="new-password" className="w-64" />
+          </Section>
+        )}
       </Form>
       {user !== undefined && (
         <p className="text-ink-muted">
@@ -212,16 +217,6 @@ export function UserDetail({ mode, user, username, standalone = false, onModeCha
       )}
       {values.password !== '' && mode === 'change' && <InfoNotice>{t('detail.pendingPassword')}</InfoNotice>}
       {mode !== 'display' && <InfoNotice>{t('detail.saveHint')}</InfoNotice>}
-      <InitialPasswordDialog
-        open={passwordDialogOpen}
-        onApply={(password) => {
-          setValue('password', password);
-          setPasswordDialogOpen(false);
-        }}
-        onCancel={() => {
-          setPasswordDialogOpen(false);
-        }}
-      />
     </div>
   );
 }
@@ -241,109 +236,4 @@ function WarehousesControl(props: TransactionFieldControlProps) {
   const options = (data ?? []).map((warehouse) => ({ value: String(warehouse.id), label: warehouse.code, description: warehouse.name }));
 
   return <CheckList {...props} options={options} emptyText={t('detail.noWarehouses')} />;
-}
-
-interface InitialPasswordDialogProps {
-  open: boolean;
-  onApply: (password: string) => void;
-  onCancel: () => void;
-}
-
-// Asignar contraseña inicial (E2.14, D5): contraseña y repetición. Aplicar la deja lista para
-// grabar con la ficha, que la envía en el mismo PATCH y cierra las sesiones del usuario
-// (REG-020); el usuario debe cambiarla en su próximo ingreso (REG-021).
-function InitialPasswordDialog({ open, onApply, onCancel }: InitialPasswordDialogProps) {
-  const { t } = useTranslation('users');
-
-  return (
-    <GridDialog open={open} title={t('passwordDialog.title')} onCancel={onCancel}>
-      <InitialPasswordForm onApply={onApply} onCancel={onCancel} />
-    </GridDialog>
-  );
-}
-
-function InitialPasswordForm({ onApply, onCancel }: Omit<InitialPasswordDialogProps, 'open'>) {
-  const { t } = useTranslation('users');
-  const { show } = useStatusBar();
-  const [password, setPassword] = useState('');
-  const [repeat, setRepeat] = useState('');
-  const [errors, setErrors] = useState<{ password?: string | undefined; repeat?: string | undefined }>({});
-  const baseId = useId();
-  const passwordId = `${baseId}-password`;
-  const repeatId = `${baseId}-repeat`;
-
-  const apply = () => {
-    const result = passwordRule(passwordMinLength, passwordMaxLength).safeParse(password);
-
-    if (!result.success) {
-      const message = result.error.issues[0]?.message ?? '';
-
-      setErrors({ password: message });
-      show({ type: 'E', text: `${t('fields.password')}: ${message}`, id: 'VALIDATION_FAILED' });
-      document.getElementById(passwordId)?.focus();
-
-      return;
-    }
-
-    if (repeat !== password) {
-      setErrors({ repeat: t('messages.passwordMismatch') });
-      show({ type: 'E', text: t('messages.passwordMismatch'), id: 'PASSWORD_MISMATCH' });
-      document.getElementById(repeatId)?.focus();
-
-      return;
-    }
-
-    show({ type: 'S', text: t('messages.passwordApplied') });
-    onApply(password);
-  };
-
-  return (
-    <GridDialogForm
-      onSubmit={apply}
-      footer={
-        <>
-          <Button type="submit" variant="primary">
-            {t('passwordDialog.apply')}
-          </Button>
-          <Button onClick={onCancel}>{t('passwordDialog.cancel')}</Button>
-        </>
-      }
-    >
-      <div className="grid gap-3">
-        <p className="text-ink-muted">{t('passwordDialog.description')}</p>
-        <FormFieldLayout htmlFor={passwordId} label={t('fields.password')} required error={errors.password} errorId={`${passwordId}-error`}>
-          <input
-            id={passwordId}
-            type="password"
-            className="field-input w-64"
-            autoComplete="new-password"
-            required
-            value={password}
-            aria-invalid={errors.password !== undefined || undefined}
-            aria-describedby={errors.password === undefined ? undefined : `${passwordId}-error`}
-            onChange={(event) => {
-              setPassword(event.target.value);
-              setErrors({});
-            }}
-          />
-        </FormFieldLayout>
-        <FormFieldLayout htmlFor={repeatId} label={t('fields.passwordRepeat')} required error={errors.repeat} errorId={`${repeatId}-error`}>
-          <input
-            id={repeatId}
-            type="password"
-            className="field-input w-64"
-            autoComplete="new-password"
-            required
-            value={repeat}
-            aria-invalid={errors.repeat !== undefined || undefined}
-            aria-describedby={errors.repeat === undefined ? undefined : `${repeatId}-error`}
-            onChange={(event) => {
-              setRepeat(event.target.value);
-              setErrors({});
-            }}
-          />
-        </FormFieldLayout>
-      </div>
-    </GridDialogForm>
-  );
 }

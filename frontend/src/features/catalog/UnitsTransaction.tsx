@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { useStatusBar } from '@/app/shell/statusMessages';
+import { useScreenContext } from '@/app/shell/useScreenContext';
 import { useTransactionForm } from '@/app/shell/useTransactionForm';
 import { ApplicationToolbar, type ApplicationAction } from '@/shared/ui/ApplicationToolbar';
 import { codeRule, requiredText } from '@/shared/ui/form/fieldRules';
@@ -20,6 +21,7 @@ const exportName = 'unidades';
 // alta: las cantidades de los artículos que la usan como unidad base están expresadas en ella.
 export function UnitsTransaction() {
   const [screen, setScreen] = useState<Screen>({ kind: 'list' });
+  useScreenContext(screen.kind);
 
   if (screen.kind === 'list') {
     return (

@@ -157,14 +157,14 @@ describe('SU01: gestionar usuarios', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Modificar' }));
 
-    expect(await screen.findByRole('button', { name: 'Asignar contraseña inicial' })).toBeInTheDocument();
+    expect(await screen.findByRole('region', { name: 'Restablecer contraseña' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Nombre' })).not.toHaveAttribute('readonly');
     expect(api.requestsTo('GET', '/api/v1/users')[0]?.query.get('filter[username][0][low]')).toBe('JPEREZ');
   });
 });
 
 describe('ZW92: modificar usuario', () => {
-  it('asigna una contraseña inicial y la graba con la ficha', async () => {
+  it('restablece la contraseña en su sección y la graba con la ficha', async () => {
     const api = stubApi({
       ...baseHandlers,
       'GET /api/v1/users': () => page([user()]),
@@ -174,25 +174,27 @@ describe('ZW92: modificar usuario', () => {
     renderRoute('/t/ZW92');
     await fill('Usuario', 'jperez');
     await userEvent.keyboard('{F8}');
-    await userEvent.click(await screen.findByRole('button', { name: 'Asignar contraseña inicial' }));
 
-    const dialog = await screen.findByRole('dialog', { name: 'Asignar contraseña inicial' });
+    const section = await screen.findByRole('region', { name: 'Restablecer contraseña' });
 
-    await userEvent.type(within(dialog).getByLabelText(/^Contraseña inicial/, { selector: 'input' }), 'clave-nueva-123');
-    await userEvent.type(within(dialog).getByLabelText(/^Repetir contraseña/, { selector: 'input' }), 'clave-distinta-1');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Aplicar' }));
+    expect(screen.queryByRole('button', { name: 'Asignar contraseña inicial' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Cambios sin grabar')).not.toBeInTheDocument();
 
-    expect(await statusBar().findByRole('alert')).toHaveTextContent('Las contraseñas no coinciden.');
-    expect(statusBar().getByRole('link', { name: /PASSWORD_MISMATCH/ })).toHaveAttribute('href', '/docs/referencia/mensajes#password-mismatch');
+    await userEvent.type(within(section).getByLabelText(/^Contraseña inicial/, { selector: 'input' }), 'clave-nueva-123');
+    await userEvent.type(within(section).getByLabelText(/^Repetir contraseña/, { selector: 'input' }), 'clave-distinta-1');
 
-    const repeat = within(dialog).getByLabelText(/^Repetir contraseña/, { selector: 'input' });
+    expect(screen.getByText('Cambios sin grabar')).toBeInTheDocument();
+    expect(screen.getByText(/se cierran las sesiones abiertas del usuario/)).toBeInTheDocument();
+
+    await userEvent.keyboard('{Control>}s{/Control}');
+
+    expect(await statusBar().findByRole('alert')).toHaveTextContent('Repetir contraseña');
+    expect(api.requestsTo('PATCH', '/api/v1/users/5')).toHaveLength(0);
+
+    const repeat = within(section).getByLabelText(/^Repetir contraseña/, { selector: 'input' });
 
     await userEvent.clear(repeat);
     await userEvent.type(repeat, 'clave-nueva-123');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Aplicar' }));
-
-    expect(await screen.findByText(/se cierran las sesiones abiertas del usuario/)).toBeInTheDocument();
-
     await userEvent.keyboard('{Control>}s{/Control}');
 
     await waitFor(() => {
@@ -205,6 +207,61 @@ describe('ZW92: modificar usuario', () => {
         password: 'clave-nueva-123',
       });
     });
+    // Grabar cambia de pantalla y conserva su propio mensaje.
+    expect(await statusBar().findByRole('status')).toHaveTextContent('Usuario JPEREZ grabado.');
+    expect(screen.queryByText('Cambios sin grabar')).not.toBeInTheDocument();
+  });
+
+  it('graba sin contraseña cuando la sección queda vacía', async () => {
+    const api = stubApi({
+      ...baseHandlers,
+      'GET /api/v1/users': () => page([user()]),
+      'PATCH /api/v1/users/5': () => jsonResponse(200, { data: user({ name: 'Juan P. Pérez' }) }),
+    });
+
+    renderRoute('/t/ZW92');
+    await fill('Usuario', 'jperez');
+    await userEvent.keyboard('{F8}');
+    await fill('Nombre', 'Juan P. Pérez');
+    await userEvent.keyboard('{Control>}s{/Control}');
+
+    await waitFor(() => {
+      expect(api.requestsTo('PATCH', '/api/v1/users/5')[0]?.body).not.toHaveProperty('password');
+    });
+  });
+
+  it('borra el error de la pantalla inicial al pasar a la ficha', async () => {
+    stubApi({
+      ...baseHandlers,
+      'GET /api/v1/users': (request) => (request.query.get('filter[username][0][low]') === 'JPEREZ' ? page([user()]) : page([])),
+    });
+
+    renderRoute('/t/ZW92');
+    await fill('Usuario', 'asa21');
+    await userEvent.keyboard('{F8}');
+
+    expect(await statusBar().findByRole('alert')).toHaveTextContent('ASA21');
+
+    await fill('Usuario', 'jperez');
+    await userEvent.keyboard('{F8}');
+
+    expect(await screen.findByRole('region', { name: 'Restablecer contraseña' })).toBeInTheDocument();
+    expect(statusBar().queryByRole('alert')).toBeEmptyDOMElement();
+  });
+
+  it('borra el error de la transacción al abrir otra desde el árbol', async () => {
+    stubApi({ ...baseHandlers, 'GET /api/v1/users': () => page([]) });
+
+    renderRoute('/t/ZW92');
+    await fill('Usuario', 'asa21');
+    await userEvent.keyboard('{F8}');
+
+    expect(await statusBar().findByRole('alert')).toHaveTextContent('ASA21');
+
+    await userEvent.click(screen.getByRole('treeitem', { name: 'Crear usuario' }));
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Crear usuario' })).toBeInTheDocument();
+    expect(statusBar().queryByRole('alert')).toBeEmptyDOMElement();
   });
 
   it('muestra LAST_ADMINISTRATOR con su código en la barra de estado', async () => {

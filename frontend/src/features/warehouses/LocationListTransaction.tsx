@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useTransactionActions } from '@/app/shell/shellActions';
 import { useStatusBar } from '@/app/shell/statusMessages';
+import { useScreenContext } from '@/app/shell/useScreenContext';
 import type { WarehouseSummary } from '@/features/auth/authApi';
 import type { ListFilterValue } from '@/shared/api/listing';
 import { DataGrid } from '@/shared/ui/grid/DataGrid';
@@ -30,6 +31,7 @@ export function LocationListTransaction() {
   const visible = useVisibleWarehouses();
   const defaultWarehouse = useDefaultWarehouse();
   const [result, setResult] = useState<{ warehouse: WarehouseSummary; values: SelectionValues }>();
+  useScreenContext(result === undefined ? 'selection' : 'list');
 
   const fields = useMemo(
     (): SelectionField[] => [

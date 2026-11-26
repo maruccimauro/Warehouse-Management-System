@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { useTransactionActions } from '@/app/shell/shellActions';
 import { errorMessage, StatusMessageError, useStatusBar } from '@/app/shell/statusMessages';
+import { useScreenContext } from '@/app/shell/useScreenContext';
 import { useTransactionForm } from '@/app/shell/useTransactionForm';
 import { ApplicationToolbar, type ApplicationAction } from '@/shared/ui/ApplicationToolbar';
 import { ConfirmDialog } from '@/shared/ui/ConfirmDialog';
@@ -40,6 +41,7 @@ type Screen =
 // las órdenes de compra a ese proveedor.
 export function SupplierProductsTransaction() {
   const [screen, setScreen] = useState<Screen>({ kind: 'selection' });
+  useScreenContext(screen.kind);
   const [last, setLast] = useState<string>();
 
   if (screen.kind === 'selection') {

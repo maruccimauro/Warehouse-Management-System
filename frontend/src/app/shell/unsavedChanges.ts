@@ -4,6 +4,8 @@ import { createContext, use, useEffect } from 'react';
 // transacción declara si tiene cambios; el armazón intercepta toda salida (F3, Mayús+F3,
 // /n, árbol, botón Atrás del navegador, cierre de sesión, cierre o recarga de la pestaña).
 export interface UnsavedChangesContextValue {
+  // La transacción abierta tiene cambios sin grabar: lo muestra el indicador junto al título.
+  dirty: boolean;
   setDirty: (dirty: boolean) => void;
   // Ejecuta proceed directamente sin cambios pendientes; con cambios, después de confirmar.
   confirmDiscard: (proceed: () => void) => void;

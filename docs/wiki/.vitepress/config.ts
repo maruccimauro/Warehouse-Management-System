@@ -127,6 +127,7 @@ export default defineConfig({
           { text: 'Movimientos', link: '/referencia/movimientos' },
           { text: 'Mensajes', link: '/referencia/mensajes' },
           { text: 'Permisos y roles', link: '/referencia/permisos' },
+          { text: 'Reglas de negocio', link: '/referencia/reglas-de-negocio' },
         ],
       },
     ],

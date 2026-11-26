@@ -68,6 +68,8 @@ La barra inferior informa el resultado de cada acción con un mensaje de uno de 
 
 Cada mensaje nuevo se anuncia pintando el área del mensaje con el color de su tipo, de izquierda a derecha, con un destello breve al completarse. Después el área queda en un tono suave del mismo color, con una franja del color fuerte a la izquierda, hasta el próximo mensaje. Si el sistema operativo tiene activada la opción de reducir el movimiento, el mensaje aparece directamente con su color, sin la animación.
 
+El mensaje queda en la barra hasta que otra acción muestra el suyo o hasta que cambia el contexto, nunca por tiempo. Cambiar de contexto es abrir otra transacción (desde el menú, el campo de comando o el historial del navegador) o pasar a otra pantalla de la misma transacción: de la pantalla inicial a la ficha, de la lista a la ficha o de vuelta con <kbd>F3</kbd>. Así, un error de la pantalla inicial desaparece al entrar a la ficha de otro registro. Si la acción que cambia de pantalla informa su propio resultado, por ejemplo **Usuario JPEREZ grabado.** al volver a la pantalla inicial, ese mensaje se ve en la pantalla nueva.
+
 Los mensajes E y W muestran su código entre paréntesis, por ejemplo `(WAREHOUSE_INACTIVE)`. El código es un enlace a su explicación en la [referencia de mensajes](/referencia/mensajes).
 
 A la derecha, la barra muestra la transacción abierta, el **Depósito por defecto** (el parámetro [`LGN`](./parametros-de-usuario#lgn)), el usuario y el idioma.
@@ -85,6 +87,8 @@ La ayuda se abre en una pestaña aparte, que se reutiliza en cada consulta: la t
 El botón **Ayuda** de la barra de herramientas y la opción **Ayuda** del menú contextual del área de trabajo hacen lo mismo: el botón usa el último campo que tuvo el foco y el menú contextual, el lugar donde se hizo el clic secundario.
 
 ## Datos sin grabar {#datos-sin-grabar}
+
+Mientras la transacción tiene cambios sin grabar, junto al título se ve el aviso **Cambios sin grabar**, en ámbar. Se apaga al grabar.
 
 Si la transacción tiene cambios sin grabar, toda salida pide confirmación: <kbd>F3</kbd>, <kbd>Mayús</kbd>+<kbd>F3</kbd>, `/n`, el menú, el botón Atrás del navegador y **Cerrar sesión**. El diálogo **Salir sin grabar** ofrece dos opciones:
 

@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { useTransactionActions } from '@/app/shell/shellActions';
 import { errorMessage, useStatusBar } from '@/app/shell/statusMessages';
 import { useInitialScreenFlow } from '@/app/shell/useInitialScreenFlow';
+import { useScreenContext } from '@/app/shell/useScreenContext';
 import { useTransactionForm } from '@/app/shell/useTransactionForm';
 import type { WarehouseSummary } from '@/features/auth/authApi';
 import { useAuthenticatedUser } from '@/features/auth/useAuthenticatedUser';
@@ -113,6 +114,7 @@ function SettingManagement({ kind }: { kind: SettingKind }) {
   const defaultWarehouse = useDefaultWarehouse();
   const scope = useWarehouseScope('change');
   const [screen, setScreen] = useState<ManagementScreen>({ kind: 'selection' });
+  useScreenContext(screen.kind);
 
   const fields = useMemo(
     (): SelectionField[] => [

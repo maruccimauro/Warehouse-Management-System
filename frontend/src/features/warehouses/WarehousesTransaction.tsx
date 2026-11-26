@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { errorMessage, useStatusBar } from '@/app/shell/statusMessages';
+import { useScreenContext } from '@/app/shell/useScreenContext';
 import { useTransactionForm } from '@/app/shell/useTransactionForm';
 import { sessionQueryKey } from '@/features/auth/session';
 import { HelpLink } from '@/shared/help/HelpLink';
@@ -30,6 +31,7 @@ type Screen = { kind: 'list' } | { kind: 'detail'; mode: 'create' | 'display' | 
 // acciones con confirmación: desactivar un depósito detiene su operación (REG-015).
 export function WarehousesTransaction() {
   const [screen, setScreen] = useState<Screen>({ kind: 'list' });
+  useScreenContext(screen.kind);
 
   if (screen.kind === 'list') {
     return (

@@ -74,7 +74,7 @@ export function UnsavedChangesProvider({ children }: { children: ReactNode }) {
         }
       : pending;
 
-  const value = useMemo(() => ({ setDirty, confirmDiscard }), [setDirty, confirmDiscard]);
+  const value = useMemo(() => ({ dirty, setDirty, confirmDiscard }), [dirty, setDirty, confirmDiscard]);
 
   return (
     <UnsavedChangesContext value={value}>

@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router';
 import { useTransactionActions } from '@/app/shell/shellActions';
 import { errorMessage, useStatusBar } from '@/app/shell/statusMessages';
 import { useInitialScreenFlow } from '@/app/shell/useInitialScreenFlow';
+import { useScreenContext } from '@/app/shell/useScreenContext';
 import { ApplicationToolbar, type ApplicationAction } from '@/shared/ui/ApplicationToolbar';
 import { InfoNotice } from '@/shared/ui/InfoNotice';
 import { SelectionScreen } from '@/shared/ui/selection/SelectionScreen';
@@ -23,6 +24,7 @@ type ManageScreen = { kind: 'initial' } | { kind: 'detail'; mode: UserMode; user
 
 export function ManageUsersTransaction() {
   const [screen, setScreen] = useState<ManageScreen>({ kind: 'initial' });
+  useScreenContext(screen.kind);
   const [last, setLast] = useState<string>();
 
   if (screen.kind === 'initial') {

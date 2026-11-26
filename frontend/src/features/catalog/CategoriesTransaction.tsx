@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { errorMessage, useStatusBar } from '@/app/shell/statusMessages';
+import { useScreenContext } from '@/app/shell/useScreenContext';
 import { useTransactionForm } from '@/app/shell/useTransactionForm';
 import { ApplicationToolbar, type ApplicationAction } from '@/shared/ui/ApplicationToolbar';
 import { requiredText } from '@/shared/ui/form/fieldRules';
@@ -25,6 +26,7 @@ const exportName = 'categorias';
 // porque la ruta la arma la pantalla. Profundidad y ciclos los valida el backend (REG-016).
 export function CategoriesTransaction() {
   const [screen, setScreen] = useState<Screen>({ kind: 'list' });
+  useScreenContext(screen.kind);
 
   if (screen.kind === 'list') {
     return (

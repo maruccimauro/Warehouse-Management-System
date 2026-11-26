@@ -143,7 +143,6 @@ const documentedMessageCodes = [
   'SUPPLIER_NOT_FOUND',
   'SUPPLIER_PRODUCT_NOT_FOUND',
   'USER_NOT_FOUND',
-  'PASSWORD_MISMATCH',
 ] as const;
 
 const documentedStates = {
