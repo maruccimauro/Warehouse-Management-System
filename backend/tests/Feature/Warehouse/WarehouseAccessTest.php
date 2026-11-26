@@ -135,13 +135,18 @@ it('requires warehouses.manage to create or edit a warehouse', function () {
 
 it('requires locations.manage in an operable warehouse to create or edit zones and locations', function () {
     $admin = userWithAccess(Role::Administrator);
+    // El Supervisor tiene locations.manage, limitado a los depósitos donde opera; el Operador no.
     $supervisor = userWithAccess(Role::Supervisor, [$this->central]);
+    $operator = userWithAccess(Role::Operator, [$this->central]);
     $zone = $this->central->zones()->firstOrFail();
 
     expect(Gate::forUser($admin)->allows('create', [Zone::class, $this->norte]))->toBeTrue()
         ->and(Gate::forUser($admin)->allows('update', receivingLocationOf($this->norte)))->toBeTrue()
-        ->and(Gate::forUser($supervisor)->allows('create', [Location::class, $this->central]))->toBeFalse()
-        ->and(Gate::forUser($supervisor)->allows('update', $zone))->toBeFalse();
+        ->and(Gate::forUser($supervisor)->allows('create', [Location::class, $this->central]))->toBeTrue()
+        ->and(Gate::forUser($supervisor)->allows('update', $zone))->toBeTrue()
+        ->and(Gate::forUser($supervisor)->allows('create', [Zone::class, $this->norte]))->toBeFalse()
+        ->and(Gate::forUser($operator)->allows('create', [Location::class, $this->central]))->toBeFalse()
+        ->and(Gate::forUser($operator)->allows('update', $zone))->toBeFalse();
 });
 
 it('lists the active warehouses where the user operates in GET /auth/me', function () {

@@ -34,7 +34,7 @@ Crear, modificar, activar y desactivar depósitos. Solo lo tiene el Administrado
 
 ### `locations.manage` {#locations-manage}
 
-Crear, modificar, activar y desactivar zonas y ubicaciones, incluida la creación de múltiples ubicaciones por rango. Solo lo tiene el Administrador.
+Crear, modificar, activar y desactivar zonas y ubicaciones, incluida la creación de múltiples ubicaciones por rango, en los depósitos donde el usuario opera. Lo tienen el Administrador y el Supervisor.
 
 ### `locations.block` {#locations-block}
 
@@ -46,11 +46,21 @@ Consultar el catálogo no exige permiso: alcanza con la sesión.
 
 ### `catalog.manage` {#catalog-manage}
 
-Crear y modificar categorías, unidades de medida y artículos, incluido el estado del artículo. Los datos de un artículo en un depósito, como el stock mínimo y los umbrales de aprobación de ajustes, exigen además operar en ese depósito. Solo lo tiene el Administrador.
+Crear y modificar categorías, unidades de medida y los datos generales de los artículos, incluido su estado. No incluye los datos de un artículo en un depósito, que tienen sus propios permisos. Solo lo tiene el Administrador.
+
+### `catalog.min_stock.manage` {#catalog-min-stock-manage}
+
+Modificar el stock mínimo de un artículo en los depósitos donde el usuario opera: [Gestionar stock mínimo](/supervisor/stock-minimo) y [Modificar stock mínimo](/supervisor/modificar-stock-minimo). Lo tienen el Administrador y el Supervisor.
 
 ### `suppliers.manage` {#suppliers-manage}
 
 Crear, modificar, activar y desactivar proveedores, y vincularlos con los artículos que proveen. Lo tienen el Administrador y Compras.
+
+## Inventario {#inventario}
+
+### `inventory.thresholds.manage` {#inventory-thresholds-manage}
+
+Fijar los umbrales de aprobación de ajustes de un artículo en cualquier depósito que el usuario consulta, aunque no opere en él: [Gestionar umbrales de ajuste](/administracion/umbrales-de-ajuste) y [Modificar umbrales de ajuste](/administracion/modificar-umbrales-de-ajuste). Es un control central: quien ajusta stock no fija su propio umbral. Solo lo tiene el Administrador.
 
 ## Usuarios {#usuarios}
 

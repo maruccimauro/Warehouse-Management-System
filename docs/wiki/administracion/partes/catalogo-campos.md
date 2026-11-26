@@ -1,6 +1,6 @@
 ## Pantalla inicial {#pantalla-inicial}
 
-La transacción empieza con dos campos. Complete el SKU y continúe con <kbd>F8</kbd> o **Ejecutar**.
+La transacción empieza con el SKU. Complételo y continúe con <kbd>F8</kbd> o **Ejecutar**.
 
 ### SKU {#sku}
 
@@ -8,13 +8,9 @@ Código del artículo, de hasta 40 caracteres: letras y números, separados por 
 
 Para modificar o visualizar, <kbd>F4</kbd> busca en el catálogo por fragmento del SKU, por fragmento del nombre o por el código de barras completo.
 
-### Depósito {#warehouse}
-
-Opcional. Con un depósito, la ficha suma la sección **Datos del depósito**, con el stock mínimo y los umbrales de aprobación de ajustes del artículo en ese depósito. Se elige con la [ayuda de búsqueda](/primeros-pasos/ayuda-de-busqueda#deposito) (<kbd>F4</kbd>) y se completa con el parámetro de usuario [`LGN`](/primeros-pasos/parametros-de-usuario#lgn); vacíelo para trabajar solo con los datos generales. Para crear o modificar, el campo ofrece los depósitos donde el usuario opera; para visualizar, todos los que puede consultar.
-
 ## Datos generales {#datos-generales}
 
-Los datos generales valen para todos los depósitos.
+Los datos generales valen para todos los depósitos. Lo propio del artículo en cada depósito se mantiene aparte, con otro responsable: el stock mínimo en [Gestionar stock mínimo](/supervisor/stock-minimo) y los umbrales de aprobación de ajustes en [Gestionar umbrales de ajuste](/administracion/umbrales-de-ajuste).
 
 ### Nombre {#name}
 
@@ -59,25 +55,3 @@ Ancho de una unidad base, en milímetros.
 ### Alto (mm) {#height-mm}
 
 Alto de una unidad base, en milímetros.
-
-## Datos del depósito {#datos-del-deposito}
-
-Aparece cuando la pantalla inicial tiene un depósito.
-
-### Stock mínimo {#min-stock}
-
-Cantidad mínima del artículo que se quiere tener en el depósito, en la unidad base. `0` indica sin stock mínimo, que es el valor de un depósito donde todavía no se cargó.
-
-### Umbral de aprobación de ajuste positivo {#adjustment-in-threshold}
-
-Opcional. Cantidad máxima del artículo, en la unidad base, que una posición de un ajuste de stock positivo (un sobrante encontrado o una corrección en más) suma en el depósito sin necesitar aprobación. Una posición que la supera no mueve stock: queda pendiente de aprobación. Una posición igual al umbral no lo supera. Vacío indica sin umbral: todos los ajustes positivos del artículo se registran en el momento. Si se completa, es un número entero mayor que cero.
-
-### Umbral de aprobación de ajuste negativo {#adjustment-out-threshold}
-
-Opcional. Igual que el anterior, para los ajustes negativos (daño, pérdida o corrección en menos). Los dos umbrales son independientes: un artículo puede tener umbral para las salidas y no para las entradas.
-
-::: info
-Cada artículo tiene sus propios umbrales en cada depósito, porque no pesa lo mismo la diferencia de un motor que la de un tornillo. Los cambios de umbral quedan registrados en la auditoría con el valor anterior y el nuevo.
-:::
-
-Los datos del depósito se graban junto con la ficha, como un dato aparte, y solo si cambiaron. Modificarlos exige operar en el depósito. Si los datos generales se graban y los del depósito no, la barra de estado lo informa con [`WAREHOUSE_SETTING_NOT_SAVED`](/referencia/mensajes#warehouse-setting-not-saved).

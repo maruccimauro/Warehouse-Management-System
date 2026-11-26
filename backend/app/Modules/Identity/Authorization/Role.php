@@ -33,7 +33,11 @@ enum Role: string
             self::Administrator => Permission::cases(),
             self::Supervisor => [
                 Permission::WarehousesViewAll,
+                // Zonas, ubicaciones y stock mínimo de los depósitos donde
+                // opera: las Policies limitan por depósito de operación.
+                Permission::LocationsManage,
                 Permission::LocationsBlock,
+                Permission::CatalogMinStockManage,
                 Permission::InventoryTransfer,
                 Permission::InventoryAdjust,
                 Permission::InventoryAdjustApprove,

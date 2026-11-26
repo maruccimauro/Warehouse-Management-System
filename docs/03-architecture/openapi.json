@@ -3685,9 +3685,9 @@
                 ]
             }
         },
-        "/products/{product}/warehouse-settings/{warehouse}": {
+        "/products/{product}/warehouse-settings/{warehouse}/min-stock": {
             "put": {
-                "operationId": "products.warehouse-settings.update",
+                "operationId": "products.warehouse-settings.min-stock",
                 "tags": [
                     "ProductWarehouseSetting"
                 ],
@@ -3716,7 +3716,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/UpdateProductWarehouseSettingsRequest"
+                                "$ref": "#/components/schemas/UpdateProductMinStockRequest"
                             }
                         }
                     }
@@ -3802,6 +3802,428 @@
                     {
                         "sessionCookie": [],
                         "xsrfToken": []
+                    }
+                ]
+            }
+        },
+        "/products/{product}/warehouse-settings/{warehouse}/adjustment-thresholds": {
+            "put": {
+                "operationId": "products.warehouse-settings.adjustment-thresholds",
+                "tags": [
+                    "ProductWarehouseSetting"
+                ],
+                "parameters": [
+                    {
+                        "name": "product",
+                        "in": "path",
+                        "required": true,
+                        "description": "The product ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "warehouse",
+                        "in": "path",
+                        "required": true,
+                        "description": "The warehouse ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateProductAdjustmentThresholdsRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`ProductWarehouseSettingResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProductWarehouseSettingResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "419": {
+                        "description": "`CSRF_TOKEN_MISMATCH`: Page Expired",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsCsrfTokenMismatch"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "`PASSWORD_CHANGE_REQUIRED`: Debe cambiar la contrase\u00f1a antes de continuar.\n\n`FORBIDDEN`: Forbidden",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsPasswordChangeRequired"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsForbidden"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "`NOT_FOUND`: Not Found",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsNotFound"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "`UNAUTHENTICATED`: Unauthorized",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsUnauthenticated"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "`VALIDATION_FAILED`: Los datos enviados no son v\u00e1lidos.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsValidationFailed"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sessionCookie": [],
+                        "xsrfToken": []
+                    }
+                ]
+            }
+        },
+        "/warehouses/{warehouse}/product-settings": {
+            "get": {
+                "operationId": "warehouses.product-settings.index",
+                "tags": [
+                    "ProductWarehouseSetting"
+                ],
+                "parameters": [
+                    {
+                        "name": "warehouse",
+                        "in": "path",
+                        "required": true,
+                        "description": "The warehouse ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "sku",
+                                "-sku",
+                                "name",
+                                "-name"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 200
+                        }
+                    },
+                    {
+                        "name": "filter[name]",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 100
+                        }
+                    },
+                    {
+                        "name": "filter[status][]",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/ProductStatus"
+                            }
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "sku": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "sign": {
+                                                "$ref": "#/components/schemas/SelectionSign"
+                                            },
+                                            "option": {
+                                                "$ref": "#/components/schemas/SelectionOption"
+                                            },
+                                            "low": {
+                                                "type": "string",
+                                                "maxLength": 100
+                                            },
+                                            "high": {
+                                                "type": "string",
+                                                "maxLength": 100
+                                            }
+                                        },
+                                        "required": [
+                                            "option",
+                                            "low"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        "x-deepObject-style": "qs"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated set of `WarehouseProductSettingResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/WarehouseProductSettingResource"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "last": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
+                                            ]
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "description": "Generated paginator links.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url",
+                                                            "label",
+                                                            "active"
+                                                        ]
+                                                    }
+                                                },
+                                                "path": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "Base path for paginator generated URLs."
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "description": "Number of items shown per page.",
+                                                    "minimum": 0
+                                                },
+                                                "to": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "description": "Number of the last item in the slice.",
+                                                    "minimum": 1
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "description": "Total number of items being paginated.",
+                                                    "minimum": 0
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "links",
+                                                "path",
+                                                "per_page",
+                                                "to",
+                                                "total"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "links",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "`PASSWORD_CHANGE_REQUIRED`: Debe cambiar la contrase\u00f1a antes de continuar.\n\n`FORBIDDEN`: Forbidden",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsPasswordChangeRequired"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ProblemDetailsForbidden"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "`NOT_FOUND`: Not Found",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsNotFound"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "`UNAUTHENTICATED`: Unauthorized",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsUnauthenticated"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "`VALIDATION_FAILED`: Los datos enviados no son v\u00e1lidos.",
+                        "content": {
+                            "application/problem+json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetailsValidationFailed"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sessionCookie": []
                     }
                 ]
             }
@@ -9447,6 +9869,48 @@
                 },
                 "title": "UpdateOwnSettingsRequest"
             },
+            "UpdateProductAdjustmentThresholdsRequest": {
+                "type": "object",
+                "description": "Umbrales de aprobaci\u00f3n de ajustes de un art\u00edculo en un dep\u00f3sito (REG-024)\ncon inventory.thresholds.manage. Es un PUT: los dos umbrales son\nobligatorios en el cuerpo y null significa \"sin umbral\" (decisi\u00f3n del\nusuario del 26/11/2026). Cantidades en la unidad base, mayores que cero y\ndentro del rango exacto de un number de JavaScript (ADR-005).",
+                "properties": {
+                    "adjustment_in_approval_threshold": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                    },
+                    "adjustment_out_approval_threshold": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                    }
+                },
+                "required": [
+                    "adjustment_in_approval_threshold",
+                    "adjustment_out_approval_threshold"
+                ],
+                "title": "UpdateProductAdjustmentThresholdsRequest"
+            },
+            "UpdateProductMinStockRequest": {
+                "type": "object",
+                "description": "Stock m\u00ednimo de un art\u00edculo en un dep\u00f3sito (DM-21) con\ncatalog.min_stock.manage y el alcance de operaci\u00f3n sobre ese dep\u00f3sito\n(REG-005). Cantidad en la unidad base, entera y dentro del rango exacto de\nun number de JavaScript (ADR-005).",
+                "properties": {
+                    "min_stock": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                    }
+                },
+                "required": [
+                    "min_stock"
+                ],
+                "title": "UpdateProductMinStockRequest"
+            },
             "UpdateProductRequest": {
                 "type": "object",
                 "description": "Edici\u00f3n de un producto y cambio de estado (REG-017). El SKU, la unidad base\n(DM-20) y el seguimiento por lote no se modifican.",
@@ -9534,39 +9998,6 @@
                     }
                 },
                 "title": "UpdateProductSupplierRequest"
-            },
-            "UpdateProductWarehouseSettingsRequest": {
-                "type": "object",
-                "description": "Datos de un producto en un dep\u00f3sito (DM-21) con catalog.manage y el alcance\nde operaci\u00f3n sobre ese dep\u00f3sito (REG-005). El stock m\u00ednimo y los umbrales\nde aprobaci\u00f3n de ajustes (E3.05) son cantidades en la unidad base, enteras y\ndentro del rango exacto de un number de JavaScript (ADR-005). Es un PUT: los\numbrales son obligatorios en el cuerpo y null significa \"sin umbral\"\n(decisi\u00f3n del usuario del 26/11/2026).",
-                "properties": {
-                    "min_stock": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 9007199254740991
-                    },
-                    "adjustment_in_approval_threshold": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ],
-                        "minimum": 1,
-                        "maximum": 9007199254740991
-                    },
-                    "adjustment_out_approval_threshold": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ],
-                        "minimum": 1,
-                        "maximum": 9007199254740991
-                    }
-                },
-                "required": [
-                    "min_stock",
-                    "adjustment_in_approval_threshold",
-                    "adjustment_out_approval_threshold"
-                ],
-                "title": "UpdateProductWarehouseSettingsRequest"
             },
             "UpdateSupplierRequest": {
                 "type": "object",
@@ -9744,6 +10175,57 @@
                     "updated_at"
                 ],
                 "title": "UserResource"
+            },
+            "WarehouseProductSettingResource": {
+                "type": "object",
+                "properties": {
+                    "product_id": {
+                        "type": "integer"
+                    },
+                    "sku": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "active",
+                            "discontinued",
+                            "blocked"
+                        ]
+                    },
+                    "warehouse_id": {
+                        "type": "integer"
+                    },
+                    "min_stock": {
+                        "type": "integer"
+                    },
+                    "adjustment_in_approval_threshold": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "adjustment_out_approval_threshold": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "product_id",
+                    "sku",
+                    "name",
+                    "status",
+                    "warehouse_id",
+                    "min_stock",
+                    "adjustment_in_approval_threshold",
+                    "adjustment_out_approval_threshold"
+                ],
+                "title": "WarehouseProductSettingResource"
             },
             "WarehouseResource": {
                 "type": "object",

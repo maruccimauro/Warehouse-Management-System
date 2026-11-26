@@ -6,6 +6,7 @@ use App\Modules\Warehouse\Models\Concerns\ScopedByWarehouse;
 use App\Modules\Warehouse\Models\Warehouse;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -17,7 +18,8 @@ use Illuminate\Support\Carbon;
  * aprobación de ajustes (E3.05).
  *
  * La clave es compuesta (product_id, warehouse_id), que Eloquent no admite:
- * el modelo sirve para leer, y SetProductWarehouseSettings escribe con upsert.
+ * el modelo sirve para leer, y SetProductMinStock y
+ * SetProductAdjustmentThresholds escriben con upsert, cada una sus columnas.
  *
  * @property int $product_id
  * @property int $warehouse_id
@@ -32,6 +34,16 @@ use Illuminate\Support\Carbon;
 class ProductWarehouseSetting extends Model
 {
     use ScopedByWarehouse;
+
+    /**
+     * La fila de un artículo en un depósito, si existe.
+     *
+     * @return Builder<self>
+     */
+    public static function of(Product $product, Warehouse $warehouse): Builder
+    {
+        return self::query()->where('product_id', $product->id)->where('warehouse_id', $warehouse->id);
+    }
 
     /**
      * @return array<string, string>

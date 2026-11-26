@@ -142,6 +142,62 @@ export const transactions: readonly TransactionDefinition[] = [
       import('@/features/warehouses/LocationBlockTransaction').then((module) => ({ default: module.LocationBlockTransaction })),
     ),
   },
+  // Datos del artículo en un depósito (DM-21), con responsables distintos: el stock mínimo,
+  // el supervisor del depósito; los umbrales de ajuste, el control central (REG-024).
+  {
+    code: 'ZW04',
+    titleKey: 'titles.ZW04',
+    permission: 'catalog.min_stock.manage',
+    helpKey: 'transaction.ZW04',
+    component: lazy(() =>
+      import('@/features/productSettings/ProductSettingTransactions').then((module) => ({ default: module.MinStockManagementTransaction })),
+    ),
+  },
+  {
+    code: 'ZW42',
+    titleKey: 'titles.ZW42',
+    permission: 'catalog.min_stock.manage',
+    helpKey: 'transaction.ZW42',
+    component: lazy(() =>
+      import('@/features/productSettings/ProductSettingTransactions').then((module) => ({ default: module.ChangeMinStockTransaction })),
+    ),
+  },
+  {
+    code: 'ZW43',
+    titleKey: 'titles.ZW43',
+    permission: null,
+    helpKey: 'transaction.ZW43',
+    component: lazy(() =>
+      import('@/features/productSettings/ProductSettingTransactions').then((module) => ({ default: module.DisplayMinStockTransaction })),
+    ),
+  },
+  {
+    code: 'ZW35',
+    titleKey: 'titles.ZW35',
+    permission: 'inventory.thresholds.manage',
+    helpKey: 'transaction.ZW35',
+    component: lazy(() =>
+      import('@/features/productSettings/ProductSettingTransactions').then((module) => ({ default: module.AdjustmentThresholdsManagementTransaction })),
+    ),
+  },
+  {
+    code: 'ZW36',
+    titleKey: 'titles.ZW36',
+    permission: 'inventory.thresholds.manage',
+    helpKey: 'transaction.ZW36',
+    component: lazy(() =>
+      import('@/features/productSettings/ProductSettingTransactions').then((module) => ({ default: module.ChangeAdjustmentThresholdsTransaction })),
+    ),
+  },
+  {
+    code: 'ZW37',
+    titleKey: 'titles.ZW37',
+    permission: null,
+    helpKey: 'transaction.ZW37',
+    component: lazy(() =>
+      import('@/features/productSettings/ProductSettingTransactions').then((module) => ({ default: module.DisplayAdjustmentThresholdsTransaction })),
+    ),
+  },
   {
     code: 'MM01',
     titleKey: 'titles.MM01',
@@ -355,6 +411,19 @@ export const menuTree: readonly MenuNode[] = [
           { kind: 'transaction', code: 'LS10' },
           { kind: 'transaction', code: 'LX03' },
           { kind: 'transaction', code: 'ZW05' },
+        ],
+      },
+      {
+        kind: 'folder',
+        id: 'inventory',
+        labelKey: 'folders.inventory',
+        children: [
+          { kind: 'transaction', code: 'ZW04' },
+          { kind: 'transaction', code: 'ZW42' },
+          { kind: 'transaction', code: 'ZW43' },
+          { kind: 'transaction', code: 'ZW35' },
+          { kind: 'transaction', code: 'ZW36' },
+          { kind: 'transaction', code: 'ZW37' },
         ],
       },
       {

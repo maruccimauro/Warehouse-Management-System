@@ -3,18 +3,10 @@ import { useMemo } from 'react';
 import { useInitialScreenFlow } from '@/app/shell/useInitialScreenFlow';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import type { StatusMessage } from '@/app/shell/statusMessages';
 import { errorMessage, useStatusBar } from '@/app/shell/statusMessages';
 import { useTransactionForm } from '@/app/shell/useTransactionForm';
 import { HelpLink } from '@/shared/help/HelpLink';
-import {
-  nonNegativeInteger,
-  optionalPositiveInteger,
-  optionalPrintable,
-  required,
-  requiredText,
-  textRule,
-} from '@/shared/ui/form/fieldRules';
+import { optionalPositiveInteger, optionalPrintable, required, requiredText, textRule } from '@/shared/ui/form/fieldRules';
 import { DataGrid } from '@/shared/ui/grid/DataGrid';
 import type { GridColumn } from '@/shared/ui/grid/gridTypes';
 import {
@@ -23,31 +15,28 @@ import {
   descriptionMaxLength,
   dimensionMax,
   fetchProductSuppliers,
-  fetchWarehouseSettings,
-  maxQuantity,
   productDetailQueryKey,
   productNameMaxLength,
   productsQueryKey,
   productStatuses,
-  setWarehouseSetting,
   updateProduct,
   type Category,
-  type Product,
   type ProductInput,
   type ProductSupplier,
   type Unit,
-  type WarehouseSettingInput,
 } from './catalogApi';
 import { CategoryField, UnitField } from './CatalogFields';
 import { categoryPaths, useCategories, useUnits } from './catalogQueries';
 import { ProductInitialScreen, type ProductActivity, type ProductEntry, type ProductTarget } from './ProductInitialScreen';
 import { InfoNotice } from '@/shared/ui/InfoNotice';
 
-// MM01, MM02 y MM03: crear, modificar y visualizar un producto (E2.13). La misma pantalla en
-// tres modos, como LS01N a LS03N: inicial con SKU y depósito opcional (F8) y la ficha. Al grabar
+// MM01, MM02 y MM03: crear, modificar y visualizar un artículo del catálogo (E2.13). La misma
+// pantalla en tres modos, como LS01N a LS03N: inicial con el SKU (F8) y la ficha con los datos
+// generales, que son globales. Los datos del artículo en un depósito tienen sus transacciones,
+// con otro responsable: el stock mínimo (ZW04) y los umbrales de ajuste (ZW35). Al grabar
 // vuelve a la pantalla inicial con lo ingresado.
 export function ProductTransaction({ activity }: { activity: ProductActivity }) {
-  const flow = useInitialScreenFlow((next: ProductTarget): ProductEntry => ({ sku: next.sku, warehouse: next.warehouse?.code ?? '' }));
+  const flow = useInitialScreenFlow((next: ProductTarget): ProductEntry => ({ sku: next.sku }));
 
   if (flow.target === undefined) {
     return <ProductInitialScreen activity={activity} initial={flow.last} onContinue={flow.open} />;
@@ -81,9 +70,6 @@ const productFormSchema = z.object({
   lengthMm: optionalPositiveInteger(dimensionMax),
   widthMm: optionalPositiveInteger(dimensionMax),
   heightMm: optionalPositiveInteger(dimensionMax),
-  minStock: nonNegativeInteger(maxQuantity),
-  adjustmentInThreshold: optionalPositiveInteger(maxQuantity),
-  adjustmentOutThreshold: optionalPositiveInteger(maxQuantity),
 });
 
 type ProductFormValues = z.input<typeof productFormSchema>;
@@ -98,47 +84,25 @@ interface ProductDetailProps {
   onDone: () => void;
 }
 
-// Lee lo que la ficha necesita antes de montar el formulario (categorías, unidades y, con
-// depósito, sus datos), para que los valores por defecto no cambien después.
+// Lee lo que la ficha necesita antes de montar el formulario (categorías y unidades), para que
+// los valores por defecto no cambien después.
 function ProductDetail({ activity, target, onDone }: ProductDetailProps) {
   const { t } = useTranslation('products');
   const categories = useCategories();
   const units = useUnits();
-  const { product, warehouse } = target;
-  const settings = useQuery({
-    queryKey: [...productDetailQueryKey(product?.id ?? 0), 'warehouse-settings'],
-    queryFn: ({ signal }) => fetchWarehouseSettings(product?.id ?? 0, signal),
-    enabled: product !== undefined && warehouse !== undefined,
-  });
-  const settingsPending = product !== undefined && warehouse !== undefined && settings.data === undefined;
 
-  if (categories.isError || units.isError || settings.isError) {
-    return <p className="text-error">{errorMessage(categories.error ?? units.error ?? settings.error, t('messages.loadFailed')).text}</p>;
+  if (categories.isError || units.isError) {
+    return <p className="text-error">{errorMessage(categories.error ?? units.error, t('messages.loadFailed')).text}</p>;
   }
 
-  if (categories.data === undefined || units.data === undefined || settingsPending) {
+  if (categories.data === undefined || units.data === undefined) {
     return <p className="text-ink-muted">{t('detail.loading')}</p>;
   }
 
-  // Un depósito sin fila usa los valores por defecto: sin stock mínimo y sin umbrales.
-  const setting = settings.data?.find((candidate) => candidate.warehouse_id === warehouse?.id);
-  const warehouseSetting: WarehouseSettingInput = {
-    min_stock: setting?.min_stock ?? 0,
-    adjustment_in_approval_threshold: setting?.adjustment_in_approval_threshold ?? null,
-    adjustment_out_approval_threshold: setting?.adjustment_out_approval_threshold ?? null,
-  };
-
   return (
     <>
-      <ProductForm
-        activity={activity}
-        target={target}
-        categories={categories.data}
-        units={units.data}
-        warehouseSetting={warehouseSetting}
-        onDone={onDone}
-      />
-      {activity === 'display' && product !== undefined && <ProductSuppliers productId={product.id} />}
+      <ProductForm activity={activity} target={target} categories={categories.data} units={units.data} onDone={onDone} />
+      {activity === 'display' && target.product !== undefined && <ProductSuppliers productId={target.product.id} />}
     </>
   );
 }
@@ -148,14 +112,13 @@ interface ProductFormProps {
   target: ProductTarget;
   categories: readonly Category[];
   units: readonly Unit[];
-  warehouseSetting: WarehouseSettingInput;
   onDone: () => void;
 }
 
-function ProductForm({ activity, target, categories, units, warehouseSetting, onDone }: ProductFormProps) {
+function ProductForm({ activity, target, categories, units, onDone }: ProductFormProps) {
   const { t } = useTranslation('products');
   const queryClient = useQueryClient();
-  const { product, warehouse, sku } = target;
+  const { product, sku } = target;
   const paths = useMemo(() => categoryPaths(categories), [categories]);
 
   const defaultValues = useMemo(
@@ -171,40 +134,11 @@ function ProductForm({ activity, target, categories, units, warehouseSetting, on
       lengthMm: numberText(product?.length_mm),
       widthMm: numberText(product?.width_mm),
       heightMm: numberText(product?.height_mm),
-      minStock: String(warehouseSetting.min_stock),
-      adjustmentInThreshold: numberText(warehouseSetting.adjustment_in_approval_threshold),
-      adjustmentOutThreshold: numberText(warehouseSetting.adjustment_out_approval_threshold),
     }),
-    [sku, product, paths, units, warehouseSetting],
+    [sku, product, paths, units],
   );
 
   const categoryIdOf = (path: string) => [...paths.entries()].find(([, candidate]) => candidate === path)?.[0];
-
-  // Graba los datos del depósito solo si cambiaron.
-  const saveWarehouseSetting = async (saved: Product, form: ProductFormValues): Promise<StatusMessage | undefined> => {
-    const input: WarehouseSettingInput = {
-      min_stock: Number(form.minStock),
-      adjustment_in_approval_threshold: optionalNumber(form.adjustmentInThreshold),
-      adjustment_out_approval_threshold: optionalNumber(form.adjustmentOutThreshold),
-    };
-    const unchanged = (Object.keys(input) as (keyof WarehouseSettingInput)[]).every((key) => input[key] === warehouseSetting[key]);
-
-    if (warehouse === undefined || unchanged) {
-      return undefined;
-    }
-
-    try {
-      await setWarehouseSetting(saved.id, warehouse.id, input);
-
-      return undefined;
-    } catch (error) {
-      return {
-        type: 'W',
-        text: t('messages.settingNotSaved', { sku, warehouse: warehouse.code, reason: errorMessage(error, t('messages.saveFailed')).text }),
-        id: 'WAREHOUSE_SETTING_NOT_SAVED',
-      };
-    }
-  };
 
   const { Form, Section, Field, values } = useTransactionForm({
     schema: productFormSchema,
@@ -220,9 +154,6 @@ function ProductForm({ activity, target, categories, units, warehouseSetting, on
       length_mm: 'lengthMm',
       width_mm: 'widthMm',
       height_mm: 'heightMm',
-      min_stock: 'minStock',
-      adjustment_in_approval_threshold: 'adjustmentInThreshold',
-      adjustment_out_approval_threshold: 'adjustmentOutThreshold',
     },
     onBack: onDone,
     onSave: async (form) => {
@@ -247,15 +178,11 @@ function ProductForm({ activity, target, categories, units, warehouseSetting, on
             })
           : await updateProduct(product?.id ?? 0, { ...input, status: form.status });
 
-      // El producto ya quedó grabado: si fallan los datos del depósito, la ficha vuelve igual a
-      // la pantalla inicial y el W lo informa (son dos recursos del backend, sin una
-      // transacción que los una; D4).
-      const outcome = await saveWarehouseSetting(saved, form);
-
       void queryClient.invalidateQueries({ queryKey: productsQueryKey });
+      void queryClient.invalidateQueries({ queryKey: productDetailQueryKey(saved.id) });
       onDone();
 
-      return outcome;
+      return undefined;
     },
   });
 
@@ -286,23 +213,6 @@ function ProductForm({ activity, target, categories, units, warehouseSetting, on
           <Field name="widthMm" inputMode="numeric" className="w-32" />
           <Field name="heightMm" inputMode="numeric" className="w-32" />
         </Section>
-        {warehouse !== undefined && (
-          <Section name="warehouse">
-            <Field name="minStock" inputMode="numeric" required className="w-40" description={t('detail.minStockHint', { code: warehouse.code })} />
-            <Field
-              name="adjustmentInThreshold"
-              inputMode="numeric"
-              className="w-40"
-              description={t('detail.adjustmentThresholdHint', { code: warehouse.code })}
-            />
-            <Field
-              name="adjustmentOutThreshold"
-              inputMode="numeric"
-              className="w-40"
-              description={t('detail.adjustmentThresholdHint', { code: warehouse.code })}
-            />
-          </Section>
-        )}
       </Form>
       {product !== undefined && (
         <section className="grid max-w-4xl gap-1 text-ink-muted">

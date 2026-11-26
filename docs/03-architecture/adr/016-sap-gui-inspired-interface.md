@@ -158,7 +158,7 @@ Se usa el código de SAP donde la transacción tiene equivalente y el rango `ZW`
 | E2 | `LS10` | Crear múltiples ubicaciones | LS10 |
 | E2 | `LX03` | Lista de ubicaciones | LX03 (informe de estado de ubicaciones) |
 | E2 | `ZW05` | Bloquear o desbloquear ubicación | Indicadores de bloqueo de LS02N; transacción propia por permiso (D2 de E2.12) |
-| E2 | `MM01`, `MM02`, `MM03` | Crear, modificar y visualizar catálogo | MM01, MM02, MM03. El depósito opcional de la pantalla inicial suma el stock mínimo, como el nivel de organización centro (D4 de E2.13) |
+| E2 | `MM01`, `MM02`, `MM03` | Crear, modificar y visualizar catálogo | MM01, MM02, MM03, solo con los datos generales. El depósito opcional de la pantalla inicial (D4 de E2.13) se quitó el 26/11/2026: los datos de centro pasaron a `ZW04` y `ZW35` |
 | E2 | `MM60` | Lista del catálogo | MM60 (lista de materiales) |
 | E2 | `XK01`, `XK02`, `XK03` | Crear, modificar y visualizar proveedor | XK01 a XK03 (BP en S/4HANA). `XK01` sin pantalla inicial: el proveedor no tiene un código propio que verificar antes, como la numeración interna (D1 de E2.13) |
 | E2 | `ZW06`; `ZW61`, `ZW62`, `ZW63` | Gestionar catálogo del proveedor; crear, modificar y visualizar artículo del proveedor | Registro info (ME11 a ME13) con lista de fuentes obligatoria; transacción propia para no mezclar grabaciones por fila con la ficha del proveedor (D5 de E2.13) |
@@ -172,12 +172,14 @@ Se usa el código de SAP donde la transacción tiene equivalente y el rango `ZW`
 | E3 | `ZW32` | Bloquear o desbloquear stock | Sin equivalente directo: SAP pasa el stock a bloqueado con 344 |
 | E3 | `ZW33` | Lista de auditoría | SCU3 (registro de cambios) |
 | E3 | `ZW34` | Lista de solicitudes de ajuste | Sin equivalente directo: aprobación del ajuste por encima del umbral del artículo |
+| E3 | `ZW04`; `ZW42`, `ZW43` | Gestionar stock mínimo; modificar y visualizar stock mínimo | Punto de pedido (`MINBE`) de la vista de planificación por centro de MM02, en transacción propia porque lo mantiene el supervisor del depósito y no el área de maestros |
+| E3 | `ZW35`; `ZW36`, `ZW37` | Gestionar umbrales de ajuste; modificar y visualizar umbrales de ajuste | Sin equivalente directo: control central del umbral de REG-024 |
 | E4 | `ME21N`, `ME22N`, `ME23N` | Crear, modificar y visualizar orden de compra | ME21N a ME23N |
 | E4 | `MIGO` | Entrada de mercadería | MIGO |
 | E4 | `LT06` | Ubicación de lo recibido | LT06 |
 | E5 | `VA01`, `VA02`, `VA03` | Crear, modificar y visualizar pedido | VA01 a VA03 |
 | E5 | `LT03` | Picking de un pedido | LT03 |
-| E5 | `ZW04` | Empaque | Embalaje en VL02N |
+| E5 | Por asignar | Empaque | Embalaje en VL02N. `ZW04` pasó al stock mínimo el 26/11/2026 |
 | E5 | `VL02N`, `VL09` | Despacho y su reversión | VL02N, VL09 |
 | E6 | `MI01`, `MI04`, `MI07`, `MI20` | Inventario físico: documento, conteo, contabilización de diferencias, lista de diferencias | MI01, MI04, MI07, MI20 |
 | E7 | `MB52`, `MB5B` | Stock por depósito y stock a una fecha | MB52, MB5B |
@@ -207,4 +209,5 @@ Se usa el código de SAP donde la transacción tiene equivalente y el rango `ZW`
 - Los parámetros de usuario, los favoritos, el idioma y mostrar códigos se guardan en el servidor desde E2.21 (DM-24). Lo guardado en el navegador en E1 se sube una sola vez: cada preferencia solo completa lo que el servidor tiene vacío.
 - Una contraseña inicial o reseteada reemplaza el armazón por la pantalla de cambio, sin ruta propia, como el diálogo de clave inicial de SAP (REG-021). Un 403 `PASSWORD_CHANGE_REQUIRED` a mitad de la sesión vuelve a esa pantalla.
 - Aceptado al cerrar E2.00, E2.17 y E2.18; lo aprendido queda en la sección correspondiente.
+- Enmendado el 26/11/2026 con la separación de los datos del depósito del catálogo (decisión del usuario del mismo día, `.claude/rules/responsabilidades-por-transaccion.md`): `ZW04` con `ZW42` y `ZW43` para el stock mínimo y `ZW35` a `ZW37` para los umbrales de ajuste, en la carpeta nueva **Logística ▸ Inventario**. Ninguna de las dos familias tiene Crear: el dato existe para todo artículo con su valor por defecto y la gestión lista el catálogo completo con su valor en el depósito, así que no hay alta que separar (excepción al trío de las tablas de configuración). Los umbrales usan el grupo `ZW3x` de inventario y no una familia `ZW0N`, porque las familias libres se agotaron; `ZW04` deja de estar reservado para Empaque.
 - Enmendado el 25/11/2026 al planificar E3: las transacciones de inventario sin gestión propia se agrupan en `ZW31` a `ZW34`. `ZW03`, asignado antes al ajuste, rompía el esquema `ZW0N` para gestión y `ZWN1` a `ZWN3` para sus acciones. Se suman `MB03`, `MB1C`, `MBST`, la lista de auditoría y la lista de solicitudes de ajuste, con títulos Verbo + objeto.

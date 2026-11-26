@@ -30,8 +30,12 @@ Route::middleware('auth:sanctum')->group(function () use ($id) {
 
     Route::get('/products/{product}/warehouse-settings', [ProductWarehouseSettingController::class, 'index'])
         ->where('product', $id)->name('products.warehouse-settings.index');
-    Route::put('/products/{product}/warehouse-settings/{warehouse}', [ProductWarehouseSettingController::class, 'update'])
-        ->where(['product' => $id, 'warehouse' => $id])->name('products.warehouse-settings.update');
+    Route::put('/products/{product}/warehouse-settings/{warehouse}/min-stock', [ProductWarehouseSettingController::class, 'updateMinStock'])
+        ->where(['product' => $id, 'warehouse' => $id])->name('products.warehouse-settings.min-stock');
+    Route::put('/products/{product}/warehouse-settings/{warehouse}/adjustment-thresholds', [ProductWarehouseSettingController::class, 'updateAdjustmentThresholds'])
+        ->where(['product' => $id, 'warehouse' => $id])->name('products.warehouse-settings.adjustment-thresholds');
+    Route::get('/warehouses/{warehouse}/product-settings', [ProductWarehouseSettingController::class, 'warehouseIndex'])
+        ->where('warehouse', $id)->name('warehouses.product-settings.index');
 
     Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
     Route::post('/suppliers', [SupplierController::class, 'store'])->name('suppliers.store');

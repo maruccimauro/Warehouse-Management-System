@@ -4,12 +4,6 @@ import { useSearchParams } from 'react-router';
 import { useTransactionActions } from '@/app/shell/shellActions';
 import type { MaintenanceActivity } from '@/app/shell/useInitialScreenFlow';
 import { errorMessage, useStatusBar } from '@/app/shell/statusMessages';
-import type { WarehouseSummary } from '@/features/auth/authApi';
-import { useAuthenticatedUser } from '@/features/auth/useAuthenticatedUser';
-import { useDefaultWarehouse } from '@/features/warehouses/useDefaultWarehouse';
-import { VisibleWarehouseField, WarehouseField } from '@/features/warehouses/WarehouseField';
-import { useVisibleWarehouses } from '@/features/warehouses/warehouseQueries';
-import { normalizeCode } from '@/features/warehouses/warehousesApi';
 import { SelectionScreen } from '@/shared/ui/selection/SelectionScreen';
 import { parameterValue } from '@/shared/ui/selection/selection';
 import type { SelectionField, SelectionInputProps } from '@/shared/ui/selection/selectionTypes';
@@ -25,13 +19,10 @@ export interface ProductTarget {
   sku: string;
   // El producto leído; undefined al crear (todavía no existe).
   product: Product | undefined;
-  // Depósito opcional de la pantalla inicial (D4): con él, la ficha suma el stock mínimo.
-  warehouse: WarehouseSummary | undefined;
 }
 
 export interface ProductEntry {
   sku: string;
-  warehouse: string;
 }
 
 interface ProductInitialScreenProps {
@@ -41,35 +32,25 @@ interface ProductInitialScreenProps {
   initial: ProductEntry | undefined;
 }
 
-// Pantalla inicial de crear, modificar y visualizar un producto (E2.13, D1 y D4): SKU y, si se
-// quiere ver o cargar el stock mínimo, un depósito. F8 lee el producto: crear exige que el SKU
-// no exista y el resto, que exista.
+// Pantalla inicial de crear, modificar y visualizar un artículo del catálogo (E2.13, D1): el SKU.
+// F8 lee el artículo: crear exige que el SKU no exista y el resto, que exista.
 export function ProductInitialScreen({ activity, onContinue, initial }: ProductInitialScreenProps) {
   const { t } = useTranslation('products');
   const { show } = useStatusBar();
-  const user = useAuthenticatedUser();
-  const visible = useVisibleWarehouses();
-  const defaultWarehouse = useDefaultWarehouse();
   const [searchParams, setSearchParams] = useSearchParams();
-  // Visualizar admite los depósitos que el usuario ve; crear y modificar el stock mínimo exige
-  // operar en el depósito (REG-005).
-  const consult = activity === 'display';
-  const warehouses: readonly WarehouseSummary[] = consult ? (visible.data ?? []) : user.warehouses;
 
   const fields = useMemo(
     (): SelectionField[] => [
       activity === 'create'
         ? { kind: 'parameter', id: 'sku', label: t('fields.sku'), normalize: normalizeSku, required: true }
         : { kind: 'parameter', id: 'sku', label: t('fields.sku'), as: ProductInput, required: true },
-      { kind: 'parameter', id: 'warehouse', label: t('fields.warehouse'), as: consult ? VisibleWarehouseField : WarehouseField },
     ],
-    [t, consult, activity],
+    [t, activity],
   );
 
   const linkedSku = searchParams.get(productLinkParams.sku);
   const selection = useSelectionScreen(fields, {
     sku: initial?.sku ?? linkedSku ?? '',
-    warehouse: initial?.warehouse ?? defaultWarehouse ?? '',
   });
   const running = useRef(false);
 
@@ -81,14 +62,6 @@ export function ProductInitialScreen({ activity, onContinue, initial }: ProductI
     }
 
     const sku = parameterValue(values, 'sku');
-    const warehouseCode = normalizeCode(parameterValue(values, 'warehouse'));
-    const warehouse = warehouseCode === '' ? undefined : warehouses.find((candidate) => candidate.code === warehouseCode);
-
-    // El campo ya informó el depósito inexistente: no se continúa con uno inválido.
-    if (warehouseCode !== '' && warehouse === undefined) {
-      return;
-    }
-
     running.current = true;
 
     try {
@@ -106,7 +79,7 @@ export function ProductInitialScreen({ activity, onContinue, initial }: ProductI
         return;
       }
 
-      onContinue({ sku, product, warehouse });
+      onContinue({ sku, product });
     } catch (error) {
       show(errorMessage(error, t('messages.loadFailed')));
     } finally {
@@ -120,19 +93,16 @@ export function ProductInitialScreen({ activity, onContinue, initial }: ProductI
     },
   });
 
-  // Abierta desde un enlace con SKU (la lista de productos): lee el producto sin esperar F8 y
-  // quita el parámetro para que F3 vuelva a una pantalla inicial normal. Con un depósito por
-  // defecto en visualizar, espera a conocer los depósitos visibles.
-  const ready = !consult || visible.data !== undefined;
-
+  // Abierta desde un enlace con SKU (la lista del catálogo): lee el artículo sin esperar F8 y
+  // quita el parámetro para que F3 vuelva a una pantalla inicial normal.
   useEffect(() => {
-    if (linkedSku !== null && ready) {
+    if (linkedSku !== null) {
       setSearchParams({}, { replace: true });
       void execute();
     }
     // Solo al abrir desde el enlace.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [linkedSku !== null, ready]);
+  }, [linkedSku !== null]);
 
   return (
     <div className="grid gap-3">

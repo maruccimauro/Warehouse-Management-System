@@ -193,12 +193,6 @@ El artículo existe, pero no está vinculado al proveedor indicado. La ficha no 
 
 **Qué hacer:** verifique el proveedor y el artículo, o vincúlelos con [Crear artículo del proveedor](/compras/crear-articulo-del-proveedor).
 
-### `WAREHOUSE_SETTING_NOT_SAVED` {#warehouse-setting-not-saved}
-
-Mensaje W. Al grabar un artículo con un depósito en la pantalla inicial, los datos generales se grabaron, pero los datos del depósito (stock mínimo y umbrales de aprobación de ajustes) no. El mensaje indica el motivo, por ejemplo que el usuario no opera en ese depósito.
-
-**Qué hacer:** corrija la causa y vuelva a cargar los datos del depósito en [Modificar catálogo](/administracion/modificar-catalogo) con el mismo depósito.
-
 ## Errores técnicos {#errores-tecnicos}
 
 Estos errores no dependen de los datos ingresados. Si se repiten, informe el código y la hora al administrador.

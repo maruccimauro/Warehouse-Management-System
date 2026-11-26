@@ -18,6 +18,12 @@ Cada pantalla del sistema es una transacción con un código, que la abre desde 
 | `LS10` | Crear múltiples ubicaciones | Logística ▸ Estructura del depósito | [`locations.manage`](./permisos#locations-manage) | [Crear múltiples ubicaciones](/administracion/crear-multiples-ubicaciones) |
 | `LX03` | Lista de ubicaciones | Logística ▸ Estructura del depósito | Ninguno: cualquier usuario con sesión | [Lista de ubicaciones](/administracion/lista-de-ubicaciones) |
 | `ZW05` | Bloquear o desbloquear ubicación | Logística ▸ Estructura del depósito | [`locations.block`](./permisos#locations-block) | [Bloqueo de ubicaciones](/supervisor/bloqueo-de-ubicaciones) |
+| `ZW04` | Gestionar stock mínimo | Logística ▸ Inventario | [`catalog.min_stock.manage`](./permisos#catalog-min-stock-manage) | [Gestionar stock mínimo](/supervisor/stock-minimo) |
+| `ZW42` | Modificar stock mínimo | Logística ▸ Inventario | [`catalog.min_stock.manage`](./permisos#catalog-min-stock-manage) | [Modificar stock mínimo](/supervisor/modificar-stock-minimo) |
+| `ZW43` | Visualizar stock mínimo | Logística ▸ Inventario | Ninguno: cualquier usuario con sesión | [Visualizar stock mínimo](/supervisor/visualizar-stock-minimo) |
+| `ZW35` | Gestionar umbrales de ajuste | Logística ▸ Inventario | [`inventory.thresholds.manage`](./permisos#inventory-thresholds-manage) | [Gestionar umbrales de ajuste](/administracion/umbrales-de-ajuste) |
+| `ZW36` | Modificar umbrales de ajuste | Logística ▸ Inventario | [`inventory.thresholds.manage`](./permisos#inventory-thresholds-manage) | [Modificar umbrales de ajuste](/administracion/modificar-umbrales-de-ajuste) |
+| `ZW37` | Visualizar umbrales de ajuste | Logística ▸ Inventario | Ninguno: cualquier usuario con sesión | [Visualizar umbrales de ajuste](/administracion/visualizar-umbrales-de-ajuste) |
 | `MM01` | Crear catálogo | Logística ▸ Catálogo | [`catalog.manage`](./permisos#catalog-manage) | [Crear catálogo](/administracion/crear-catalogo) |
 | `MM02` | Modificar catálogo | Logística ▸ Catálogo | [`catalog.manage`](./permisos#catalog-manage) | [Modificar catálogo](/administracion/modificar-catalogo) |
 | `MM03` | Visualizar catálogo | Logística ▸ Catálogo | Ninguno: cualquier usuario con sesión | [Visualizar catálogo](/administracion/visualizar-catalogo) |

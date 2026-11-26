@@ -109,7 +109,6 @@ const supplierPage = listPageSchema(supplierSchema);
 const productSupplierPage = listPageSchema(productSupplierSchema);
 const productResponse = z.object({ data: productSchema }).transform((response) => response.data);
 const supplierResponse = z.object({ data: supplierSchema }).transform((response) => response.data);
-const warehouseSettingResponse = z.object({ data: warehouseSettingSchema }).transform((response) => response.data);
 const warehouseSettingList = z.object({ data: z.array(warehouseSettingSchema) }).transform((response) => response.data);
 const productSupplierResponse = z.object({ data: productSupplierSchema }).transform((response) => response.data);
 const productSupplierList = z.object({ data: z.array(productSupplierSchema) }).transform((response) => response.data);
@@ -163,20 +162,6 @@ export function updateProduct(id: number, input: ProductInput): Promise<Product>
 // Datos del producto en los depósitos que el usuario consulta (DM-21); a lo sumo uno por depósito.
 export function fetchWarehouseSettings(productId: number, signal?: AbortSignal): Promise<WarehouseSetting[]> {
   return api.request('GET', `/products/${String(productId)}/warehouse-settings`, { schema: warehouseSettingList, signal });
-}
-
-// Datos editables de un producto en un depósito. Es un PUT: se envían todos y un umbral nulo
-// es "sin umbral" (E3.05).
-export type WarehouseSettingInput = Pick<
-  WarehouseSetting,
-  'min_stock' | 'adjustment_in_approval_threshold' | 'adjustment_out_approval_threshold'
->;
-
-export function setWarehouseSetting(productId: number, warehouseId: number, input: WarehouseSettingInput): Promise<WarehouseSetting> {
-  return api.request('PUT', `/products/${String(productId)}/warehouse-settings/${String(warehouseId)}`, {
-    body: input,
-    schema: warehouseSettingResponse,
-  });
 }
 
 export function fetchProductSuppliers(productId: number, signal?: AbortSignal): Promise<ProductSupplier[]> {

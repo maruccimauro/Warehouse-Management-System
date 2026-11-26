@@ -1,0 +1,47 @@
+{
+  "fields": {
+    "warehouse": "Depósito",
+    "sku": "SKU",
+    "product": "Artículo",
+    "productName": "Nombre",
+    "productStatus": "Estado del artículo",
+    "minStock": "Stock mínimo",
+    "adjustmentInThreshold": "Umbral de aprobación de ajuste positivo",
+    "adjustmentOutThreshold": "Umbral de aprobación de ajuste negativo"
+  },
+  "sections": {
+    "minStock": "Stock mínimo en el depósito",
+    "thresholds": "Umbrales de aprobación de ajustes en el depósito"
+  },
+  "warehouse": "Depósito {{code}} {{name}}",
+  "change": "Modificar",
+  "detailActions": "Acciones de la ficha",
+  "initialHint": "Ingrese el depósito y el SKU del artículo y continúe con F8.",
+  "saveHint": "Grabe con Ctrl+S. F3 vuelve sin grabar.",
+  "minStock": {
+    "title": "Gestionar stock mínimo",
+    "change": "Modificar stock mínimo",
+    "display": "Visualizar stock mínimo",
+    "selectionHint": "Ingrese el depósito y, si quiere acotar, el SKU (un valor, un rango o un patrón con *, como TOR*). F8 muestra los artículos del catálogo con su stock mínimo en ese depósito.",
+    "listTitle": "Stock mínimo en {{code}}",
+    "listHint": "Doble clic abre la ficha del artículo; desde ahí, Modificar. Un artículo con 0 no tiene stock mínimo en el depósito.",
+    "hint": "Cantidad en la unidad base para el depósito {{code}}. 0 indica sin stock mínimo.",
+    "saved": "Stock mínimo del artículo {{sku}} en {{code}} grabado.",
+    "saveFailed": "No se pudo grabar el stock mínimo."
+  },
+  "thresholds": {
+    "title": "Gestionar umbrales de ajuste",
+    "change": "Modificar umbrales de ajuste",
+    "display": "Visualizar umbrales de ajuste",
+    "selectionHint": "Ingrese el depósito y, si quiere acotar, el SKU (un valor, un rango o un patrón con *, como TOR*). F8 muestra los artículos del catálogo con sus umbrales en ese depósito.",
+    "listTitle": "Umbrales de ajuste en {{code}}",
+    "listHint": "Doble clic abre la ficha del artículo; desde ahí, Modificar. Un umbral vacío indica que los ajustes de esa dirección no esperan aprobación.",
+    "hint": "Cantidad en la unidad base para el depósito {{code}}. Una posición de ajuste que la supera espera aprobación. Vacío indica sin umbral.",
+    "saved": "Umbrales de ajuste del artículo {{sku}} en {{code}} grabados.",
+    "saveFailed": "No se pudieron grabar los umbrales de ajuste."
+  },
+  "messages": {
+    "productNotFound": "El artículo {{sku}} no existe.",
+    "loadFailed": "No se pudieron leer los datos del artículo."
+  }
+}

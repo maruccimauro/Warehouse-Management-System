@@ -22,6 +22,12 @@ const ls03nPage = 'administracion/visualizar-ubicacion';
 const ls10Page = 'administracion/crear-multiples-ubicaciones';
 const lx03Page = 'administracion/lista-de-ubicaciones';
 const zw05Page = 'supervisor/bloqueo-de-ubicaciones';
+const zw04Page = 'supervisor/stock-minimo';
+const zw42Page = 'supervisor/modificar-stock-minimo';
+const zw43Page = 'supervisor/visualizar-stock-minimo';
+const zw35Page = 'administracion/umbrales-de-ajuste';
+const zw36Page = 'administracion/modificar-umbrales-de-ajuste';
+const zw37Page = 'administracion/visualizar-umbrales-de-ajuste';
 const mm01Page = 'administracion/crear-catalogo';
 const mm02Page = 'administracion/modificar-catalogo';
 const mm03Page = 'administracion/visualizar-catalogo';
@@ -62,7 +68,6 @@ const locationFields = ['warehouse', 'code', 'zone', 'status', 'aisle', 'rack', 
 // páginas de su trío, como los de ubicación.
 const productFields = [
   'sku',
-  'warehouse',
   'name',
   'description',
   'status',
@@ -73,10 +78,11 @@ const productFields = [
   'lengthMm',
   'widthMm',
   'heightMm',
-  'minStock',
-  'adjustmentInThreshold',
-  'adjustmentOutThreshold',
 ] as const;
+// Campos de las fichas de stock mínimo y de umbrales de ajuste, incluidos desde un fragmento en
+// las páginas de su gestión y de sus transacciones individuales.
+const minStockFields = ['warehouse', 'product', 'minStock'] as const;
+const thresholdFields = ['warehouse', 'product', 'adjustmentInThreshold', 'adjustmentOutThreshold'] as const;
 const supplierFields = ['number', 'taxId', 'name', 'status', 'email', 'phone'] as const;
 // Campos de la ficha de usuario (E2.14), incluidos desde un fragmento en SU01 y ZW91 a ZW93.
 const userFields = ['username', 'name', 'email', 'status', 'passwordStatus', 'password', 'passwordRepeat', 'roles', 'warehouses'] as const;
@@ -135,7 +141,6 @@ const documentedMessageCodes = [
   'PRODUCT_NOT_FOUND',
   'SUPPLIER_NOT_FOUND',
   'SUPPLIER_PRODUCT_NOT_FOUND',
-  'WAREHOUSE_SETTING_NOT_SAVED',
   'USER_NOT_FOUND',
   'PASSWORD_MISMATCH',
 ] as const;
@@ -155,6 +160,8 @@ const documentedPermissions = [
   'locations.manage',
   'locations.block',
   'catalog.manage',
+  'catalog.min_stock.manage',
+  'inventory.thresholds.manage',
   'suppliers.manage',
   'users.view',
   'users.manage',
@@ -189,6 +196,12 @@ const fixedLinks = {
   'transaction.LS10': ls10Page,
   'transaction.LX03': lx03Page,
   'transaction.ZW05': zw05Page,
+  'transaction.ZW04': zw04Page,
+  'transaction.ZW42': zw42Page,
+  'transaction.ZW43': zw43Page,
+  'transaction.ZW35': zw35Page,
+  'transaction.ZW36': zw36Page,
+  'transaction.ZW37': zw37Page,
   'transaction.MM01': mm01Page,
   'transaction.MM02': mm02Page,
   'transaction.MM03': mm03Page,
@@ -240,6 +253,12 @@ const fixedLinks = {
   ]),
   ...fieldLinks('LX03', lx03Page, ['warehouse', 'code']),
   ...fieldLinks('ZW05', zw05Page, ['warehouse', 'code', 'reason']),
+  ...fieldLinks('ZW04', zw04Page, ['sku', ...minStockFields]),
+  ...fieldLinks('ZW42', zw42Page, minStockFields),
+  ...fieldLinks('ZW43', zw43Page, minStockFields),
+  ...fieldLinks('ZW35', zw35Page, ['sku', ...thresholdFields]),
+  ...fieldLinks('ZW36', zw36Page, thresholdFields),
+  ...fieldLinks('ZW37', zw37Page, thresholdFields),
   ...fieldLinks('MM01', mm01Page, productFields),
   ...fieldLinks('MM02', mm02Page, productFields),
   ...fieldLinks('MM03', mm03Page, productFields),

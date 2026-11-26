@@ -1,6 +1,6 @@
 <?php
 
-use App\Modules\Catalog\Actions\SetProductWarehouseSettings;
+use App\Modules\Catalog\Actions\SetProductAdjustmentThresholds;
 use App\Modules\Catalog\Enums\ProductStatus;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Identity\Actions\SyncRolesAndPermissions;
@@ -58,7 +58,7 @@ function adjustmentOnHand(Product $product, Location $location): int
 
 function adjustmentThresholds(Product $product, ?int $in, ?int $out): void
 {
-    app(SetProductWarehouseSettings::class)($product, test()->warehouse, 0, $in, $out);
+    app(SetProductAdjustmentThresholds::class)($product, test()->warehouse, $in, $out);
 }
 
 /**

@@ -23,6 +23,9 @@ enum Permission: string
     case LocationsManage = 'locations.manage';
     case LocationsBlock = 'locations.block';
     case CatalogManage = 'catalog.manage';
+    // Stock mínimo de un artículo en un depósito (DM-21): planificación del
+    // depósito, separada del maestro global (catalog.manage).
+    case CatalogMinStockManage = 'catalog.min_stock.manage';
     case SuppliersManage = 'suppliers.manage';
     case UsersView = 'users.view';
     case UsersManage = 'users.manage';
@@ -33,6 +36,9 @@ enum Permission: string
     case InventoryAdjustApprove = 'inventory.adjust.approve';
     case InventoryBlock = 'inventory.block';
     case InventoryReverse = 'inventory.reverse';
+    // Umbrales de aprobación de ajustes por artículo y depósito (REG-024): es
+    // un control central, separado de quien ajusta y de quien aprueba.
+    case InventoryThresholdsManage = 'inventory.thresholds.manage';
 
     // Abastecimiento y recepción (E4).
     case ProcurementCreate = 'procurement.create';

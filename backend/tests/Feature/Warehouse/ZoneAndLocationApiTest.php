@@ -97,7 +97,17 @@ describe('authorization matrix', function () {
             ->assertForbidden()
             ->assertJsonPath('code', 'FORBIDDEN')
             ->assertJsonPath('detail', __('identity.permission_denied'));
-    })->with('write endpoints')->with([Role::Supervisor, Role::Operator, Role::Purchasing, Role::Auditor]);
+    })->with('write endpoints')->with([Role::Operator, Role::Purchasing, Role::Auditor]);
+
+    it('lets the supervisor manage the structure of the warehouses where they operate', function (Closure $endpoint) {
+        [$method, $uri, $body] = $endpoint->call($this);
+
+        // El Supervisor consulta todos los depósitos: en uno no asignado responde 403.
+        $this->actingAs(userWithAccess(Role::Supervisor, [$this->central]))->json($method, $uri, $body)->assertSuccessful();
+        $this->actingAs(userWithAccess(Role::Supervisor, [$this->norte]))->json($method, $uri, $body)
+            ->assertForbidden()
+            ->assertJsonPath('detail', __('identity.warehouse_not_assigned'));
+    })->with('write endpoints');
 
     it('denies with 403 in a visible warehouse that is not assigned', function (Closure $endpoint) {
         [$method, $uri, $body] = $endpoint->call($this);

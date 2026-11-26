@@ -5,7 +5,7 @@ namespace App\Modules\Catalog\Database\Seeders;
 use App\Modules\Catalog\Actions\CreateCategory;
 use App\Modules\Catalog\Actions\CreateProduct;
 use App\Modules\Catalog\Actions\CreateUnitOfMeasure;
-use App\Modules\Catalog\Actions\SetProductWarehouseSettings;
+use App\Modules\Catalog\Actions\SetProductMinStock;
 use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\UnitOfMeasure;
@@ -68,7 +68,7 @@ class CatalogSeeder extends Seeder
         private readonly CreateUnitOfMeasure $createUnit,
         private readonly CreateCategory $createCategory,
         private readonly CreateProduct $createProduct,
-        private readonly SetProductWarehouseSettings $setSettings,
+        private readonly SetProductMinStock $setMinStock,
     ) {}
 
     public function run(): void
@@ -123,7 +123,7 @@ class CatalogSeeder extends Seeder
                 $product = Product::query()->where('sku', $sku)->sole();
 
                 if ($product->warehouseSettings()->where('warehouse_id', $warehouse->id)->doesntExist()) {
-                    ($this->setSettings)($product, $warehouse, $minStock, null, null);
+                    ($this->setMinStock)($product, $warehouse, $minStock);
                 }
             }
         }

@@ -60,7 +60,12 @@ export default defineConfig({
       },
       {
         text: 'Supervisor',
-        items: [{ text: 'Bloqueo de ubicaciones (ZW05)', link: '/supervisor/bloqueo-de-ubicaciones' }],
+        items: [
+          { text: 'Bloqueo de ubicaciones (ZW05)', link: '/supervisor/bloqueo-de-ubicaciones' },
+          { text: 'Gestionar stock mínimo (ZW04)', link: '/supervisor/stock-minimo' },
+          { text: 'Modificar stock mínimo (ZW42)', link: '/supervisor/modificar-stock-minimo' },
+          { text: 'Visualizar stock mínimo (ZW43)', link: '/supervisor/visualizar-stock-minimo' },
+        ],
       },
       {
         text: 'Compras',
@@ -94,6 +99,9 @@ export default defineConfig({
           { text: 'Modificar catálogo (MM02)', link: '/administracion/modificar-catalogo' },
           { text: 'Visualizar catálogo (MM03)', link: '/administracion/visualizar-catalogo' },
           { text: 'Lista del catálogo (MM60)', link: '/administracion/lista-del-catalogo' },
+          { text: 'Gestionar umbrales de ajuste (ZW35)', link: '/administracion/umbrales-de-ajuste' },
+          { text: 'Modificar umbrales de ajuste (ZW36)', link: '/administracion/modificar-umbrales-de-ajuste' },
+          { text: 'Visualizar umbrales de ajuste (ZW37)', link: '/administracion/visualizar-umbrales-de-ajuste' },
           { text: 'Gestionar categorías (ZW07)', link: '/administracion/categorias' },
           { text: 'Crear categoría (ZW71)', link: '/administracion/crear-categoria' },
           { text: 'Modificar categoría (ZW72)', link: '/administracion/modificar-categoria' },

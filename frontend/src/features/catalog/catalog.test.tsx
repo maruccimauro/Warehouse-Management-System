@@ -77,27 +77,23 @@ afterEach(() => {
 });
 
 describe('MM01 a MM03: artículos', () => {
-  it('crea un artículo con categoría, unidad y stock mínimo del depósito', async () => {
+  it('crea un artículo con categoría y unidad, sin datos de depósito', async () => {
     const api = stubApi({
       ...catalogHandlers,
       'GET /api/v1/products': () => page([]),
       'POST /api/v1/products': () => jsonResponse(201, { data: product({ id: 9, sku: 'TOR-M8-40' }) }),
-      'PUT /api/v1/products/9/warehouse-settings/1': () =>
-        jsonResponse(200, {
-          data: { product_id: 9, warehouse_id: 1, min_stock: 50, adjustment_in_approval_threshold: null, adjustment_out_approval_threshold: 20 },
-        }),
     });
 
     renderRoute('/t/MM01');
     await fill('SKU', 'tor-m8-40');
-    await fill('Depósito', 'central');
+    // Los datos del artículo en un depósito tienen sus transacciones (ZW04 y ZW35).
+    expect(screen.queryByRole('textbox', { name: 'Depósito' })).not.toBeInTheDocument();
     await userEvent.keyboard('{F8}');
 
     await fill('Nombre', 'Tornillo M8');
     await fill('Categoría', 'ferretería/tornillería');
     await fill('Unidad base', 'un');
-    await fill('Stock mínimo', '50');
-    await fill('Umbral de aprobación de ajuste negativo', '20');
+    expect(screen.queryByRole('textbox', { name: 'Stock mínimo' })).not.toBeInTheDocument();
     await userEvent.keyboard('{Control>}s{/Control}');
 
     await waitFor(() => {
@@ -111,11 +107,6 @@ describe('MM01 a MM03: artículos', () => {
       base_uom_id: 1,
       barcode: null,
       weight_grams: null,
-    });
-    expect(api.requestsTo('PUT', '/api/v1/products/9/warehouse-settings/1')[0]?.body).toEqual({
-      min_stock: 50,
-      adjustment_in_approval_threshold: null,
-      adjustment_out_approval_threshold: 20,
     });
   });
 
@@ -142,81 +133,28 @@ describe('MM01 a MM03: artículos', () => {
     expect(statusBar().getByRole('link', { name: /PRODUCT_NOT_FOUND/ })).toHaveAttribute('href', '/docs/referencia/mensajes#product-not-found');
   });
 
-  it('si el artículo se graba y el stock mínimo no, avisa con un W y vuelve a la pantalla inicial', async () => {
+  it('modificar graba los datos generales y vuelve a la pantalla inicial', async () => {
     const api = stubApi({
       ...catalogHandlers,
       'GET /api/v1/products': () => page([product()]),
-      'GET /api/v1/products/7/warehouse-settings': () => jsonResponse(200, { data: [] }),
       'PATCH /api/v1/products/7': () => jsonResponse(200, { data: product({ status: 'discontinued' }) }),
-      'PUT /api/v1/products/7/warehouse-settings/1': () => problemResponse(403, 'FORBIDDEN', { detail: 'No tiene permiso para operar en este depósito.' }),
     });
 
     renderRoute('/t/MM02');
     await fill('SKU', 'tor-m6-30');
-    await fill('Depósito', 'central');
     await userEvent.keyboard('{F8}');
 
     expect(await screen.findByRole('textbox', { name: 'Categoría' })).toHaveValue('Ferretería / Tornillería');
     expect(screen.getByRole('textbox', { name: 'Unidad base' })).toBeDisabled();
 
     await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Estado' }), 'discontinued');
-    await fill('Stock mínimo', '20');
     await userEvent.keyboard('{Control>}s{/Control}');
 
     await waitFor(() => {
-      expect(statusBar().getByRole('link', { name: /WAREHOUSE_SETTING_NOT_SAVED/ })).toBeInTheDocument();
+      expect(statusBar().getByRole('status')).toHaveTextContent('Artículo TOR-M6-30 grabado.');
     });
     expect(api.requestsTo('PATCH', '/api/v1/products/7')[0]?.body).toMatchObject({ status: 'discontinued', category_id: 2 });
     expect(await screen.findByRole('heading', { name: 'Modificar catálogo', level: 2 })).toBeInTheDocument();
-  });
-
-  it('modificar lee los umbrales del depósito y graba solo si cambian, con vacío como sin umbral', async () => {
-    const setting = { product_id: 7, warehouse_id: 1, min_stock: 10, adjustment_in_approval_threshold: 100, adjustment_out_approval_threshold: 5 };
-    const api = stubApi({
-      ...catalogHandlers,
-      'GET /api/v1/products': () => page([product()]),
-      'GET /api/v1/products/7/warehouse-settings': () => jsonResponse(200, { data: [setting] }),
-      'PATCH /api/v1/products/7': () => jsonResponse(200, { data: product() }),
-      'PUT /api/v1/products/7/warehouse-settings/1': () => jsonResponse(200, { data: { ...setting, adjustment_in_approval_threshold: null } }),
-    });
-
-    renderRoute('/t/MM02');
-    await fill('SKU', 'tor-m6-30');
-    await fill('Depósito', 'central');
-    await userEvent.keyboard('{F8}');
-
-    expect(await screen.findByRole('textbox', { name: 'Umbral de aprobación de ajuste positivo' })).toHaveValue('100');
-    expect(screen.getByRole('textbox', { name: 'Umbral de aprobación de ajuste negativo' })).toHaveValue('5');
-
-    await userEvent.clear(screen.getByRole('textbox', { name: 'Umbral de aprobación de ajuste positivo' }));
-    await userEvent.keyboard('{Control>}s{/Control}');
-
-    await waitFor(() => {
-      expect(api.requestsTo('PUT', '/api/v1/products/7/warehouse-settings/1')[0]?.body).toEqual({
-        min_stock: 10,
-        adjustment_in_approval_threshold: null,
-        adjustment_out_approval_threshold: 5,
-      });
-    });
-  });
-
-  it('rechaza un umbral de cero, que no es un umbral válido', async () => {
-    const api = stubApi({
-      ...catalogHandlers,
-      'GET /api/v1/products': () => page([product()]),
-      'GET /api/v1/products/7/warehouse-settings': () => jsonResponse(200, { data: [] }),
-    });
-
-    renderRoute('/t/MM02');
-    await fill('SKU', 'tor-m6-30');
-    await fill('Depósito', 'central');
-    await userEvent.keyboard('{F8}');
-
-    await fill('Umbral de aprobación de ajuste negativo', '0');
-    await userEvent.keyboard('{Control>}s{/Control}');
-
-    expect(await statusBar().findByRole('alert')).toBeInTheDocument();
-    expect(api.requestsTo('PATCH', '/api/v1/products/7')).toHaveLength(0);
   });
 
   it('visualizar muestra la ficha en solo lectura y los proveedores del artículo', async () => {
