@@ -17,7 +17,7 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)->in('Feature');
 
-pest()->use(RefreshDatabase::class)->in('Feature/Catalog', 'Feature/Database', 'Feature/Http', 'Feature/Identity', 'Feature/Warehouse');
+pest()->use(RefreshDatabase::class)->in('Feature/Audit', 'Feature/Catalog', 'Feature/Database', 'Feature/Http', 'Feature/Identity', 'Feature/Inventory', 'Feature/Warehouse');
 
 /**
  * Usuario con un rol (null: sin rol, como uno sin warehouses.view_all) y los

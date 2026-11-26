@@ -52,6 +52,8 @@ Reproducen el DDL de `docs/03-architecture/database-design.md`.
 | Fechas y horas | `timestampTz()`; `created_at` y `updated_at` con `useCurrent()` cuando el DDL los declara `NOT NULL DEFAULT now()` | `timestamp()` y `timestamps()` generan `timestamp without time zone`. La precisión de microsegundos la fija `AppServiceProvider` |
 | Cantidades | `bigInteger()` en unidad base (ADR-005) | Aritmética entera exacta |
 | Lo que el Schema Builder no expresa | `DB::statement` en la misma migración: `CHECK`, índices parciales, `NULLS NOT DISTINCT`, claves foráneas compuestas, columnas generadas, triggers | El DDL es la referencia |
+| Secuencias de números y funciones | La secuencia se declara `OWNED BY` su columna y la función de un trigger con `CREATE OR REPLACE` | `migrate:fresh` borra tablas, no secuencias sueltas ni funciones |
+| Tablas de infraestructura de la API | `backend/database/migrations/` (`idempotency_keys`), no un módulo | Las usa código de `app/Shared`, que no depende de los módulos |
 | Nombres de restricciones | `{tabla}_{columnas}_{tipo}` | `DatabaseErrorTranslator` traduce por nombre |
 
 `tests/Feature/Database/SchemaConventionsTest.php` recorre el esquema migrado y falla ante una columna `timestamp without time zone`, una precisión distinta de microsegundos o una secuencia `serial`. Las tablas de infraestructura de Laravel (`sessions`, `cache`, `jobs` y afines) quedan como sus migraciones publicadas y se excluyen.
