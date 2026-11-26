@@ -6,13 +6,10 @@ use App\Modules\Inventory\Data\MovementLine;
 use App\Modules\Inventory\Data\OperationDraft;
 use App\Modules\Inventory\Enums\AdjustmentReason;
 use App\Modules\Inventory\Enums\OperationType;
-use App\Modules\Inventory\Models\InventoryOperation;
 use App\Modules\Inventory\Models\StockMovement;
 use App\Modules\Inventory\Services\StockLedger;
-use App\Shared\Database\DatabaseErrorTranslator;
-use App\Shared\Exceptions\DomainException;
+use App\Shared\Exceptions\ProblemDetailsRenderer;
 use Illuminate\Console\Command;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Throwable;
@@ -24,21 +21,25 @@ use Throwable;
  *
  * Abre la conexión, espera la barrera de inicio (el bloqueo consultivo que
  * tiene la prueba) y corre el escenario en su transacción, como una Action
- * (DB::transaction con tres intentos, ADR-004). Imprime una línea JSON con el
- * resultado: ok, rejected con el código de dominio, o error con la clase y el
- * mensaje. Termina con 0 en los tres casos: un rechazo es un resultado del
- * escenario, no una falla del proceso.
+ * (DB::transaction con tres intentos por defecto, ADR-004). Imprime una línea
+ * JSON con el resultado y los intentos usados: ok; rejected con el código que
+ * respondería la API, calculado por ProblemDetailsRenderer; o error con la
+ * clase y el mensaje si la API respondería 500. Termina con 0 en los tres
+ * casos: un rechazo es un resultado del escenario, no una falla del proceso.
  */
 final class ConcurrencyScenarioCommand extends Command
 {
     /** Clave del bloqueo consultivo de la barrera (registrada en ADR-003). */
     public const BARRIER_KEY = 999001;
 
+    /** Pausa entre el primer y el segundo bloqueo del escenario deadlock. */
+    private const DEADLOCK_PAUSE_SECONDS = 0.5;
+
     protected $signature = 'testing:concurrency-scenario {scenario} {payload}';
 
     protected $description = 'Corre un escenario de las pruebas de concurrencia (solo en testing).';
 
-    public function handle(StockLedger $ledger, DatabaseErrorTranslator $translator): int
+    public function handle(StockLedger $ledger, ProblemDetailsRenderer $problems): int
     {
         $payload = json_decode((string) $this->argument('payload'), true, flags: JSON_THROW_ON_ERROR);
 
@@ -46,38 +47,52 @@ final class ConcurrencyScenarioCommand extends Command
             throw new InvalidArgumentException('El payload es un objeto JSON.');
         }
 
+        $scenario = (string) $this->argument('scenario');
+        $work = $scenario === 'deadlock'
+            ? fn (): ?int => $this->crossLocks($payload)
+            : fn (): ?int => $ledger->apply($this->draft($scenario, $payload))->id;
+        $attempts = 0;
+
         // La barrera: la prueba tiene el bloqueo exclusivo y lo suelta cuando
         // todos los hijos esperan el compartido.
         DB::select('SELECT pg_advisory_lock_shared(?)', [self::BARRIER_KEY]);
         DB::select('SELECT pg_advisory_unlock_shared(?)', [self::BARRIER_KEY]);
 
-        $this->line((string) json_encode($this->outcome(fn (): InventoryOperation => DB::transaction(
-            fn (): InventoryOperation => $ledger->apply($this->draft((string) $this->argument('scenario'), $payload)),
-            attempts: 3,
-        ), $translator)));
+        try {
+            $operationId = DB::transaction(function () use ($work, &$attempts): ?int {
+                $attempts++;
+
+                return $work();
+            }, attempts: self::int($payload, 'attempts', 3));
+
+            $outcome = ['status' => 'ok', 'operation_id' => $operationId];
+        } catch (Throwable $exception) {
+            $problem = $problems->toProblem($exception);
+
+            $outcome = $problem->status >= 500 && $problem->code === 'INTERNAL_ERROR'
+                ? ['status' => 'error', 'class' => $exception::class, 'message' => $exception->getMessage()]
+                : ['status' => 'rejected', 'code' => $problem->code, 'http_status' => $problem->status];
+        }
+
+        $this->line((string) json_encode([...$outcome, 'attempts' => $attempts]));
 
         return self::SUCCESS;
     }
 
     /**
-     * @param  callable(): InventoryOperation  $scenario
-     * @return array<string, mixed>
+     * Deadlock real (E3.19): toma el bloqueo consultivo first, espera a que el
+     * otro proceso tome el suyo y pide second. Dos procesos con las claves
+     * cruzadas se esperan mutuamente y PostgreSQL aborta a uno con 40P01.
+     *
+     * @param  array<array-key, mixed>  $payload
      */
-    private function outcome(callable $scenario, DatabaseErrorTranslator $translator): array
+    private function crossLocks(array $payload): ?int
     {
-        try {
-            return ['status' => 'ok', 'operation_id' => $scenario()->id];
-        } catch (DomainException $exception) {
-            return ['status' => 'rejected', 'code' => $exception->errorCode()];
-        } catch (QueryException $exception) {
-            $domain = $translator->translate($exception);
+        DB::select('SELECT pg_advisory_xact_lock(?)', [self::int($payload, 'first')]);
+        DB::select('SELECT pg_sleep(?)', [self::DEADLOCK_PAUSE_SECONDS]);
+        DB::select('SELECT pg_advisory_xact_lock(?)', [self::int($payload, 'second')]);
 
-            return $domain !== null
-                ? ['status' => 'rejected', 'code' => $domain->errorCode()]
-                : ['status' => 'error', 'class' => $exception::class, 'message' => $exception->getMessage()];
-        } catch (Throwable $exception) {
-            return ['status' => 'error', 'class' => $exception::class, 'message' => $exception->getMessage()];
-        }
+        return null;
     }
 
     /**
@@ -88,7 +103,7 @@ final class ConcurrencyScenarioCommand extends Command
      */
     private function draft(string $scenario, array $payload): OperationDraft
     {
-        $int = static fn (string $key): int => is_numeric($payload[$key] ?? null) ? (int) $payload[$key] : throw new InvalidArgumentException("Falta {$key} en el payload.");
+        $int = static fn (string $key): int => self::int($payload, $key);
 
         $warehouse = $int('warehouse');
         $user = $int('user');
@@ -118,5 +133,15 @@ final class ConcurrencyScenarioCommand extends Command
                 ->all(), reversesOperationId: $int('operation'), notes: 'Reversión concurrente'),
             default => throw new InvalidArgumentException("Escenario desconocido: {$scenario}."),
         };
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $payload
+     */
+    private static function int(array $payload, string $key, ?int $default = null): int
+    {
+        $value = $payload[$key] ?? $default;
+
+        return is_numeric($value) ? (int) $value : throw new InvalidArgumentException("Falta {$key} en el payload.");
     }
 }

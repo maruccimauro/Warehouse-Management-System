@@ -22,4 +22,8 @@ return [
     ],
     'idempotency_key_reused' => 'The idempotency key was already used with different content.',
     'idempotency_request_in_progress' => 'Another request with the same idempotency key is still in progress.',
+    'concurrency_conflict' => [
+        'title' => 'The operation collided with a simultaneous one.',
+        'detail' => 'Another operation was using the same data and this one could not complete after several attempts. Try again in a few seconds.',
+    ],
 ];

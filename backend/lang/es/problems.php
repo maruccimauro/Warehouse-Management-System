@@ -22,4 +22,8 @@ return [
     ],
     'idempotency_key_reused' => 'La clave de idempotencia ya se usó con otro contenido.',
     'idempotency_request_in_progress' => 'Otra solicitud con la misma clave de idempotencia sigue en curso.',
+    'concurrency_conflict' => [
+        'title' => 'La operación chocó con otra simultánea.',
+        'detail' => 'Otra operación usaba los mismos datos y no se pudo completar después de varios intentos. Reintente en unos segundos.',
+    ],
 ];

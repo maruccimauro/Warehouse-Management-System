@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Shared\Database\DatabaseErrorTranslator;
+use App\Shared\Database\PostgresConcurrencyErrorDetector;
 use App\Shared\Exceptions\ProblemDetailsRenderer;
+use Illuminate\Contracts\Database\ConcurrencyErrorDetector;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -18,8 +20,13 @@ class AppServiceProvider extends ServiceProvider
         // Una sola instancia: los módulos registran sus traducciones en boot().
         $this->app->singleton(DatabaseErrorTranslator::class);
 
+        // Reintento de DB::transaction por SQLSTATE, sin depender del idioma
+        // del servidor (ADR-004).
+        $this->app->singleton(ConcurrencyErrorDetector::class, PostgresConcurrencyErrorDetector::class);
+
         $this->app->singleton(ProblemDetailsRenderer::class, fn (Application $app): ProblemDetailsRenderer => new ProblemDetailsRenderer(
             $app->make(DatabaseErrorTranslator::class),
+            $app->make(ConcurrencyErrorDetector::class),
             (bool) $app->make('config')->get('app.debug'),
         ));
     }

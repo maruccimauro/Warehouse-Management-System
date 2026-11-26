@@ -5,10 +5,12 @@ namespace App\Shared\Exceptions;
 use App\Shared\Database\DatabaseErrorTranslator;
 use App\Shared\Http\Problems\ProblemDetails;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Database\ConcurrencyErrorDetector;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use PDOException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
@@ -50,6 +52,7 @@ final readonly class ProblemDetailsRenderer
 
     public function __construct(
         private DatabaseErrorTranslator $databaseErrors,
+        private ConcurrencyErrorDetector $concurrencyErrors,
         private bool $debug,
     ) {}
 
@@ -62,7 +65,12 @@ final readonly class ProblemDetailsRenderer
 
     public function toProblem(Throwable $exception): ProblemDetails
     {
-        if ($exception instanceof QueryException) {
+        // Deadlock o falla de serialización que llegó hasta acá: DB::transaction
+        // agotó sus intentos (ADR-004). DeadlockException, la de una
+        // transacción anidada, también es una PDOException.
+        if ($exception instanceof PDOException && $this->concurrencyErrors->causedByConcurrencyError($exception)) {
+            $exception = new ConcurrencyConflict(previous: $exception);
+        } elseif ($exception instanceof QueryException) {
             $exception = $this->databaseErrors->translate($exception) ?? $exception;
         }
 

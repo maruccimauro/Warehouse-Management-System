@@ -1,8 +1,11 @@
 <?php
 
 use App\Shared\Database\DatabaseErrorTranslator;
+use App\Shared\Database\PostgresConcurrencyErrorDetector;
 use App\Shared\Exceptions\ProblemDetailsRenderer;
 use App\Shared\Http\Problems\ProblemDetails;
+use Illuminate\Contracts\Database\ConcurrencyErrorDetector;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
 use Tests\Fixtures\Modules\Sample\SampleServiceProvider;
 
@@ -188,6 +191,19 @@ describe('database errors', function () {
         'restricción sin traducción' => ['/api/v1/sample/errors/constraint-unmapped', 'sample_unmapped_check'],
         'trigger sin traducción' => ['/api/v1/sample/errors/trigger-unmapped', 'SAMPLE_UNMAPPED_TRIGGER'],
     ]);
+
+    it('answers 503 CONCURRENCY_CONFLICT for a deadlock that ran out of attempts (ADR-004)', function () {
+        $pdo = new PDOException('ERROR:  se ha detectado un bloqueo mutuo');
+        $pdo->errorInfo = ['40P01', 7, 'ERROR:  se ha detectado un bloqueo mutuo'];
+
+        $problem = $this->app->make(ProblemDetailsRenderer::class)->toProblem(new QueryException('pgsql', 'SELECT 1', [], $pdo));
+
+        expect($this->app->make(ConcurrencyErrorDetector::class))->toBeInstanceOf(PostgresConcurrencyErrorDetector::class)
+            ->and($problem->status)->toBe(503)
+            ->and($problem->code)->toBe('CONCURRENCY_CONFLICT')
+            ->and($problem->type)->toBe('urn:wms:problem:concurrency-conflict')
+            ->and($problem->title)->toBe('La operación chocó con otra simultánea.');
+    });
 
     it('exposes the registered translations for the coverage check of E3', function () {
         $translator = $this->app->make(DatabaseErrorTranslator::class);

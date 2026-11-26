@@ -215,6 +215,12 @@ El servidor no puede atender la solicitud en este momento, por ejemplo durante u
 
 **Qué hacer:** intente de nuevo en unos minutos.
 
+### `CONCURRENCY_CONFLICT` {#concurrency-conflict}
+
+Otra operación modificaba los mismos datos al mismo tiempo y el servidor no pudo completar la suya después de varios intentos. La operación no se realizó y no quedó ningún cambio a medias.
+
+**Qué hacer:** repita la operación en unos segundos. Si el mensaje se repite, contacte al administrador.
+
 ### `INTERNAL_ERROR` {#internal-error}
 
 Ocurrió un error inesperado en el servidor. La operación no se realizó.
