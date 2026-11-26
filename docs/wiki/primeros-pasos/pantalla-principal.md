@@ -59,12 +59,14 @@ Cada transacción habilita solo los botones que admite: una pantalla sin nada qu
 
 La barra inferior informa el resultado de cada acción con un mensaje de uno de cuatro tipos:
 
-| Tipo | Significado |
-| - | - |
-| S | Éxito: la acción se completó |
-| W | Advertencia: se completó con una observación |
-| E | Error: la acción no se realizó |
-| I | Información |
+| Tipo | Color | Significado |
+| - | - | - |
+| S | Verde | Éxito: la acción se completó |
+| W | Ámbar | Advertencia: se completó con una observación |
+| E | Rojo | Error: la acción no se realizó |
+| I | Azul | Información |
+
+Cada mensaje nuevo se anuncia pintando el área del mensaje con el color de su tipo, de izquierda a derecha, con un destello breve al completarse. Después el área queda en un tono suave del mismo color, con una franja del color fuerte a la izquierda, hasta el próximo mensaje. Si el sistema operativo tiene activada la opción de reducir el movimiento, el mensaje aparece directamente con su color, sin la animación.
 
 Los mensajes E y W muestran su código entre paréntesis, por ejemplo `(WAREHOUSE_INACTIVE)`. El código es un enlace a su explicación en la [referencia de mensajes](/referencia/mensajes).
 

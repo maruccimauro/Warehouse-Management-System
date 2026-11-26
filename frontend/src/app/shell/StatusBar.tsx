@@ -4,11 +4,12 @@ import { isHelpKey } from '@/shared/help/helpLinks';
 import { Icon, type IconName } from '@/shared/ui/icons';
 import { useStatusBar, type MessageType, type StatusMessage } from './statusMessages';
 
-const appearance: Record<MessageType, { icon: IconName; className: string }> = {
-  S: { icon: 'success', className: 'text-success' },
-  W: { icon: 'warning', className: 'text-warning' },
-  E: { icon: 'error', className: 'text-error' },
-  I: { icon: 'info', className: 'text-info' },
+// El color de cada tipo lo pone .status-message según data-type (index.css).
+const icons: Record<MessageType, IconName> = {
+  S: 'success',
+  W: 'warning',
+  E: 'error',
+  I: 'info',
 };
 
 // Código del mensaje: si la wiki lo explica, es un enlace a su entrada, como el texto largo
@@ -35,12 +36,10 @@ function MessageId({ id }: { id: string }) {
 
 function MessageContent({ message }: { message: StatusMessage }) {
   const { t } = useTranslation('shell');
-  const { icon, className } = appearance[message.type];
-
   return (
-    <span className="inline-flex min-w-0 items-center gap-1.5">
-      <span className={className}>
-        <Icon name={icon} />
+    <span className="status-message-content inline-flex min-w-0 items-center gap-1.5">
+      <span className="status-message-icon">
+        <Icon name={icons[message.type]} />
       </span>
       <span className="visually-hidden">{t(`statusBar.types.${message.type}`)}: </span>
       <span className="truncate">{message.text}</span>
@@ -58,17 +57,24 @@ interface StatusBarProps {
 // Barra de estado de SAP GUI: el resultado de la última acción a la izquierda y los datos
 // de la sesión a la derecha. Dos regiones vivas fijas (una cortés y una asertiva) para que
 // cada mensaje se anuncie de forma confiable: los errores interrumpen, el resto espera.
+// Cada mensaje nuevo pinta el área del mensaje con el color de su tipo, de izquierda a
+// derecha, con un destello al completarse; la clave sequence reinicia la animación aunque el
+// mensaje se repita. Los datos de la sesión, a la derecha, no se animan.
 export function StatusBar({ transactionCode, defaultWarehouse, language }: StatusBarProps) {
   const { t } = useTranslation('shell');
-  const { message } = useStatusBar();
+  const { message, sequence } = useStatusBar();
   const isError = message?.type === 'E';
 
   return (
     <footer
       aria-label={t('statusBar.label')}
-      className="flex min-h-7 items-center gap-4 border-t border-border bg-toolbar px-3 text-xs"
+      className="flex min-h-7 items-stretch gap-4 border-t border-border bg-toolbar pe-3 text-xs"
     >
-      <div className="min-w-0 flex-1">
+      <div
+        key={sequence}
+        data-type={message?.type}
+        className={`flex min-w-0 flex-1 flex-col justify-center ps-3 pe-2${message === undefined ? '' : ' status-message'}`}
+      >
         <p role="status" className="min-w-0">
           {message !== undefined && !isError && <MessageContent message={message} />}
         </p>

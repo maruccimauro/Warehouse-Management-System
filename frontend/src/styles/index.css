@@ -278,4 +278,103 @@
       }
     }
   }
+
+  /* Mensaje de la barra de estado (StatusBar): el área del mensaje queda con el color suave
+     de su tipo y una franja del color fuerte a la izquierda. Con movimiento permitido, cada
+     mensaje nuevo la llena de izquierda a derecha con el color fuerte, da un golpe de brillo
+     al completarse (un solo destello, por debajo del límite de tres por segundo) y se
+     desvanece hasta el color suave. Sin movimiento, se ve directo el estado final. */
+  .status-message {
+    --status-tone: var(--color-info);
+    --status-tone-soft: var(--color-info-soft);
+
+    position: relative;
+    isolation: isolate;
+    background-color: var(--status-tone-soft);
+    box-shadow: inset 3px 0 0 var(--status-tone);
+
+    &[data-type='S'] {
+      --status-tone: var(--color-success);
+      --status-tone-soft: var(--color-success-soft);
+    }
+
+    &[data-type='W'] {
+      --status-tone: var(--color-warning);
+      --status-tone-soft: var(--color-warning-soft);
+    }
+
+    &[data-type='E'] {
+      --status-tone: var(--color-error);
+      --status-tone-soft: var(--color-error-soft);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background-color: var(--status-tone);
+      transform-origin: left center;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      &::before {
+        animation: status-message-fill 1.1s ease-out both;
+      }
+
+      .status-message-content,
+      .status-message-content * {
+        animation: status-message-text 1.1s ease-out;
+      }
+    }
+  }
+
+  .status-message-icon {
+    color: var(--status-tone);
+  }
+}
+
+/* Relleno (0 a 30 %), golpe de brillo al llenarse (30 a 45 %), color fuerte sostenido y
+   desvanecimiento hasta el color suave. Solo transform, opacity y filter: corre en el
+   compositor. */
+@keyframes status-message-fill {
+  0% {
+    transform: scaleX(0);
+    opacity: 1;
+    filter: brightness(1);
+  }
+
+  30% {
+    transform: scaleX(1);
+    opacity: 1;
+    filter: brightness(1);
+  }
+
+  38% {
+    filter: brightness(1.45) saturate(1.2);
+  }
+
+  50% {
+    filter: brightness(1);
+  }
+
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+
+/* El texto, el ícono y el código pasan a blanco mientras el fondo se pinta con el color
+   fuerte, para que se lean, y vuelven a su color cuando el fondo se aclara. */
+@keyframes status-message-text {
+  28%,
+  70% {
+    color: #fff;
+  }
 }

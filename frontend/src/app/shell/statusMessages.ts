@@ -14,6 +14,9 @@ export interface StatusMessage {
 
 export interface StatusBarContextValue {
   message: StatusMessage | undefined;
+  // Crece con cada mensaje mostrado, aunque repita el anterior: la barra lo usa para volver
+  // a animar el aviso.
+  sequence: number;
   show: (message: StatusMessage) => void;
   clear: () => void;
 }
