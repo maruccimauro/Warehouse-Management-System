@@ -9,7 +9,8 @@ Esta página lista los permisos que usan las funciones disponibles hoy. Los de r
 | Rol | Puesto |
 | - | - |
 | Administrador | Configura el sistema y puede operar en todos los depósitos. Tiene todos los permisos |
-| Gerente de operaciones | Controla la operación de los depósitos que tiene asignados, por encima de los supervisores: aprueba, fija los umbrales de ajuste y carga el stock inicial, sin la operación diaria ni la administración de usuarios |
+| Gerente de operaciones | Controla la operación de todos los depósitos, por encima de los supervisores: aprueba, fija los umbrales de ajuste y carga el stock inicial, sin la operación diaria ni la administración de usuarios. Tiene [`warehouses.operate_all`](#warehouses-operate-all) |
+| Jefe de operaciones | Tiene los mismos permisos que el Gerente de operaciones, pero solo en los depósitos que tiene asignados |
 | Supervisor | Supervisa la operación del depósito: aprueba, revierte y bloquea |
 | Operador | Ejecuta las tareas del depósito |
 | Compras | Gestiona proveedores y órdenes de compra |
@@ -25,7 +26,7 @@ Consultar todos los depósitos, con sus zonas, ubicaciones y su información, si
 
 ### `warehouses.operate_all` {#warehouses-operate-all}
 
-Operar en todos los depósitos sin tenerlos asignados. Solo lo tiene el Administrador.
+Operar en todos los depósitos sin tenerlos asignados. Lo tienen el Administrador y el Gerente de operaciones.
 
 ### `warehouses.manage` {#warehouses-manage}
 
@@ -61,11 +62,11 @@ Crear, modificar, activar y desactivar proveedores, y vincularlos con los artíc
 
 ### `inventory.thresholds.manage` {#inventory-thresholds-manage}
 
-Fijar los umbrales de aprobación de ajustes de un artículo en los depósitos donde el usuario opera: [Gestionar umbrales de ajuste](/administracion/umbrales-de-ajuste) y [Modificar umbrales de ajuste](/administracion/modificar-umbrales-de-ajuste). Es un control central: quien ajusta stock no fija su propio umbral. Lo tienen el Administrador y el Gerente de operaciones.
+Fijar los umbrales de aprobación de ajustes de un artículo en los depósitos donde el usuario opera: [Gestionar umbrales de ajuste](/administracion/umbrales-de-ajuste) y [Modificar umbrales de ajuste](/administracion/modificar-umbrales-de-ajuste). Es un control central: quien ajusta stock no fija su propio umbral. Lo tienen el Administrador, el Gerente de operaciones y el Jefe de operaciones.
 
 ### `inventory.initial_load` {#inventory-initial-load}
 
-Cargar el stock inicial de los artículos en los depósitos donde el usuario opera, con el movimiento [561](./movimientos#mov-561). La carga no pasa por el umbral de aprobación de los ajustes, por eso el permiso queda reservado. Lo tienen el Administrador y el Gerente de operaciones.
+Cargar el stock inicial de los artículos en los depósitos donde el usuario opera, con el movimiento [561](./movimientos#mov-561). La carga no pasa por el umbral de aprobación de los ajustes, por eso el permiso queda reservado. Lo tienen el Administrador, el Gerente de operaciones y el Jefe de operaciones.
 
 ## Usuarios {#usuarios}
 

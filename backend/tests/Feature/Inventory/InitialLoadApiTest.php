@@ -225,8 +225,14 @@ describe('validation', function () {
 });
 
 describe('authorization (REG-005)', function () {
-    it('lets the operations manager load in an assigned warehouse', function () {
-        $this->actingAs(userWithAccess(Role::OperationsManager, [$this->warehouse]));
+    it('lets the operations lead load in an assigned warehouse', function () {
+        $this->actingAs(userWithAccess(Role::OperationsLead, [$this->warehouse]));
+
+        initialLoadPost([[$this->bolt, $this->a, 4]])->assertCreated();
+    });
+
+    it('lets the operations manager load in any warehouse without assignment', function () {
+        $this->actingAs(userWithAccess(Role::OperationsManager));
 
         initialLoadPost([[$this->bolt, $this->a, 4]])->assertCreated();
     });
@@ -239,8 +245,8 @@ describe('authorization (REG-005)', function () {
             ->assertJsonPath('code', 'FORBIDDEN');
     });
 
-    it('forbids a warehouse the manager does not operate in, without revealing whether it exists', function (Closure $warehouseId) {
-        $this->actingAs(userWithAccess(Role::OperationsManager, [$this->warehouse]));
+    it('forbids a warehouse the lead does not operate in, without revealing whether it exists', function (Closure $warehouseId) {
+        $this->actingAs(userWithAccess(Role::OperationsLead, [$this->warehouse]));
 
         $this->postJson('/api/v1/inventory/initial-loads', ['warehouse_id' => $warehouseId->call($this), 'items' => []], [Idempotency::HEADER => (string) Str::uuid()])
             ->assertForbidden()

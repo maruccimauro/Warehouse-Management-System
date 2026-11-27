@@ -12,8 +12,23 @@ namespace App\Modules\Identity\Authorization;
  */
 enum Role: string
 {
+    /**
+     * Permisos de control de operaciones, comunes al Gerente y al Jefe de
+     * operaciones; los distingue solo el alcance por depósito.
+     */
+    private const OPERATIONS_CONTROL = [
+        Permission::WarehousesViewAll,
+        Permission::InventoryAdjustApprove,
+        Permission::InventoryThresholdsManage,
+        Permission::InventoryInitialLoad,
+        Permission::ProcurementApprove,
+        Permission::StocktakeApprove,
+        Permission::AuditView,
+    ];
+
     case Administrator = 'administrator';
     case OperationsManager = 'operations_manager';
+    case OperationsLead = 'operations_lead';
     case Supervisor = 'supervisor';
     case Operator = 'operator';
     case Purchasing = 'purchasing';
@@ -29,24 +44,21 @@ enum Role: string
             // segregación (REG-001, INV-010, DM-08) se validan por documento y
             // también lo alcanzan. Todos los roles consultan los depósitos
             // (warehouses.view_all), para ubicar mercadería entre depósitos;
-            // operar en todos sin asignación (warehouses.operate_all) es solo
-            // del administrador.
+            // operar en todos sin asignación (warehouses.operate_all) es del
+            // administrador y del gerente de operaciones.
             self::Administrator => Permission::cases(),
-            // Control por encima de los supervisores, en los depósitos que
-            // tiene asignados (regional) o en todos con el permiso directo
-            // warehouses.operate_all (general), sin la operación diaria: quien
-            // fija los umbrales y aprueba no ajusta (regla de responsabilidades
-            // por transacción). No administra usuarios, roles, depósitos,
-            // catálogo ni proveedores (decisión del usuario del 26/11/2026).
+            // Control por encima de los supervisores sin la operación diaria:
+            // quien fija los umbrales y aprueba no ajusta (regla de
+            // responsabilidades por transacción). No administra usuarios,
+            // roles, depósitos, catálogo ni proveedores (decisiones del
+            // usuario del 26/11/2026, D16.7). El Gerente de operaciones actúa
+            // en todos los depósitos; el Jefe de operaciones, en los que tiene
+            // asignados.
             self::OperationsManager => [
-                Permission::WarehousesViewAll,
-                Permission::InventoryAdjustApprove,
-                Permission::InventoryThresholdsManage,
-                Permission::InventoryInitialLoad,
-                Permission::ProcurementApprove,
-                Permission::StocktakeApprove,
-                Permission::AuditView,
+                Permission::WarehousesOperateAll,
+                ...self::OPERATIONS_CONTROL,
             ],
+            self::OperationsLead => self::OPERATIONS_CONTROL,
             self::Supervisor => [
                 Permission::WarehousesViewAll,
                 // Zonas, ubicaciones y stock mínimo de los depósitos donde

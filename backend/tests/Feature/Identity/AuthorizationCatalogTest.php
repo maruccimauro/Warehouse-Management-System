@@ -77,6 +77,30 @@ it('keeps the roles assigned to users when synchronizing', function () {
     expect($user->fresh()?->hasRole(Role::Supervisor->value))->toBeTrue();
 });
 
+it('distinguishes the operations manager from the lead only by the scope over every warehouse', function () {
+    $manager = array_values(array_diff(permissionNamesOf(Role::OperationsManager), [Permission::WarehousesOperateAll->value]));
+
+    expect(permissionNamesOf(Role::OperationsManager))->toContain(Permission::WarehousesOperateAll->value)
+        ->and($manager)->toBe(permissionNamesOf(Role::OperationsLead));
+});
+
+it('keeps the assignments of the former operations manager in the operations lead when migrating', function () {
+    RoleModel::query()->where('name', Role::OperationsLead->value)->delete();
+    RoleModel::query()->where('name', Role::OperationsManager->value)->delete();
+    $former = RoleModel::findOrCreate('operations_manager', SyncRolesAndPermissions::GUARD);
+    $user = User::factory()->create();
+    $user->assignRole($former);
+
+    $migration = require database_path('../app/Modules/Identity/Database/Migrations/2026_11_26_100000_rename_operations_manager_to_operations_lead.php');
+    $migration->up();
+    app(SyncRolesAndPermissions::class)();
+
+    $user = User::query()->findOrFail($user->id);
+    expect($user->hasRole(Role::OperationsLead->value))->toBeTrue()
+        ->and($user->hasRole(Role::OperationsManager->value))->toBeFalse()
+        ->and(RoleModel::query()->where('name', Role::OperationsManager->value)->exists())->toBeTrue();
+});
+
 it('stores the morph alias instead of the class name', function () {
     app(SyncRolesAndPermissions::class)();
     User::factory()->create()->assignRole(Role::Operator->value);

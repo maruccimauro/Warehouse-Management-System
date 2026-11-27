@@ -1,6 +1,6 @@
 # Gestionar umbrales de ajuste (ZW35)
 
-La transacción `ZW35` mantiene los umbrales de aprobación de ajustes de los artículos en un depósito. Exige el permiso [`inventory.thresholds.manage`](/referencia/permisos#inventory-thresholds-manage), que tienen el administrador y el gerente de operaciones, y está en el menú en **Logística ▸ Inventario**.
+La transacción `ZW35` mantiene los umbrales de aprobación de ajustes de los artículos en un depósito. Exige el permiso [`inventory.thresholds.manage`](/referencia/permisos#inventory-thresholds-manage), que tienen el Administrador, el Gerente de operaciones y el Jefe de operaciones, y está en el menú en **Logística ▸ Inventario**.
 
 Un **umbral de aprobación** es la cantidad a partir de la cual un ajuste de stock de un artículo no se registra en el momento y espera la aprobación de otro usuario. Cada artículo tiene un umbral para los ajustes positivos y otro para los negativos en cada depósito. Es un control central: lo fija la administración o la gerencia de operaciones, y no quien ajusta el stock. Se modifica en los depósitos donde el usuario opera; en los demás solo se visualiza.
 

@@ -97,6 +97,7 @@ dataset('session write endpoints', fn (): array => array_combine(sessionWriteEnd
 dataset('roles', [
     'administrador' => [Role::Administrator],
     'gerente de operaciones' => [Role::OperationsManager],
+    'jefe de operaciones' => [Role::OperationsLead],
     'supervisor' => [Role::Supervisor],
     'operador' => [Role::Operator],
     'compras' => [Role::Purchasing],

@@ -161,18 +161,24 @@ describe('adjustment approval thresholds', function () {
             ->assertForbidden();
     });
 
-    it('lets the operations manager set it only in the assigned warehouses', function () {
-        $manager = userWithAccess(Role::OperationsManager, [$this->central]);
+    it('lets the operations lead set it only in the assigned warehouses', function () {
+        $lead = userWithAccess(Role::OperationsLead, [$this->central]);
 
-        $this->actingAs($manager)
+        $this->actingAs($lead)
             ->putJson(thresholdsUrl($this->product, $this->central->id), thresholdsBody(100, 20))
             ->assertOk();
 
         // Ve el depósito norte (warehouses.view_all) pero no opera en él.
-        $this->actingAs($manager)
+        $this->actingAs($lead)
             ->putJson(thresholdsUrl($this->product, $this->norte->id), thresholdsBody(100, 20))
             ->assertForbidden()
             ->assertJsonPath('code', 'WAREHOUSE_NOT_ASSIGNED');
+    });
+
+    it('lets the operations manager set it in every warehouse without assignment', function () {
+        $this->actingAs(userWithAccess(Role::OperationsManager))
+            ->putJson(thresholdsUrl($this->product, $this->norte->id), thresholdsBody(100, 20))
+            ->assertOk();
     });
 
     it('answers 404 for a warehouse outside the query scope', function () {
@@ -268,6 +274,12 @@ describe('queries', function () {
             ]))
             ->assertOk()
             ->assertJsonPath('data.*.sku', ['TOR-M8']);
+    });
+
+    it('lets the operations manager set it in every warehouse without assignment', function () {
+        $this->actingAs(userWithAccess(Role::OperationsManager))
+            ->putJson(thresholdsUrl($this->product, $this->norte->id), thresholdsBody(100, 20))
+            ->assertOk();
     });
 
     it('answers 404 for a warehouse outside the query scope', function () {

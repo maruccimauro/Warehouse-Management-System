@@ -7,7 +7,7 @@ import { listPageSchema, listPath, type ListPage, type ListParams } from '@/shar
 // sigue con el email. Los roles los define el backend y el nombre visible lo traduce la
 // interfaz.
 
-export const roleNames = ['administrator', 'operations_manager', 'supervisor', 'operator', 'purchasing', 'auditor'] as const;
+export const roleNames = ['administrator', 'operations_manager', 'operations_lead', 'supervisor', 'operator', 'purchasing', 'auditor'] as const;
 export type RoleName = (typeof roleNames)[number];
 
 // Límites que valida el backend y que la pantalla anticipa.

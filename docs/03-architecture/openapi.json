@@ -10063,6 +10063,7 @@
                 "enum": [
                     "administrator",
                     "operations_manager",
+                    "operations_lead",
                     "supervisor",
                     "operator",
                     "purchasing",
@@ -10574,7 +10575,7 @@
                         "items": {
                             "$ref": "#/components/schemas/Role"
                         },
-                        "maxItems": 6,
+                        "maxItems": 7,
                         "uniqueItems": true
                     },
                     "warehouse_ids": {
