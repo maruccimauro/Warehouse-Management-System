@@ -1,6 +1,6 @@
 # La pantalla principal
 
-La pantalla principal tiene un encabezado con el campo de comando y la barra de herramientas, el menú de transacciones a la izquierda, el área de trabajo en el centro y la barra de estado abajo.
+La pantalla principal tiene un encabezado con el campo de comando, la barra de herramientas y el [contador de la bandeja de entrada](./bandeja-de-entrada#contador), el menú de transacciones a la izquierda, el área de trabajo en el centro y la barra de estado abajo.
 
 ## Transacción {#transaccion}
 

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useMatch, useNavigate } from 'react-router';
 import { useLogout } from '@/features/auth/session';
 import { useAuthenticatedUser } from '@/features/auth/useAuthenticatedUser';
+import { UnreadCounter } from '@/features/inbox/UnreadCounter';
 import { useUserPreferences } from '@/features/preferences/userPreferences';
 import { UserPreferencesProvider } from '@/features/preferences/UserPreferencesProvider';
 import { useDefaultWarehouse } from '@/features/warehouses/useDefaultWarehouse';
@@ -241,7 +242,8 @@ function ShellLayout() {
           </button>
           <span className="font-semibold tracking-wide">{t('brand')}</span>
           <span className="text-shell-muted max-sm:hidden">{t('app.fullName', { ns: 'common' })}</span>
-          <div className="ms-auto">
+          <div className="ms-auto flex items-center gap-2">
+            <UnreadCounter />
             <UserMenu />
           </div>
         </div>

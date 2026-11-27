@@ -1,0 +1,43 @@
+{
+  "folders": {
+    "label": "Carpetas de la bandeja",
+    "inbox": "Entrada",
+    "archived": "Archivados"
+  },
+  "columns": {
+    "received": "Recibido",
+    "message": "Mensaje",
+    "status": "Estado"
+  },
+  "status": {
+    "unread": "No leído",
+    "read": "Leído"
+  },
+  "actions": {
+    "label": "Acciones de la bandeja",
+    "read": "Marcar como leído",
+    "unread": "Marcar como no leído",
+    "archive": "Archivar",
+    "restore": "Desarchivar"
+  },
+  "messages": {
+    "read_one": "{{count}} mensaje marcado como leído.",
+    "read_other": "{{count}} mensajes marcados como leídos.",
+    "unread_one": "{{count}} mensaje marcado como no leído.",
+    "unread_other": "{{count}} mensajes marcados como no leídos.",
+    "archive_one": "{{count}} mensaje archivado.",
+    "archive_other": "{{count}} mensajes archivados.",
+    "restore_one": "{{count}} mensaje devuelto a la entrada.",
+    "restore_other": "{{count}} mensajes devueltos a la entrada.",
+    "markFailed": "No se pudieron marcar los mensajes."
+  },
+  "counter": {
+    "none": "Bandeja de entrada: sin mensajes no leídos",
+    "unread_one": "Bandeja de entrada: {{count}} mensaje no leído",
+    "unread_other": "Bandeja de entrada: {{count}} mensajes no leídos"
+  },
+  "types": {
+    "unknown": "Aviso del sistema ({{type}})."
+  },
+  "exportName": "bandeja-de-entrada"
+}

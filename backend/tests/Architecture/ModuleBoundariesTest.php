@@ -6,7 +6,7 @@
 */
 
 const MODULES = [
-    'Audit', 'Catalog', 'Fulfillment', 'Identity', 'Inventory',
+    'Audit', 'Catalog', 'Fulfillment', 'Identity', 'Inbox', 'Inventory',
     'Procurement', 'Receiving', 'Reporting', 'Stocktaking', 'Warehouse',
 ];
 
@@ -36,6 +36,11 @@ foreach (MODULES as $module) {
 arch('inventory models are only used by inventory and reporting')
     ->expect(module_namespace('Inventory', 'Models'))
     ->toOnlyBeUsedIn([module_namespace('Inventory'), module_namespace('Reporting')]);
+
+// Los demás módulos dejan avisos con el contrato Inbox, sin tocar la tabla.
+arch('inbox models are only used by the inbox')
+    ->expect(module_namespace('Inbox', 'Models'))
+    ->toOnlyBeUsedIn([module_namespace('Inbox')]);
 
 arch('application code does not use debugging functions')
     ->expect(['dd', 'dump', 'ddd', 'ray', 'var_dump', 'print_r', 'var_export', 'die', 'exit'])

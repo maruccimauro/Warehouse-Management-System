@@ -27,7 +27,7 @@ pest()->extend(ConcurrencyTestCase::class)->group('concurrency')->in('Concurrenc
 // verifica al final de cada prueba, antes de revertir su transacción.
 pest()->use(RefreshDatabase::class)
     ->afterEach(fn () => AuditedOperations::assertAllAudited())
-    ->in('Feature/Audit', 'Feature/Catalog', 'Feature/Database', 'Feature/Http', 'Feature/Identity', 'Feature/Inventory', 'Feature/Warehouse');
+    ->in('Feature/Audit', 'Feature/Catalog', 'Feature/Database', 'Feature/Http', 'Feature/Identity', 'Feature/Inbox', 'Feature/Inventory', 'Feature/Warehouse');
 
 /**
  * Exime a la prueba de la verificación de INV-012: solo para las que insertan

@@ -35,6 +35,8 @@ const paths = {
   multipleSelection: 'M2.5 6h6V3l5 5-5 5v-3h-6z',
   multipleSelectionActive: 'M2.5 6h6V3l5 5-5 5v-3h-6z',
   deleteRow: 'M3 4.5h10 M6 4.5V3h4v1.5 M4.5 4.5l.7 9h5.6l.7-9',
+  // Bandeja: el contador de no leídos del encabezado.
+  inbox: 'M1.5 9l2-6h9l2 6v4.5h-13z M1.5 9h4l1 1.5h3l1-1.5h4',
 } as const;
 
 export type IconName = keyof typeof paths;

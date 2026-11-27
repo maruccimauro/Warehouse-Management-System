@@ -9,6 +9,7 @@ Una **regla de negocio** es una condición que el sistema controla siempre, en c
 | [Datos maestros](#datos-maestros) | [Los datos maestros no se borran](#bajas-logicas), [Jerarquía de categorías](#jerarquia-de-categorias) |
 | [Usuarios y seguridad](#usuarios) | [Contraseña inicial](#contrasena-inicial), [Usuario inactivo](#usuario-inactivo), [Siempre hay un administrador](#ultimo-administrador), [Sin escalada de privilegios](#sin-escalada-de-privilegios) |
 | [Controles de inventario](#controles-de-inventario) | [Quién fija los umbrales de ajuste](#umbrales-de-ajuste) |
+| [Bandeja de entrada](#bandeja-de-entrada) | [Retención de la bandeja](#retencion-de-la-bandeja) |
 
 ## Acceso a los depósitos {#acceso}
 
@@ -89,3 +90,13 @@ Los [umbrales de ajuste](/administracion/umbrales-de-ajuste) de un artículo en 
 **Por qué:** el umbral es el control sobre los ajustes; quien opera no fija el control de su propia operación.
 
 **Mensajes:** [`FORBIDDEN`](./mensajes#forbidden).
+
+## Bandeja de entrada {#bandeja-de-entrada}
+
+### Retención de la bandeja {#retencion-de-la-bandeja}
+
+Cada usuario ve y marca solo los avisos de su [bandeja de entrada](/primeros-pasos/bandeja-de-entrada). Archivar un aviso lo marca leído. Los avisos archivados se borran a los 90 días de archivados; los de la carpeta **Entrada** se conservan hasta que el usuario los archiva.
+
+**Por qué:** un aviso archivado ya fue atendido, y la bandeja no es el registro de auditoría: los cambios que originan los avisos quedan auditados aparte.
+
+**Mensajes:** [`VALIDATION_FAILED`](./mensajes#validation-failed) si la marca incluye un aviso que no es del usuario.

@@ -28,6 +28,12 @@ return [
         'retention_days' => (int) env('WMS_IDEMPOTENCY_RETENTION_DAYS', 7),
     ],
 
+    // Bandeja de entrada (E3.27): días que se conservan los mensajes
+    // archivados antes de la limpieza programada (D16.13).
+    'inbox' => [
+        'archived_retention_days' => (int) env('WMS_INBOX_ARCHIVED_RETENTION_DAYS', 90),
+    ],
+
     // Interfaz de la documentación OpenAPI en /api/docs (ADR-012). Nunca se
     // registra en producción, aunque la variable esté activa.
     'api_docs' => [

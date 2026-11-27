@@ -51,6 +51,7 @@ function writeEndpointPermissions(): array
         'POST api/v1/auth/logout' => PUBLIC_ENDPOINT,
         'PATCH api/v1/me' => OWN_ACCOUNT,
         'PUT api/v1/me/favorites' => OWN_ACCOUNT,
+        'PATCH api/v1/me/inbox' => OWN_ACCOUNT,
         'PUT api/v1/me/parameters' => OWN_ACCOUNT,
         'PUT api/v1/me/password' => OWN_ACCOUNT,
         'POST api/v1/warehouses' => Permission::WarehousesManage,

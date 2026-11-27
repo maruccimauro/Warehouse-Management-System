@@ -14,6 +14,7 @@ Monolito modular (ADR-001): un módulo por contexto de dominio, con una base Pos
 | `Stocktaking` | Inventario físico, conteos y ajustes |
 | `Reporting` | Reportes y consultas de solo lectura |
 | `Audit` | Registro de auditoría |
+| `Inbox` | Bandeja de entrada interna de cada usuario: avisos de los demás módulos |
 
 ## Estructura de un módulo
 

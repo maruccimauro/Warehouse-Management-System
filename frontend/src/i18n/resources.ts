@@ -5,6 +5,7 @@ import esErrors from './locales/es/errors.json';
 import esForm from './locales/es/form.json';
 import esGrid from './locales/es/grid.json';
 import esHome from './locales/es/home.json';
+import esInbox from './locales/es/inbox.json';
 import esLocations from './locales/es/locations.json';
 import esNotFound from './locales/es/notFound.json';
 import esProducts from './locales/es/products.json';
@@ -32,6 +33,7 @@ export const resources = {
     form: esForm,
     grid: esGrid,
     home: esHome,
+    inbox: esInbox,
     locations: esLocations,
     notFound: esNotFound,
     products: esProducts,

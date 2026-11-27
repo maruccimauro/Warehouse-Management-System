@@ -375,6 +375,13 @@ export const transactions: readonly TransactionDefinition[] = [
     component: lazy(() => import('@/features/users/RoleTransaction').then((module) => ({ default: module.DisplayRoleTransaction }))),
   },
   {
+    code: 'SBWP',
+    titleKey: 'titles.SBWP',
+    permission: null,
+    helpKey: 'transaction.SBWP',
+    component: lazy(() => import('@/features/inbox/InboxTransaction').then((module) => ({ default: module.InboxTransaction }))),
+  },
+  {
     code: 'SU3',
     titleKey: 'titles.SU3',
     permission: null,
@@ -473,6 +480,7 @@ export const menuTree: readonly MenuNode[] = [
     id: 'system',
     labelKey: 'folders.system',
     children: [
+      { kind: 'transaction', code: 'SBWP' },
       {
         kind: 'folder',
         id: 'userData',

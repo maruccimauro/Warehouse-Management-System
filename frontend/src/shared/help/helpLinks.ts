@@ -14,6 +14,7 @@
 export const wikiBasePath = '/docs/';
 
 const su3Page = 'primeros-pasos/parametros-de-usuario';
+const sbwpPage = 'primeros-pasos/bandeja-de-entrada';
 const zw01Page = 'administracion/depositos';
 const zw02Page = 'administracion/zonas';
 const ls01nPage = 'administracion/crear-ubicacion';
@@ -187,6 +188,7 @@ function anchor(value: string): string {
 
 const fixedLinks = {
   home: '',
+  'transaction.SBWP': sbwpPage,
   'transaction.SU3': su3Page,
   'field.SU3.locale': `${su3Page}#locale`,
   'field.SU3.lgn': `${su3Page}#lgn`,

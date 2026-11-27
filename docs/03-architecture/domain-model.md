@@ -69,6 +69,7 @@ Organización según [ADR-001](adr/001-modular-monolith.md). Solo `Inventory` es
 | | `Dispatch` | `dispatches` | Salida de mercadería de un pedido; documento propio y reversible (DM-10) |
 | Stocktaking | `Stocktake` | `stocktakes`, `stocktake_locations`, `stocktake_items` | Inventario físico, alcance y conteos |
 | Audit | `AuditLog` | `audit_logs` | Registro inmutable de auditoría |
+| Inbox | `InboxMessage` | `inbox_messages` | Aviso a un usuario en su bandeja de entrada: tipo, parámetros y objeto referido; leído y archivado por el destinatario, archivados borrados a los 90 días (E3.27, D16.13) |
 
 ## Relaciones principales
 

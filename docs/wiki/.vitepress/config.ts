@@ -56,6 +56,7 @@ export default defineConfig({
           { text: 'Pantallas de selección', link: '/primeros-pasos/pantallas-de-seleccion' },
           { text: 'Listas', link: '/primeros-pasos/listas' },
           { text: 'Gestionar parámetros de usuario (SU3)', link: '/primeros-pasos/parametros-de-usuario' },
+          { text: 'Bandeja de entrada (SBWP)', link: '/primeros-pasos/bandeja-de-entrada' },
         ],
       },
       {

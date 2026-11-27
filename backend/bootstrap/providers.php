@@ -4,6 +4,7 @@ use App\Modules\Audit\AuditServiceProvider;
 use App\Modules\Catalog\CatalogServiceProvider;
 use App\Modules\Fulfillment\FulfillmentServiceProvider;
 use App\Modules\Identity\IdentityServiceProvider;
+use App\Modules\Inbox\InboxServiceProvider;
 use App\Modules\Inventory\InventoryServiceProvider;
 use App\Modules\Procurement\ProcurementServiceProvider;
 use App\Modules\Receiving\ReceivingServiceProvider;
@@ -27,6 +28,7 @@ return [
     StocktakingServiceProvider::class,
     ReportingServiceProvider::class,
     AuditServiceProvider::class,
+    InboxServiceProvider::class,
 
     // Después de los módulos: documenta sus rutas (ADR-012).
     ApiDocumentationServiceProvider::class,

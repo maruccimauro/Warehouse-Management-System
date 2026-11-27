@@ -82,6 +82,8 @@ export function stubApi(handlers: Record<string, Handler> = {}, initial: Partial
 
       return jsonResponse(200, { data: preferences.parameters });
     },
+    // Contador de la bandeja del encabezado (E3.27): sin mensajes, salvo que la prueba lo defina.
+    'GET /api/v1/me/inbox/unread-count': () => jsonResponse(200, { data: { unread: 0 } }),
     'GET /api/v1/me/favorites': () => jsonResponse(200, { data: preferences.favorites }),
     'PUT /api/v1/me/favorites': (request) => {
       preferences.favorites = (request.body as { favorites: string[] }).favorites;
