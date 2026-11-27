@@ -9,7 +9,7 @@ use Tests\Fixtures\Modules\Sample\SampleServiceProvider;
 
 /** Módulos de dominio definidos en ADR-001. */
 const DOMAIN_MODULES = [
-    'Audit', 'Catalog', 'Fulfillment', 'Identity', 'Inventory',
+    'Audit', 'Catalog', 'Fulfillment', 'Identity', 'Inbox', 'Inventory',
     'Procurement', 'Receiving', 'Reporting', 'Stocktaking', 'Warehouse',
 ];
 

@@ -10,7 +10,7 @@ El WMS ejecuta operaciones que modifican varias entidades a la vez (recepción q
 
 ## Decisión
 
-Una única aplicación Laravel organizada en módulos por contexto de dominio (`Identity`, `Warehouse`, `Catalog`, `Inventory`, `Procurement`, `Receiving`, `Fulfillment`, `Stocktaking`, `Reporting`, `Audit`) bajo `app/Modules`, con una base PostgreSQL compartida. Cada módulo registra sus rutas, policies y migraciones en su propio ServiceProvider. Solo `Inventory` escribe sobre las tablas de stock; los demás módulos lo invocan a través de sus Actions.
+Una única aplicación Laravel organizada en módulos por contexto de dominio (`Identity`, `Warehouse`, `Catalog`, `Inventory`, `Procurement`, `Receiving`, `Fulfillment`, `Stocktaking`, `Reporting`, `Audit`, `Inbox`) bajo `app/Modules`, con una base PostgreSQL compartida. Cada módulo registra sus rutas, policies y migraciones en su propio ServiceProvider. Solo `Inventory` escribe sobre las tablas de stock; los demás módulos lo invocan a través de sus Actions.
 
 ## Alternativas consideradas
 
