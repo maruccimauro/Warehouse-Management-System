@@ -35,7 +35,7 @@ final class UserController
         /** @var array{username: string, name: string, email: string, password: string, locale?: string} $attributes */
         $attributes = $request->safe()->only(['username', ...self::ATTRIBUTES, 'password']);
 
-        $user = $createUser($attributes, $request->roles() ?? [], $request->warehouseIds() ?? []);
+        $user = $createUser($attributes, $request->roles() ?? [], $request->warehouseIds() ?? [], self::actor($request));
 
         return (new UserResource($user))->response()->setStatusCode(201);
     }

@@ -23,6 +23,12 @@ La lista muestra los avisos de la carpeta, del más nuevo al más viejo, con las
 
 Doble clic o <kbd>Enter</kbd> sobre un aviso lo marca como leído y, si el aviso se refiere a un registro (un usuario, por ejemplo), abre la transacción que lo muestra.
 
+## Avisos que llegan a la bandeja {#avisos}
+
+| Aviso | Quién lo recibe | Al abrirlo |
+| - | - | - |
+| **Se asignó el rol … al usuario …** | Todos los administradores activos, incluido quien asignó el rol, cuando un usuario suma un [rol crítico](/referencia/reglas-de-negocio#roles-criticos) | Abre [Visualizar usuario](/administracion/visualizar-usuario) con ese usuario |
+
 ## Marcar y archivar {#acciones}
 
 Las acciones de la barra de la transacción se aplican a los avisos marcados con la casilla de la primera columna, de la página visible. La casilla del título marca todos los de la página.

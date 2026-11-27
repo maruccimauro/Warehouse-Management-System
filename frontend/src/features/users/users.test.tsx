@@ -336,3 +336,82 @@ describe('PFCG: visualizar rol', () => {
     expect(screen.queryByRole('textbox', { name: 'Rol' })).not.toBeInTheDocument();
   });
 });
+
+describe('E3.28: confirmación de roles críticos', () => {
+  async function openChange(api: ReturnType<typeof stubApi>) {
+    renderRoute('/t/ZW92');
+    await fill('Usuario', 'jperez');
+    await userEvent.keyboard('{F8}');
+    await userEvent.click(await screen.findByRole('checkbox', { name: 'Administrador' }));
+
+    return api;
+  }
+
+  it('pide escribir la frase y envía el rol confirmado', async () => {
+    const api = await openChange(
+      stubApi({
+        ...baseHandlers,
+        'GET /api/v1/users': () => page([user()]),
+        'PATCH /api/v1/users/5': () => jsonResponse(200, { data: user({ roles: ['administrator', 'operator'] }) }),
+      }),
+    );
+
+    await userEvent.keyboard('{Control>}s{/Control}');
+
+    const dialog = await screen.findByRole('dialog', { name: 'Asignar rol crítico: Administrador' });
+    const assign = within(dialog).getByRole('button', { name: 'Asignar' });
+    const phrase = within(dialog).getByRole('textbox', { name: 'Para confirmar, escriba la frase:' });
+
+    expect(assign).toBeDisabled();
+    expect(phrase).toHaveFocus();
+
+    await userEvent.type(phrase, 'ASIGNAR ADMIN');
+    expect(assign).toBeDisabled();
+
+    await userEvent.type(phrase, 'ISTRADOR');
+    await userEvent.click(assign);
+
+    await waitFor(() => {
+      expect(api.requestsTo('PATCH', '/api/v1/users/5')[0]?.body).toMatchObject({
+        roles: ['administrator', 'operator'],
+        confirmed_critical_roles: ['administrator'],
+      });
+    });
+  });
+
+  it('no graba si se cancela la confirmación', async () => {
+    const api = await openChange(
+      stubApi({
+        ...baseHandlers,
+        'GET /api/v1/users': () => page([user()]),
+      }),
+    );
+
+    await userEvent.keyboard('{Control>}s{/Control}');
+    const dialog = await screen.findByRole('dialog', { name: 'Asignar rol crítico: Administrador' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+
+    expect(await statusBar().findByText('Grabación cancelada: no se confirmó el rol crítico.')).toBeInTheDocument();
+    expect(api.requestsTo('PATCH', '/api/v1/users/5')).toHaveLength(0);
+    expect(screen.getByText('Cambios sin grabar')).toBeInTheDocument();
+  });
+
+  it('no pide confirmación para un rol crítico que el usuario ya tenía', async () => {
+    const api = stubApi({
+      ...baseHandlers,
+      'GET /api/v1/users': () => page([user({ roles: ['administrator'] })]),
+      'PATCH /api/v1/users/5': () => jsonResponse(200, { data: user({ roles: ['administrator'], name: 'Juan P. Pérez' }) }),
+    });
+
+    renderRoute('/t/ZW92');
+    await fill('Usuario', 'jperez');
+    await userEvent.keyboard('{F8}');
+    await fill('Nombre', 'Juan P. Pérez');
+    await userEvent.keyboard('{Control>}s{/Control}');
+
+    await waitFor(() => {
+      expect(api.requestsTo('PATCH', '/api/v1/users/5')[0]?.body).not.toHaveProperty('confirmed_critical_roles');
+    });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+});

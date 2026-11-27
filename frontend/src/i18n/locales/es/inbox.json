@@ -37,7 +37,11 @@
     "unread_other": "Bandeja de entrada: {{count}} mensajes no leídos"
   },
   "types": {
-    "unknown": "Aviso del sistema ({{type}})."
+    "unknown": "Aviso del sistema ({{type}}).",
+    "user": {
+      "critical_role_assigned": "Se asignó el rol {{roleName}} al usuario {{username}} ({{name}}). Lo asignó {{assigned_by}}."
+    }
   },
-  "exportName": "bandeja-de-entrada"
+  "exportName": "bandeja-de-entrada",
+  "systemActor": "el sistema"
 }

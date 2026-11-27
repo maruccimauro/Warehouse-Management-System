@@ -3,6 +3,7 @@
 namespace App\Modules\Identity\Http\Requests;
 
 use App\Modules\Identity\Models\User;
+use App\Modules\Identity\Services\UserAssignments;
 use App\Shared\Http\Requests\Concerns\ResolvesRouteModel;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Support\Facades\Gate;
@@ -45,6 +46,7 @@ class UpdateUserRequest extends StoreUserRequest
 
         if ($roles !== null) {
             Gate::authorize('assignRoles', [User::class, $this->targetUser(), $roles]);
+            $this->ensureCriticalRolesConfirmed(UserAssignments::currentRoleNames($this->targetUser()));
         }
     }
 

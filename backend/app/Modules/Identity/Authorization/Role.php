@@ -35,6 +35,23 @@ enum Role: string
     case Auditor = 'auditor';
 
     /**
+     * Roles críticos (D16.4, D16.11): administran el sistema o controlan la
+     * operación por encima de los supervisores. Asignarlos exige una
+     * confirmación explícita y avisa a los Administradores (REG-025).
+     *
+     * @return list<self>
+     */
+    public static function critical(): array
+    {
+        return [self::Administrator, self::OperationsManager, self::OperationsLead];
+    }
+
+    public function isCritical(): bool
+    {
+        return in_array($this, self::critical(), true);
+    }
+
+    /**
      * @return list<Permission>
      */
     public function permissions(): array

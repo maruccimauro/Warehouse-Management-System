@@ -67,8 +67,24 @@
     "notFound": "El usuario {{username}} no existe.",
     "alreadyExists": "El usuario {{username}} ya existe.",
     "passwordMismatch": "Las contraseñas no coinciden.",
-    "statusInvalid": "El estado {{status}} no existe."
+    "statusInvalid": "El estado {{status}} no existe.",
+    "criticalRoleCancelled": "Grabación cancelada: no se confirmó el rol crítico."
   },
   "yes": "Sí",
-  "no": "No"
+  "no": "No",
+  "criticalRole": {
+    "title": "Asignar rol crítico: {{role}}",
+    "message": {
+      "danger": "El rol {{role}} administra todo el sistema: usuarios, roles, depósitos y datos maestros, y opera en todos los depósitos. Se avisará a todos los administradores.",
+      "warning": "El rol {{role}} aprueba, fija los umbrales de ajuste y carga el stock inicial. Se avisará a todos los administradores."
+    },
+    "inputLabel": "Para confirmar, escriba la frase:",
+    "phrase": {
+      "administrator": "ASIGNAR ADMINISTRADOR",
+      "operations_manager": "ASIGNAR GERENTE DE OPERACIONES",
+      "operations_lead": "ASIGNAR JEFE DE OPERACIONES"
+    },
+    "confirm": "Asignar",
+    "cancel": "Cancelar"
+  }
 }

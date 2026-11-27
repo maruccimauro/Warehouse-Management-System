@@ -7,6 +7,7 @@ use App\Modules\Identity\Data\UserChanges;
 use App\Modules\Identity\Exceptions\SelfDeactivationNotAllowed;
 use App\Modules\Identity\Models\User;
 use App\Modules\Identity\Services\AdministratorContinuity;
+use App\Modules\Identity\Services\CriticalRoleNotifier;
 use App\Modules\Identity\Services\UserAssignments;
 use App\Modules\Identity\Services\UserSessions;
 use App\Shared\Exceptions\ValueAlreadyExists;
@@ -33,7 +34,7 @@ use Illuminate\Support\Facades\DB;
  *
  * Se auditan los cambios de acceso (INV-012): activación, roles, depósitos y
  * reseteo de contraseña. Nombre, email e idioma son datos maestros y no se
- * auditan.
+ * auditan. Sumar un rol crítico avisa a los Administradores (REG-025).
  */
 final class UpdateUser
 {
@@ -43,6 +44,7 @@ final class UpdateUser
         private readonly AuditLogger $audit,
         private readonly AdministratorContinuity $continuity,
         private readonly UserSessions $sessions,
+        private readonly CriticalRoleNotifier $criticalRoles,
     ) {}
 
     /**
@@ -57,7 +59,7 @@ final class UpdateUser
             throw new SelfDeactivationNotAllowed;
         }
 
-        return DB::transaction(function () use ($user, $changes, $currentSessionId): User {
+        return DB::transaction(function () use ($actor, $user, $changes, $currentSessionId): User {
             if ($changes->mayRemoveAdministrator()) {
                 $this->continuity->lock();
             }
@@ -78,7 +80,7 @@ final class UpdateUser
 
             $user->save();
 
-            $this->applyRoles($user, $changes);
+            $this->applyRoles($actor, $user, $changes);
             $this->applyWarehouses($user, $changes);
             $this->recordActivation($user, $wasActive);
 
@@ -100,7 +102,7 @@ final class UpdateUser
         });
     }
 
-    private function applyRoles(User $user, UserChanges $changes): void
+    private function applyRoles(User $actor, User $user, UserChanges $changes): void
     {
         if ($changes->roles === null) {
             return;
@@ -115,6 +117,7 @@ final class UpdateUser
 
         $user->syncRoles($after);
         $this->audit->record('user.roles_changed', $user, null, ['roles' => $before], ['roles' => $after]);
+        $this->criticalRoles->notify($user, $before, $after, $actor);
     }
 
     private function applyWarehouses(User $user, UserChanges $changes): void

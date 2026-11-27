@@ -156,3 +156,30 @@ describe('SBWP: bandeja de entrada', () => {
     expect(api.requestsTo('GET', '/api/v1/me/inbox').some((request) => request.query.get('filter[folder]') === 'archived')).toBe(true);
   });
 });
+
+describe('aviso de rol crítico', () => {
+  it('muestra el texto con el nombre del rol y abre el usuario', async () => {
+    stubApi({
+      'GET /api/v1/auth/me': () => userResponse(testUser({ username: 'ADMIN', permissions: ['users.view', 'users.manage'] })),
+      'GET /api/v1/me/inbox': () =>
+        page([
+          message({
+            id: 9,
+            type: 'user.critical_role_assigned',
+            parameters: { username: 'JPEREZ', name: 'Juan Pérez', role: 'operations_manager', assigned_by: 'ADMIN' },
+            subject: { type: 'user', id: 5 },
+          }),
+        ]),
+      'PATCH /api/v1/me/inbox': () => new Response(null, { status: 204 }),
+      'GET /api/v1/users': () => page([]),
+    });
+    renderRoute('/t/SBWP');
+
+    const grid = await inboxGrid();
+    const text = within(grid).getByText('Se asignó el rol Gerente de operaciones al usuario JPEREZ (Juan Pérez). Lo asignó ADMIN.');
+
+    await userEvent.dblClick(text);
+
+    expect(await screen.findByRole('heading', { name: /Visualizar usuario/ }, { timeout: 5000 })).toBeInTheDocument();
+  });
+});

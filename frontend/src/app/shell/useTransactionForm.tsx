@@ -27,6 +27,18 @@ import { useUnsavedChanges } from './unsavedChanges';
 type FormValues = Record<string, unknown>;
 type FormSchema = z.ZodType<FormValues, FormValues>;
 
+// onSave la lanza cuando el usuario desiste en un paso previo al envío (una confirmación que
+// cancela): no se graba, la ficha conserva lo editado y la barra de estado muestra el mensaje.
+export class SaveCancelled extends Error {
+  readonly statusMessage: StatusMessage;
+
+  constructor(statusMessage: StatusMessage) {
+    super(statusMessage.text);
+    this.name = 'SaveCancelled';
+    this.statusMessage = statusMessage;
+  }
+}
+
 export type TransactionFieldName<TValues> = Extract<keyof TValues, string>;
 
 // Props de un control especial (`as`): SearchHelpField y los que lo envuelven, como
@@ -178,6 +190,12 @@ export function useTransactionForm<TSchema extends FormSchema>(
         formApi.reset(value);
         show(savedStatus(saved, savedMessage));
       } catch (error) {
+        if (error instanceof SaveCancelled) {
+          show(error.statusMessage);
+
+          return;
+        }
+
         if (error instanceof ApiError && error.code === 'VALIDATION_FAILED') {
           const fieldMap: Readonly<Record<string, string>> = serverFields ?? {};
           const failed = serverFieldMessages(error.fieldErrors, Object.keys(formApi.state.values), (key) => fieldMap[key] ?? key);

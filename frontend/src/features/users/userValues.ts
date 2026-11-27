@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { fetchRoles, isRoleName, rolesQueryKey } from './usersApi';
@@ -12,7 +13,8 @@ export function useRoles() {
 export function useRoleLabel() {
   const { t } = useTranslation('roles');
 
-  return (name: string) => (isRoleName(name) ? t(`names.${name}`) : name);
+  // Estable entre renders: la usan columnas de grillas memorizadas.
+  return useCallback((name: string) => (isRoleName(name) ? t(`names.${name}`) : name), [t]);
 }
 
 export const userStatuses = ['active', 'inactive'] as const;

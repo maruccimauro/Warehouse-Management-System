@@ -5,6 +5,7 @@ namespace App\Modules\Identity\Actions;
 use App\Modules\Audit\Contracts\AuditLogger;
 use App\Modules\Identity\Authorization\Role;
 use App\Modules\Identity\Models\User;
+use App\Modules\Identity\Services\CriticalRoleNotifier;
 use App\Modules\Identity\Services\UserAssignments;
 use App\Shared\Exceptions\ValueAlreadyExists;
 use Illuminate\Support\Facades\DB;
@@ -13,22 +14,26 @@ use Illuminate\Support\Facades\DB;
  * Alta de un usuario (SU01) con sus roles y depósitos en una sola transacción.
  * Nace activo y con la contraseña inicial que fija el administrador, que el
  * usuario debe cambiar antes de operar (REG-021). Se audita (INV-012) porque
- * otorga acceso.
+ * otorga acceso, y un rol crítico avisa a los Administradores (REG-025).
  */
 final class CreateUser
 {
-    public function __construct(private readonly AuditLogger $audit) {}
+    public function __construct(
+        private readonly AuditLogger $audit,
+        private readonly CriticalRoleNotifier $criticalRoles,
+    ) {}
 
     /**
      * @param  array{username: string, name: string, email: string, password: string, locale?: string}  $attributes
      * @param  list<Role>  $roles
      * @param  list<int>  $warehouseIds
+     * @param  User|null  $actor  quien da el alta; null en las altas del sistema (seeders, pruebas)
      *
      * @throws ValueAlreadyExists respaldo de la restricción única ante dos peticiones simultáneas (ADR-010)
      */
-    public function __invoke(array $attributes, array $roles, array $warehouseIds): User
+    public function __invoke(array $attributes, array $roles, array $warehouseIds, ?User $actor = null): User
     {
-        return DB::transaction(function () use ($attributes, $roles, $warehouseIds): User {
+        return DB::transaction(function () use ($attributes, $roles, $warehouseIds, $actor): User {
             $user = new User;
             $user->username = $attributes['username'];
             $user->name = $attributes['name'];
@@ -48,6 +53,8 @@ final class CreateUser
                 'roles' => UserAssignments::roleNames($roles),
                 'warehouse_ids' => UserAssignments::sortedIds($warehouseIds),
             ]);
+
+            $this->criticalRoles->notify($user, [], UserAssignments::roleNames($roles), $actor);
 
             return $user->refresh()->load(['roles', 'warehouses']);
         });

@@ -8,6 +8,7 @@ return [
     'user_inactive' => 'El usuario está desactivado. Consulte con el administrador del sistema.',
     'password_change_required' => 'Debe cambiar la contraseña antes de continuar.',
     'last_administrator' => 'El cambio dejaría el sistema sin un administrador activo.',
+    'critical_role_confirmation_required' => 'Asignar un rol crítico exige confirmarlo.',
     'self_deactivation_not_allowed' => 'Un usuario no puede desactivarse a sí mismo.',
     'own_roles_not_editable' => 'Un usuario no puede modificar sus propios roles.',
     'role_exceeds_permissions' => 'Solo se pueden asignar o quitar roles cuyos permisos tiene quien hace el cambio.',

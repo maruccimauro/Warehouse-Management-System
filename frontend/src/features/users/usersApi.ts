@@ -77,6 +77,9 @@ export interface UserInput {
   is_active?: boolean;
   roles?: string[];
   warehouse_ids?: number[];
+  // Roles críticos que se suman y que el usuario confirmó con su frase (E3.28): el backend
+  // responde CRITICAL_ROLE_CONFIRMATION_REQUIRED si falta alguno.
+  confirmed_critical_roles?: string[];
   // Contraseña inicial: el usuario la cambia antes de operar (REG-021).
   password?: string;
 }

@@ -10989,7 +10989,7 @@
             },
             "StoreUserRequest": {
                 "type": "object",
-                "description": "Alta de usuario con users.manage (SU01, D6): c\u00f3digo de usuario (E2.14 D1),\ndatos, contrase\u00f1a inicial,\nroles y dep\u00f3sitos en una sola petici\u00f3n. Nace activo y con cambio de\ncontrase\u00f1a obligatorio (REG-021). Los roles pedidos se autorizan despu\u00e9s de\nvalidar, contra los permisos de quien opera (REG-023).",
+                "description": "Alta de usuario con users.manage (SU01, D6): c\u00f3digo de usuario (E2.14 D1),\ndatos, contrase\u00f1a inicial,\nroles y dep\u00f3sitos en una sola petici\u00f3n. Nace activo y con cambio de\ncontrase\u00f1a obligatorio (REG-021). Los roles pedidos se autorizan despu\u00e9s de\nvalidar, contra los permisos de quien opera (REG-023), y cada rol cr\u00edtico\nque se suma exige su confirmaci\u00f3n en confirmed_critical_roles (REG-025).",
                 "properties": {
                     "username": {
                         "type": "string",
@@ -11020,6 +11020,20 @@
                             "$ref": "#/components/schemas/Role"
                         },
                         "maxItems": 7,
+                        "uniqueItems": true
+                    },
+                    "confirmed_critical_roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "description": "Roles del sistema y sus permisos (E2.07). El valor es un identificador estable que guarda la tabla roles; el nombre visible lo traduce el frontend, porque los roles son datos del sistema y no de los usuarios. La asignaci\u00f3n de permisos sigue la tabla de roles de docs/03-architecture/domain-model.md.\n",
+                            "enum": [
+                                "administrator",
+                                "operations_manager",
+                                "operations_lead"
+                            ]
+                        },
+                        "maxItems": 3,
                         "uniqueItems": true
                     },
                     "warehouse_ids": {
@@ -11574,6 +11588,19 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Role"
+                        },
+                        "uniqueItems": true
+                    },
+                    "confirmed_critical_roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "description": "Roles del sistema y sus permisos (E2.07). El valor es un identificador estable que guarda la tabla roles; el nombre visible lo traduce el frontend, porque los roles son datos del sistema y no de los usuarios. La asignaci\u00f3n de permisos sigue la tabla de roles de docs/03-architecture/domain-model.md.\n",
+                            "enum": [
+                                "administrator",
+                                "operations_manager",
+                                "operations_lead"
+                            ]
                         },
                         "uniqueItems": true
                     },

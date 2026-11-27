@@ -3,12 +3,13 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import type { TransactionFieldControlProps } from '@/app/shell/useTransactionForm';
-import { useTransactionForm } from '@/app/shell/useTransactionForm';
+import { SaveCancelled, useTransactionForm } from '@/app/shell/useTransactionForm';
 import { useVisibleWarehouses } from '@/features/warehouses/warehouseQueries';
 import { HelpLink } from '@/shared/help/HelpLink';
 import { ApplicationToolbar, type ApplicationAction } from '@/shared/ui/ApplicationToolbar';
 import { InfoNotice } from '@/shared/ui/InfoNotice';
 import { passwordMismatchMessage, passwordRule, requiredEmail, requiredText, usernameRule } from '@/shared/ui/form/fieldRules';
+import { addedCriticalRoles, useCriticalRoleConfirmation } from './criticalRoles';
 import { CheckList } from './UserFields';
 import { checkListValue, checkListValues, useRoleLabel } from './userValues';
 import {
@@ -97,6 +98,7 @@ interface UserDetailProps {
 export function UserDetail({ mode, user, username, standalone = false, onModeChange, onBack }: UserDetailProps) {
   const { t } = useTranslation('users');
   const queryClient = useQueryClient();
+  const criticalRoleConfirmation = useCriticalRoleConfirmation();
 
   const schema = useMemo(() => userFormSchema(mode), [mode]);
   const defaultValues = useMemo(
@@ -127,6 +129,14 @@ export function UserDetail({ mode, user, username, standalone = false, onModeCha
     onSave: async (form) => {
       const roles = checkListValues(form.roles);
       const warehouseIds = checkListValues(form.warehouses).map(Number);
+      // Cada rol crítico que se suma se confirma con su frase antes de enviar (D16.4).
+      const confirmedCriticalRoles = addedCriticalRoles(user?.roles ?? [], roles);
+
+      if (!(await criticalRoleConfirmation.confirm(confirmedCriticalRoles))) {
+        throw new SaveCancelled({ type: 'I', text: t('messages.criticalRoleCancelled') });
+      }
+
+      const confirmation = confirmedCriticalRoles.length === 0 ? {} : { confirmed_critical_roles: confirmedCriticalRoles };
       const saved =
         mode === 'create'
           ? await createUser({
@@ -136,6 +146,7 @@ export function UserDetail({ mode, user, username, standalone = false, onModeCha
               password: form.password,
               roles,
               warehouse_ids: warehouseIds,
+              ...confirmation,
             })
           : await updateUser(user?.id ?? 0, {
               name: form.name,
@@ -143,6 +154,7 @@ export function UserDetail({ mode, user, username, standalone = false, onModeCha
               is_active: form.status === 'active',
               roles,
               warehouse_ids: warehouseIds,
+              ...confirmation,
               ...(form.password === '' ? {} : { password: form.password }),
             });
 
@@ -217,6 +229,7 @@ export function UserDetail({ mode, user, username, standalone = false, onModeCha
       )}
       {values.password !== '' && mode === 'change' && <InfoNotice>{t('detail.pendingPassword')}</InfoNotice>}
       {mode !== 'display' && <InfoNotice>{t('detail.saveHint')}</InfoNotice>}
+      {criticalRoleConfirmation.dialog}
     </div>
   );
 }

@@ -38,6 +38,18 @@ Roles asignados, cada uno con su casilla. Un **rol** reúne los permisos de un p
 
 Nadie cambia sus propios roles, y solo se asignan o quitan roles cuyos permisos tiene quien hace el cambio. Si no se cumple, el sistema rechaza la grabación con [`FORBIDDEN`](/referencia/mensajes#forbidden).
 
+#### Roles críticos {#roles-criticos}
+
+Al grabar una ficha que suma un [rol crítico](/referencia/reglas-de-negocio#roles-criticos) que el usuario no tenía, un diálogo pide confirmarlo escribiendo una frase exacta. El botón **Asignar** se habilita solo con la frase completa; **Cancelar** o <kbd>Esc</kbd> no graban, la ficha conserva lo editado y la barra de estado muestra **Grabación cancelada: no se confirmó el rol crítico.** Si se suman varios roles críticos, se confirma uno por uno.
+
+| Rol | Diálogo | Frase |
+| - | - | - |
+| Administrador | Rojo | `ASIGNAR ADMINISTRADOR` |
+| Gerente de operaciones | Ámbar | `ASIGNAR GERENTE DE OPERACIONES` |
+| Jefe de operaciones | Ámbar | `ASIGNAR JEFE DE OPERACIONES` |
+
+Después de grabar, cada administrador activo recibe un aviso en su [bandeja de entrada](/primeros-pasos/bandeja-de-entrada#avisos). Un rol crítico que el usuario ya tenía no pide confirmación.
+
 ### Depósitos {#warehouses}
 
 Depósitos en los que el usuario opera, con su código y su nombre. Se pueden asignar depósitos inactivos. Un usuario con el permiso [`warehouses.operate_all`](/referencia/permisos#warehouses-operate-all) opera en todos los depósitos aunque no los tenga asignados.

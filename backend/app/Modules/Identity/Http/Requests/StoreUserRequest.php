@@ -3,6 +3,7 @@
 namespace App\Modules\Identity\Http\Requests;
 
 use App\Modules\Identity\Authorization\Role;
+use App\Modules\Identity\Exceptions\CriticalRoleConfirmationRequired;
 use App\Modules\Identity\Models\User;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Http\FormRequest;
@@ -15,7 +16,8 @@ use Illuminate\Validation\Rules\Password;
  * datos, contraseña inicial,
  * roles y depósitos en una sola petición. Nace activo y con cambio de
  * contraseña obligatorio (REG-021). Los roles pedidos se autorizan después de
- * validar, contra los permisos de quien opera (REG-023).
+ * validar, contra los permisos de quien opera (REG-023), y cada rol crítico
+ * que se suma exige su confirmación en confirmed_critical_roles (REG-025).
  */
 class StoreUserRequest extends FormRequest
 {
@@ -51,6 +53,34 @@ class StoreUserRequest extends FormRequest
     protected function passedValidation(): void
     {
         Gate::authorize('assignRoles', [User::class, null, $this->roles() ?? []]);
+        $this->ensureCriticalRolesConfirmed([]);
+    }
+
+    /**
+     * Cada rol crítico pedido que el usuario no tenía tiene que venir en
+     * confirmed_critical_roles: es la constancia de que quien asigna escribió
+     * la frase de confirmación (D16.4). Va después de autorizar: sin permiso
+     * para asignar el rol, la respuesta es 403.
+     *
+     * @param  list<string>  $currentRoles
+     *
+     * @throws CriticalRoleConfirmationRequired
+     */
+    protected function ensureCriticalRolesConfirmed(array $currentRoles): void
+    {
+        $confirmed = $this->validated('confirmed_critical_roles', []);
+        $confirmed = is_array($confirmed) ? $confirmed : [];
+
+        $missing = array_values(array_filter(
+            $this->roles() ?? [],
+            fn (Role $role): bool => $role->isCritical()
+                && ! in_array($role->value, $currentRoles, true)
+                && ! in_array($role->value, $confirmed, true),
+        ));
+
+        if ($missing !== []) {
+            throw CriticalRoleConfirmationRequired::for($missing);
+        }
     }
 
     /**
@@ -117,6 +147,8 @@ class StoreUserRequest extends FormRequest
         return [
             'roles' => [$presence, 'array', 'list', 'max:'.count(Role::cases())],
             'roles.*' => ['required', 'string', 'distinct', Rule::enum(Role::class)],
+            'confirmed_critical_roles' => ['sometimes', 'array', 'list', 'max:'.count(Role::critical())],
+            'confirmed_critical_roles.*' => ['required', 'string', 'distinct', Rule::enum(Role::class)->only(Role::critical())],
             'warehouse_ids' => [$presence, 'array', 'list', 'max:500'],
             'warehouse_ids.*' => ['required', 'integer', 'distinct', 'min:1', Rule::exists('warehouses', 'id')],
         ];

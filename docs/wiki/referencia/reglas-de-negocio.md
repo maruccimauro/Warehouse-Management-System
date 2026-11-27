@@ -7,7 +7,7 @@ Una **regla de negocio** es una condición que el sistema controla siempre, en c
 | [Acceso a los depósitos](#acceso) | [Consulta y operación por depósito](#alcance-por-deposito) |
 | [Depósitos](#depositos) | [Un depósito inactivo no admite operaciones](#deposito-inactivo) |
 | [Datos maestros](#datos-maestros) | [Los datos maestros no se borran](#bajas-logicas), [Jerarquía de categorías](#jerarquia-de-categorias) |
-| [Usuarios y seguridad](#usuarios) | [Contraseña inicial](#contrasena-inicial), [Usuario inactivo](#usuario-inactivo), [Siempre hay un administrador](#ultimo-administrador), [Sin escalada de privilegios](#sin-escalada-de-privilegios) |
+| [Usuarios y seguridad](#usuarios) | [Contraseña inicial](#contrasena-inicial), [Usuario inactivo](#usuario-inactivo), [Siempre hay un administrador](#ultimo-administrador), [Sin escalada de privilegios](#sin-escalada-de-privilegios), [Roles críticos](#roles-criticos) |
 | [Controles de inventario](#controles-de-inventario) | [Quién fija los umbrales de ajuste](#umbrales-de-ajuste) |
 | [Bandeja de entrada](#bandeja-de-entrada) | [Retención de la bandeja](#retencion-de-la-bandeja) |
 
@@ -80,6 +80,14 @@ Nadie cambia sus propios roles. Solo se asignan o quitan roles cuyos permisos ti
 **Por qué:** un usuario no puede darse ni dar a otro más acceso del que tiene. Restablecer la contraseña de alguien con más permisos equivaldría a tomar su cuenta.
 
 **Mensajes:** [`FORBIDDEN`](./mensajes#forbidden).
+
+### Roles críticos {#roles-criticos}
+
+Los roles **Administrador**, **Gerente de operaciones** y **Jefe de operaciones** son críticos: administran el sistema o controlan la operación por encima de los supervisores. Asignarlos a un usuario que no los tenía exige escribir una frase de confirmación al grabar la ficha, y cada asignación deja un aviso en la [bandeja de entrada](/primeros-pasos/bandeja-de-entrada#avisos) de todos los administradores activos, incluido quien la hizo.
+
+**Por qué:** un rol crítico da mucho acceso de una vez; la frase evita asignarlo por error y el aviso permite que los demás administradores controlen la asignación.
+
+**Mensajes:** [`CRITICAL_ROLE_CONFIRMATION_REQUIRED`](./mensajes#critical-role-confirmation-required).
 
 ## Controles de inventario {#controles-de-inventario}
 

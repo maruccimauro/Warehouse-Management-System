@@ -104,6 +104,12 @@ El cambio dejaría el sistema sin ningún administrador activo, al quitar el rol
 
 **Qué hacer:** asigne antes el rol Administrador a otro usuario activo.
 
+### `CRITICAL_ROLE_CONFIRMATION_REQUIRED` {#critical-role-confirmation-required}
+
+La grabación asigna un [rol crítico](/referencia/reglas-de-negocio#roles-criticos) (Administrador, Gerente de operaciones o Jefe de operaciones) sin su confirmación. La ficha del usuario pide la confirmación antes de grabar; este mensaje aparece si la confirmación no llegó al servidor, por ejemplo porque otro usuario cambió los roles mientras tanto.
+
+**Qué hacer:** vuelva a grabar y escriba la frase de confirmación que pide el diálogo.
+
 ### `SELF_DEACTIVATION_NOT_ALLOWED` {#self-deactivation-not-allowed}
 
 Un usuario no puede desactivar su propia cuenta.
